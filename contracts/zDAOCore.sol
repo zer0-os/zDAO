@@ -2,35 +2,57 @@
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/IzDAOCore.sol";
 
-contract zDAOCore is Ownable {
-  string[] public zDAOIds;
-  mapping(string => bool) zDAOIDPresence;
+contract zDAOCore is IzDAOCore, Ownable {
+  string[] private zDAOIds;
+  mapping(string => bool) public zDAOIDPresence;
 
-  struct DAO {
-    string[] zNAs;
-    mapping(address => bool) admins;
-  }
-
-  mapping(string => DAO) zDAOs;
-  mapping(string => string) zNATozDAO;
+  mapping(string => DAO) private zDAOs;
+  mapping(string => string) public zNATozDAO;
 
   /// @dev Allowed core managers
   mapping(address => bool) private managers;
 
-  function addNewDAO(string calldata newDAO, address[] calldata admins) external onlyManagers {
-    if (!zDAOIDPresence[newDAO]) {
-      zDAOIds.push(newDAO);
-      zDAOIDPresence[newDAO] = true;
+  function getDAOIds() external view returns (string[] memory) {
+    return zDAOIds;
+  }
+
+  function getDAOMetadataUri(string calldata daoId)
+    external
+    view
+    returns (string memory metadataUri)
+  {
+    return zDAOs[daoId].metadataUri;
+  }
+
+  function getDAOZNAs(string calldata daoId) external view returns (string[] memory) {
+    return zDAOs[daoId].zNAs;
+  }
+
+  function addNewDAO(
+    string calldata _daoId,
+    string calldata _metadataUri,
+    address[] calldata admins
+  ) external onlyManagers {
+    if (!zDAOIDPresence[_daoId]) {
+      zDAOIds.push(_daoId);
+      zDAOIDPresence[_daoId] = true;
+
+      DAO storage dao = zDAOs[_daoId];
+      dao.metadataUri = _metadataUri;
       for (uint256 i = 0; i < admins.length; i++) {
-        zDAOs[newDAO].admins[admins[i]] = true;
+        dao.admins[admins[i]] = true;
       }
+
+      emit DAOCreated(_daoId, _metadataUri);
     }
   }
 
   function addZNAAssociation(string memory daoId, string memory zNA) external {
     require(zDAOIDPresence[daoId], "DAO ID invalid");
-    require(zDAOs[daoId].admins[msg.sender], "Only DAO admins can add new association");
+    DAO storage dao = zDAOs[daoId];
+    require(dao.admins[msg.sender], "Only DAO admins can add new association");
     string memory currentDAO = zNATozDAO[zNA];
     require(!strcmp(currentDAO, daoId), "Already added");
 
@@ -40,7 +62,9 @@ contract zDAOCore is Ownable {
     }
 
     zNATozDAO[zNA] = daoId;
-    zDAOs[daoId].zNAs.push(zNA);
+    dao.zNAs.push(zNA);
+
+    emit DAOzNAAdded(daoId, zNA);
   }
 
   function removeZNAAssociation(string memory daoId, string memory zNA) external {
@@ -51,11 +75,14 @@ contract zDAOCore is Ownable {
   }
 
   function _removeZNAAssociation(string memory daoId, string memory zNA) internal {
+    DAO storage dao = zDAOs[daoId];
     uint256 length = zDAOs[daoId].zNAs.length;
     for (uint256 i = 0; i < length; i++) {
-      if (strcmp(zDAOs[daoId].zNAs[i], zNA)) {
-        zDAOs[daoId].zNAs[i] = zDAOs[daoId].zNAs[length - 1];
-        zDAOs[daoId].zNAs.pop();
+      if (strcmp(dao.zNAs[i], zNA)) {
+        dao.zNAs[i] = dao.zNAs[length - 1];
+        dao.zNAs.pop();
+
+        emit DAOzNARemoved(daoId, zNA);
         break;
       }
     }

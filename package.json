@@ -5,7 +5,8 @@
     "test": "hardhat test --show-stack-traces",
     "build": "yarn run clean && yarn run compile",
     "clean": "hardhat clean",
-    "compile": "hardhat compile"
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.ts --network"
   },
   "devDependencies": {
     "@defi-wonderland/smock": "2.0.7",

@@ -1,4 +1,4 @@
-import { task, HardhatUserConfig } from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 
 import "hardhat-deploy";
 import "hardhat-deploy-ethers";
@@ -21,7 +21,7 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       PRIVATE_KEY: string;
-      INFURA_API_KEY: string;
+      ALCHEMY_KEY: string;
       ETHERSCAN_API_KEY: string;
     }
   }
@@ -48,12 +48,17 @@ const config: HardhatUserConfig = {
   },
   networks: {
     rinkeby: {
-      url: `https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
       accounts: [process.env.PRIVATE_KEY],
     },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
   },
   typechain: {
     outDir: "types",

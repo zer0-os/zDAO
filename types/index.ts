@@ -2,7 +2,9 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { Ownable } from "./Ownable";
+export type { IzDAOCore } from "./IzDAOCore";
 export type { ZDAOCore } from "./ZDAOCore";
 
 export { Ownable__factory } from "./factories/Ownable__factory";
+export { IzDAOCore__factory } from "./factories/IzDAOCore__factory";
 export { ZDAOCore__factory } from "./factories/ZDAOCore__factory";
