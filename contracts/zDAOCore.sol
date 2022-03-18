@@ -31,28 +31,36 @@ contract zDAOCore is IzDAOCore, Ownable {
   }
 
   function addNewDAO(
-    string calldata _daoId,
-    string calldata _metadataUri,
+    string calldata daoId,
+    string calldata metadataUri,
     address[] calldata admins
   ) external onlyManagers {
-    if (!zDAOIDPresence[_daoId]) {
-      zDAOIds.push(_daoId);
-      zDAOIDPresence[_daoId] = true;
+    if (!zDAOIDPresence[daoId]) {
+      zDAOIds.push(daoId);
+      zDAOIDPresence[daoId] = true;
 
-      DAO storage dao = zDAOs[_daoId];
-      dao.metadataUri = _metadataUri;
+      DAO storage dao = zDAOs[daoId];
+      dao.metadataUri = metadataUri;
       for (uint256 i = 0; i < admins.length; i++) {
         dao.admins[admins[i]] = true;
       }
 
-      emit DAOCreated(_daoId, _metadataUri);
+      emit DAOCreated(daoId, metadataUri);
     }
   }
 
-  function addZNAAssociation(string memory daoId, string memory zNA) external {
-    require(zDAOIDPresence[daoId], "DAO ID invalid");
-    DAO storage dao = zDAOs[daoId];
-    require(dao.admins[msg.sender], "Only DAO admins can add new association");
+  function setDAOAdmin(
+    string calldata daoId,
+    address admin,
+    bool flag
+  ) external onlyDAOAdmins(daoId) {
+    zDAOs[daoId].admins[admin] = flag;
+  }
+
+  function addZNAAssociation(string calldata daoId, string calldata zNA)
+    external
+    onlyDAOAdmins(daoId)
+  {
     string memory currentDAO = zNATozDAO[zNA];
     require(!strcmp(currentDAO, daoId), "Already added");
 
@@ -62,14 +70,17 @@ contract zDAOCore is IzDAOCore, Ownable {
     }
 
     zNATozDAO[zNA] = daoId;
-    dao.zNAs.push(zNA);
+    zDAOs[daoId].zNAs.push(zNA);
 
     emit DAOzNAAdded(daoId, zNA);
   }
 
-  function removeZNAAssociation(string memory daoId, string memory zNA) external {
-    require(zDAOIDPresence[daoId], "DAO ID invalid");
-    require(zDAOs[daoId].admins[msg.sender], "Only DAO admins can add remove association");
+  function removeZNAAssociation(string calldata daoId, string calldata zNA)
+    external
+    onlyDAOAdmins(daoId)
+  {
+    string memory currentDAO = zNATozDAO[zNA];
+    require(strcmp(currentDAO, daoId), "Not associated yet");
 
     _removeZNAAssociation(daoId, zNA);
   }
@@ -81,6 +92,7 @@ contract zDAOCore is IzDAOCore, Ownable {
       if (strcmp(dao.zNAs[i], zNA)) {
         dao.zNAs[i] = dao.zNAs[length - 1];
         dao.zNAs.pop();
+        zNATozDAO[zNA] = "";
 
         emit DAOzNARemoved(daoId, zNA);
         break;
@@ -94,6 +106,13 @@ contract zDAOCore is IzDAOCore, Ownable {
 
   function strcmp(string memory a, string memory b) internal pure returns (bool) {
     return keccak256(abi.encode(a)) == keccak256(abi.encode(b));
+  }
+
+  modifier onlyDAOAdmins(string calldata daoId) {
+    require(zDAOIDPresence[daoId], "DAO ID invalid");
+    DAO storage dao = zDAOs[daoId];
+    require(dao.admins[msg.sender], "Only DAO admins can update association");
+    _;
   }
 
   modifier onlyManagers {

@@ -29,6 +29,7 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     "owner()": FunctionFragment;
     "removeZNAAssociation(string,string)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "setDAOAdmin(string,address,bool)": FunctionFragment;
     "setManager(address,bool)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "zDAOIDPresence(string)": FunctionFragment;
@@ -57,6 +58,10 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setDAOAdmin",
+    values: [string, string, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "setManager",
@@ -90,6 +95,10 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setDAOAdmin",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "setManager", data: BytesLike): Result;
@@ -161,8 +170,8 @@ export class ZDAOCore extends BaseContract {
 
   functions: {
     addNewDAO(
-      _daoId: string,
-      _metadataUri: string,
+      daoId: string,
+      metadataUri: string,
       admins: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -194,6 +203,13 @@ export class ZDAOCore extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    setDAOAdmin(
+      daoId: string,
+      admin: string,
+      flag: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setManager(
       manager: string,
       allowed: boolean,
@@ -211,8 +227,8 @@ export class ZDAOCore extends BaseContract {
   };
 
   addNewDAO(
-    _daoId: string,
-    _metadataUri: string,
+    daoId: string,
+    metadataUri: string,
     admins: string[],
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -241,6 +257,13 @@ export class ZDAOCore extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setDAOAdmin(
+    daoId: string,
+    admin: string,
+    flag: boolean,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setManager(
     manager: string,
     allowed: boolean,
@@ -258,8 +281,8 @@ export class ZDAOCore extends BaseContract {
 
   callStatic: {
     addNewDAO(
-      _daoId: string,
-      _metadataUri: string,
+      daoId: string,
+      metadataUri: string,
       admins: string[],
       overrides?: CallOverrides
     ): Promise<void>;
@@ -288,6 +311,13 @@ export class ZDAOCore extends BaseContract {
     ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    setDAOAdmin(
+      daoId: string,
+      admin: string,
+      flag: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     setManager(
       manager: string,
@@ -335,8 +365,8 @@ export class ZDAOCore extends BaseContract {
 
   estimateGas: {
     addNewDAO(
-      _daoId: string,
-      _metadataUri: string,
+      daoId: string,
+      metadataUri: string,
       admins: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -368,6 +398,13 @@ export class ZDAOCore extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    setDAOAdmin(
+      daoId: string,
+      admin: string,
+      flag: boolean,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setManager(
       manager: string,
       allowed: boolean,
@@ -386,8 +423,8 @@ export class ZDAOCore extends BaseContract {
 
   populateTransaction: {
     addNewDAO(
-      _daoId: string,
-      _metadataUri: string,
+      daoId: string,
+      metadataUri: string,
       admins: string[],
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -419,6 +456,13 @@ export class ZDAOCore extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setDAOAdmin(
+      daoId: string,
+      admin: string,
+      flag: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

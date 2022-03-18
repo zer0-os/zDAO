@@ -31,16 +31,78 @@ describe("zDAOCore", function () {
       expect(await zDAOCore.getDAOIds()).to.eql(["test1DAO", "test2DAO"]);
       expect(await zDAOCore.zDAOIDPresence("test1DAO")).to.eq(true);
       expect(await zDAOCore.zDAOIDPresence("test2DAO")).to.eq(true);
-      expect(await zDAOCore.zDAOs("test1DAO")).to.eql({
-        metadataUri: "ipfs1",
-        zNAs: [],
-        admins: [user1.address],
-      });
-      expect(await zDAOCore.zDAOs("test2DAO")).to.eql({
-        metadataUri: "ipfs2",
-        zNAs: [],
-        admins: [user2.address],
-      });
+      expect(await zDAOCore.getDAOMetadataUri("test1DAO")).to.eql("ipfs1");
+      expect(await zDAOCore.getDAOZNAs("test1DAO")).to.eql([]);
+    });
+
+    it("blocks when called from non-managers", async function () {
+      await expect(
+        zDAOCore.connect(user1).addNewDAO("test3DAO", "ipfs3", [user2.address])
+      ).to.revertedWith("Not allowed");
+    });
+  });
+
+  describe("#addZNAAssociation", () => {
+    it("adds new zna association", async function () {
+      await zDAOCore.connect(user1).addZNAAssociation("test1DAO", "zNA1");
+      expect(await zDAOCore.getDAOZNAs("test1DAO")).to.eql(["zNA1"]);
+      await zDAOCore.connect(user2).addZNAAssociation("test2DAO", "zNA2");
+      expect(await zDAOCore.getDAOZNAs("test2DAO")).to.eql(["zNA2"]);
+      await zDAOCore.connect(user2).addZNAAssociation("test2DAO", "zNA3");
+      expect(await zDAOCore.getDAOZNAs("test2DAO")).to.eql(["zNA2", "zNA3"]);
+
+      expect(await zDAOCore.zNATozDAO("zNA1")).to.eq("test1DAO");
+      expect(await zDAOCore.zNATozDAO("zNA2")).to.eq("test2DAO");
+      expect(await zDAOCore.zNATozDAO("zNA3")).to.eq("test2DAO");
+    });
+    it("renews existing association", async function () {
+      await zDAOCore.connect(user1).addZNAAssociation("test1DAO", "zNA3");
+      expect(await zDAOCore.getDAOZNAs("test1DAO")).to.eql(["zNA1", "zNA3"]);
+      expect(await zDAOCore.getDAOZNAs("test2DAO")).to.eql(["zNA2"]);
+      expect(await zDAOCore.zNATozDAO("zNA1")).to.eq("test1DAO");
+      expect(await zDAOCore.zNATozDAO("zNA2")).to.eq("test2DAO");
+      expect(await zDAOCore.zNATozDAO("zNA3")).to.eq("test1DAO");
+    });
+    it("reverts", async function () {
+      await expect(zDAOCore.connect(user2).addZNAAssociation("test1DAO", "zNA3")).to.revertedWith(
+        "Only DAO admins can update association"
+      );
+      await expect(zDAOCore.connect(user1).addZNAAssociation("testxDAO", "zNA4")).to.revertedWith(
+        "DAO ID invalid"
+      );
+
+      await expect(zDAOCore.connect(user1).addZNAAssociation("test1DAO", "zNA1")).to.revertedWith(
+        "Already added"
+      );
+    });
+  });
+
+  describe("#removezNAAssociation", () => {
+    it("removes existing association", async function () {
+      await zDAOCore.connect(user1).removeZNAAssociation("test1DAO", "zNA3");
+      expect(await zDAOCore.getDAOZNAs("test1DAO")).to.eql(["zNA1"]);
+      expect(await zDAOCore.zNATozDAO("zNA3")).to.eq("");
+    });
+    it("reverts", async function () {
+      await expect(
+        zDAOCore.connect(user2).removeZNAAssociation("test1DAO", "zNA4")
+      ).to.revertedWith("Only DAO admins can update association");
+      await expect(
+        zDAOCore.connect(user1).removeZNAAssociation("testxDAO", "zNA4")
+      ).to.revertedWith("DAO ID invalid");
+    });
+  });
+
+  describe("#setDAOAdmin", () => {
+    it("set dao admin and update association", async function () {
+      await zDAOCore.connect(user1).setDAOAdmin("test1DAO", user3.address, true);
+      await zDAOCore.connect(user3).addZNAAssociation("test1DAO", "zNA5");
+      expect(await zDAOCore.getDAOZNAs("test1DAO")).to.eql(["zNA1", "zNA5"]);
+
+      await zDAOCore.connect(user1).setDAOAdmin("test1DAO", user3.address, false);
+      await expect(
+        zDAOCore.connect(user3).removeZNAAssociation("test1DAO", "zNA4")
+      ).to.revertedWith("Only DAO admins can update association");
     });
   });
 });
