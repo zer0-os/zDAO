@@ -105,4 +105,11 @@ describe("zDAOCore", function () {
       ).to.revertedWith("Only DAO admins can update association");
     });
   });
+
+  describe("#setDAOMetadataUri", () => {
+    it("updates dao metadatauri", async function () {
+      await zDAOCore.connect(user1).setDAOMetadataUri("test1DAO", "updated");
+      expect(await zDAOCore.getDAOMetadataUri("test1DAO")).to.eq("updated");
+    });
+  });
 });

@@ -57,6 +57,13 @@ contract zDAOCore is IzDAOCore, Ownable {
     zDAOs[daoId].admins[admin] = flag;
   }
 
+  function setDAOMetadataUri(string calldata daoId, string calldata metadataUri)
+    external
+    onlyDAOAdmins(daoId)
+  {
+    zDAOs[daoId].metadataUri = metadataUri;
+  }
+
   function addZNAAssociation(string calldata daoId, string calldata zNA)
     external
     onlyDAOAdmins(daoId)
