@@ -4,7 +4,48 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/IzDAOCore.sol";
 
+/*
+zDAO
+  - ID ~ Primary Key (increments for each new zDAO) (zDAO id)
+  - snapshotId uint256
+  - zNA uint256[]
+  - ..... metadata and what not
+*/
+
+
+/* @feedback:
+
+zNA association process:
+
+Transaction 1: (By the owner of a zNA)*:
+  - Make a request to associate zNA to zDAO
+  - Store this request in this contract
+
+Transaction 2: (By the Gnosis Safe)*:
+  - Accepts the request to associate zNA to zDAO
+  - Adds the zNA to the list + sets up any mappings
+
+*for testing/debugging/initial development, these transactions can also
+  be done by the contract owner (.owner())
+
+
+-----
+
+zNA disassociation:
+
+Either the owner of zNA or the Gnosis Safe of a zDAO*:
+  - Can make a transaction to remove the association from zNA <-> zDAO
+
+*for testing/debugging/initial development, these transactions can also
+  be done by the contract owner (.owner())
+
+*/
+
+//@feedback: These contracts need to be upgradeable using OZ upgrade pattern
 contract zDAOCore is IzDAOCore, Ownable {
+  // @feedback: use uint256 instead of strings
+  // https://docs.ens.domains/contract-api-reference/name-processing
+  // zNA's work a similar way
   string[] private zDAOIds;
   mapping(string => bool) public zDAOIDPresence;
 
@@ -30,6 +71,10 @@ contract zDAOCore is IzDAOCore, Ownable {
     return zDAOs[daoId].zNAs;
   }
 
+  // @feedback: Create ZDAO
+  // Add new entry into the list of zDAO's assigns an id
+  // Require gnosis safe address
+  // Only callable by owner
   function addNewDAO(
     string calldata daoId,
     string calldata metadataUri,
