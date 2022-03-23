@@ -23,6 +23,8 @@ declare global {
       PRIVATE_KEY: string;
       ALCHEMY_KEY: string;
       ETHERSCAN_API_KEY: string;
+      PROXY_ADMIN: string;
+      ZNS_HUB: string;
     }
   }
 }

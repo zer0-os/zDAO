@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "./interfaces/IzDAOCore.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "./interfaces/IZDAOCore.sol";
+import "./interfaces/IZNSHub.sol";
 
 /*
 zDAO
@@ -11,7 +13,6 @@ zDAO
   - zNA uint256[]
   - ..... metadata and what not
 */
-
 
 /* @feedback:
 
@@ -42,32 +43,37 @@ Either the owner of zNA or the Gnosis Safe of a zDAO*:
 */
 
 //@feedback: These contracts need to be upgradeable using OZ upgrade pattern
-contract zDAOCore is IzDAOCore, Ownable {
+contract ZDAOCore is IZDAOCore, OwnableUpgradeable {
   // @feedback: use uint256 instead of strings
   // https://docs.ens.domains/contract-api-reference/name-processing
   // zNA's work a similar way
-  string[] private zDAOIds;
-  mapping(string => bool) public zDAOIDPresence;
+  using Counters for Counters.Counter;
 
-  mapping(string => DAO) private zDAOs;
-  mapping(string => string) public zNATozDAO;
+  Counters.Counter private daoCounter;
 
-  /// @dev Allowed core managers
-  mapping(address => bool) private managers;
+  IZNSHub public znsHub;
+  uint256[] private ensHashes; // to fetch data from snapshot
+  mapping(uint256 => bool) public ensPresence;
 
-  function getDAOIds() external view returns (string[] memory) {
-    return zDAOIds;
+  mapping(uint256 => DAO) private zDAOs;
+  mapping(uint256 => uint256) public zNATozDAO;
+
+  function initialize(address _znsHub) external initializer {
+    __Ownable_init();
+
+    znsHub = IZNSHub(_znsHub);
+    daoCounter.increment(); // Starting from 1
   }
 
-  function getDAOMetadataUri(string calldata daoId)
-    external
-    view
-    returns (string memory metadataUri)
-  {
-    return zDAOs[daoId].metadataUri;
+  function setZNSHub(address _znsHub) external onlyOwner {
+    znsHub = IZNSHub(_znsHub);
   }
 
-  function getDAOZNAs(string calldata daoId) external view returns (string[] memory) {
+  function getEnsHashes() external view returns (uint256[] memory) {
+    return ensHashes;
+  }
+
+  function getDAOZNAs(uint256 daoId) external view returns (uint256[] memory) {
     return zDAOs[daoId].zNAs;
   }
 
@@ -75,48 +81,32 @@ contract zDAOCore is IzDAOCore, Ownable {
   // Add new entry into the list of zDAO's assigns an id
   // Require gnosis safe address
   // Only callable by owner
-  function addNewDAO(
-    string calldata daoId,
-    string calldata metadataUri,
-    address[] calldata admins
-  ) external onlyManagers {
-    if (!zDAOIDPresence[daoId]) {
-      zDAOIds.push(daoId);
-      zDAOIDPresence[daoId] = true;
+  function addNewDAO(uint256 ens, address gnosis) external onlyOwner {
+    require(!ensPresence[ens], "Already added");
 
-      DAO storage dao = zDAOs[daoId];
-      dao.metadataUri = metadataUri;
-      for (uint256 i = 0; i < admins.length; i++) {
-        dao.admins[admins[i]] = true;
-      }
+    ensHashes.push(ens);
+    ensPresence[ens] = true;
+    uint256 current = daoCounter.current();
 
-      emit DAOCreated(daoId, metadataUri);
-    }
+    DAO storage dao = zDAOs[current];
+    dao.id = current;
+    dao.ens = ens;
+    dao.gnosis = gnosis;
+
+    daoCounter.increment();
+
+    emit DAOCreated(current, ens);
   }
 
-  function setDAOAdmin(
-    string calldata daoId,
-    address admin,
-    bool flag
-  ) external onlyDAOAdmins(daoId) {
-    zDAOs[daoId].admins[admin] = flag;
-  }
-
-  function setDAOMetadataUri(string calldata daoId, string calldata metadataUri)
+  function addZNAAssociation(uint256 daoId, uint256 zNA)
     external
-    onlyDAOAdmins(daoId)
+    onlyValidDAOId(daoId)
+    onlyZNAOwner(zNA)
   {
-    zDAOs[daoId].metadataUri = metadataUri;
-  }
+    uint256 currentDAO = zNATozDAO[zNA];
+    require(currentDAO != daoId, "Already added");
 
-  function addZNAAssociation(string calldata daoId, string calldata zNA)
-    external
-    onlyDAOAdmins(daoId)
-  {
-    string memory currentDAO = zNATozDAO[zNA];
-    require(!strcmp(currentDAO, daoId), "Already added");
-
-    if (!strcmp(currentDAO, "")) {
+    if (currentDAO > 0) {
       // remove current DAO
       _removeZNAAssociation(currentDAO, zNA);
     }
@@ -124,51 +114,43 @@ contract zDAOCore is IzDAOCore, Ownable {
     zNATozDAO[zNA] = daoId;
     zDAOs[daoId].zNAs.push(zNA);
 
-    emit DAOzNAAdded(daoId, zNA);
+    emit LinkAdded(daoId, zNA);
   }
 
-  function removeZNAAssociation(string calldata daoId, string calldata zNA)
+  function removeZNAAssociation(uint256 daoId, uint256 zNA)
     external
-    onlyDAOAdmins(daoId)
+    onlyValidDAOId(daoId)
+    onlyZNAOwner(zNA)
   {
-    string memory currentDAO = zNATozDAO[zNA];
-    require(strcmp(currentDAO, daoId), "Not associated yet");
+    uint256 currentDAO = zNATozDAO[zNA];
+    require(currentDAO == daoId, "Not associated yet");
 
     _removeZNAAssociation(daoId, zNA);
   }
 
-  function _removeZNAAssociation(string memory daoId, string memory zNA) internal {
+  function _removeZNAAssociation(uint256 daoId, uint256 zNA) internal {
     DAO storage dao = zDAOs[daoId];
     uint256 length = zDAOs[daoId].zNAs.length;
+
     for (uint256 i = 0; i < length; i++) {
-      if (strcmp(dao.zNAs[i], zNA)) {
+      if (dao.zNAs[i] == zNA) {
         dao.zNAs[i] = dao.zNAs[length - 1];
         dao.zNAs.pop();
-        zNATozDAO[zNA] = "";
+        zNATozDAO[zNA] = 0;
 
-        emit DAOzNARemoved(daoId, zNA);
+        emit LinkRemoved(daoId, zNA);
         break;
       }
     }
   }
 
-  function setManager(address manager, bool allowed) external onlyOwner {
-    managers[manager] = allowed;
-  }
-
-  function strcmp(string memory a, string memory b) internal pure returns (bool) {
-    return keccak256(abi.encode(a)) == keccak256(abi.encode(b));
-  }
-
-  modifier onlyDAOAdmins(string calldata daoId) {
-    require(zDAOIDPresence[daoId], "DAO ID invalid");
-    DAO storage dao = zDAOs[daoId];
-    require(dao.admins[msg.sender], "Only DAO admins can update association");
+  modifier onlyZNAOwner(uint256 zNA) {
+    require(znsHub.ownerOf(zNA) == msg.sender, "Not zNA owner");
     _;
   }
 
-  modifier onlyManagers {
-    require(msg.sender == owner() || managers[msg.sender], "Not allowed");
+  modifier onlyValidDAOId(uint256 daoId) {
+    require(daoId > 0 && daoId < daoCounter.current(), "Invalid daoId");
     _;
   }
 }

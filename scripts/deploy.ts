@@ -3,7 +3,7 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 
-import { ZDAOCore__factory } from "../types";
+import { ZDAOCore__factory, ZDAOCoreProxy__factory, ZDAOCore } from "../types";
 
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
@@ -17,13 +17,23 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const zDAOCoreFactory: ZDAOCore__factory = await ethers.getContractFactory("zDAOCore");
+  const ZDAOCoreFactory: ZDAOCore__factory = await ethers.getContractFactory("ZDAOCore");
 
-  console.log(process.env.INFURA_API_KEY);
-  const zDAOCore = await zDAOCoreFactory.deploy();
-  await zDAOCore.deployed();
+  const ZDAOCore = await ZDAOCoreFactory.deploy();
+  await ZDAOCore.deployed();
 
-  console.log("deployed to:", zDAOCore.address);
+  const ZDAOCoreProxyFactory: ZDAOCoreProxy__factory = await ethers.getContractFactory(
+    "ZDAOCoreProxy"
+  );
+
+  const proxy = await ZDAOCoreProxyFactory.deploy(ZDAOCore.address, process.env.PROXY_ADMIN);
+  await proxy.deployed();
+
+  const proxyCast: ZDAOCore = await ethers.getContractAt("ZDAOCore", proxy.address);
+  const initializeTx = await proxyCast.initialize(process.env.ZNS_HUB);
+  await initializeTx.wait();
+
+  await console.log("deployed to:", proxyCast.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

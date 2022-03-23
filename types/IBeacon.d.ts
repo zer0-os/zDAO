@@ -11,27 +11,32 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
+  CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IZDAOCoreInterface extends ethers.utils.Interface {
-  functions: {};
-
-  events: {
-    "DAOCreated(uint256,uint256)": EventFragment;
-    "LinkAdded(uint256,uint256)": EventFragment;
-    "LinkRemoved(uint256,uint256)": EventFragment;
+interface IBeaconInterface extends ethers.utils.Interface {
+  functions: {
+    "implementation()": FunctionFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
+  encodeFunctionData(
+    functionFragment: "implementation",
+    values?: undefined
+  ): string;
+
+  decodeFunctionResult(
+    functionFragment: "implementation",
+    data: BytesLike
+  ): Result;
+
+  events: {};
 }
 
-export class IZDAOCore extends BaseContract {
+export class IBeacon extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -72,39 +77,25 @@ export class IZDAOCore extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IZDAOCoreInterface;
+  interface: IBeaconInterface;
 
-  functions: {};
-
-  callStatic: {};
-
-  filters: {
-    DAOCreated(
-      daoId?: BigNumberish | null,
-      ens?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; ens: BigNumber }
-    >;
-
-    LinkAdded(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
-
-    LinkRemoved(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
+  functions: {
+    implementation(overrides?: CallOverrides): Promise<[string]>;
   };
 
-  estimateGas: {};
+  implementation(overrides?: CallOverrides): Promise<string>;
 
-  populateTransaction: {};
+  callStatic: {
+    implementation(overrides?: CallOverrides): Promise<string>;
+  };
+
+  filters: {};
+
+  estimateGas: {
+    implementation(overrides?: CallOverrides): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    implementation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+  };
 }

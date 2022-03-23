@@ -17,21 +17,13 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IZDAOCoreInterface extends ethers.utils.Interface {
+interface ProxyInterface extends ethers.utils.Interface {
   functions: {};
 
-  events: {
-    "DAOCreated(uint256,uint256)": EventFragment;
-    "LinkAdded(uint256,uint256)": EventFragment;
-    "LinkRemoved(uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
+  events: {};
 }
 
-export class IZDAOCore extends BaseContract {
+export class Proxy extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -72,37 +64,13 @@ export class IZDAOCore extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IZDAOCoreInterface;
+  interface: ProxyInterface;
 
   functions: {};
 
   callStatic: {};
 
-  filters: {
-    DAOCreated(
-      daoId?: BigNumberish | null,
-      ens?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; ens: BigNumber }
-    >;
-
-    LinkAdded(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
-
-    LinkRemoved(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
-  };
+  filters: {};
 
   estimateGas: {};
 

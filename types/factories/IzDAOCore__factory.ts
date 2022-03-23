@@ -4,7 +4,7 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IzDAOCore, IzDAOCoreInterface } from "../IzDAOCore";
+import type { IZDAOCore, IZDAOCoreInterface } from "../IZDAOCore";
 
 const _abi = [
   {
@@ -12,15 +12,15 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "string",
+        internalType: "uint256",
         name: "daoId",
-        type: "string",
+        type: "uint256",
       },
       {
-        indexed: true,
-        internalType: "string",
-        name: "metadataUri",
-        type: "string",
+        indexed: false,
+        internalType: "uint256",
+        name: "ens",
+        type: "uint256",
       },
     ],
     name: "DAOCreated",
@@ -31,18 +31,18 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "string",
+        internalType: "uint256",
         name: "daoId",
-        type: "string",
+        type: "uint256",
       },
       {
         indexed: true,
-        internalType: "string",
+        internalType: "uint256",
         name: "zNA",
-        type: "string",
+        type: "uint256",
       },
     ],
-    name: "DAOzNAAdded",
+    name: "LinkAdded",
     type: "event",
   },
   {
@@ -50,31 +50,31 @@ const _abi = [
     inputs: [
       {
         indexed: true,
-        internalType: "string",
+        internalType: "uint256",
         name: "daoId",
-        type: "string",
+        type: "uint256",
       },
       {
         indexed: true,
-        internalType: "string",
+        internalType: "uint256",
         name: "zNA",
-        type: "string",
+        type: "uint256",
       },
     ],
-    name: "DAOzNARemoved",
+    name: "LinkRemoved",
     type: "event",
   },
 ];
 
-export class IzDAOCore__factory {
+export class IZDAOCore__factory {
   static readonly abi = _abi;
-  static createInterface(): IzDAOCoreInterface {
-    return new utils.Interface(_abi) as IzDAOCoreInterface;
+  static createInterface(): IZDAOCoreInterface {
+    return new utils.Interface(_abi) as IZDAOCoreInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IzDAOCore {
-    return new Contract(address, _abi, signerOrProvider) as IzDAOCore;
+  ): IZDAOCore {
+    return new Contract(address, _abi, signerOrProvider) as IZDAOCore;
   }
 }

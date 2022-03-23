@@ -11,27 +11,29 @@ import {
   PopulatedTransaction,
   BaseContract,
   ContractTransaction,
+  CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
 import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IZDAOCoreInterface extends ethers.utils.Interface {
-  functions: {};
-
-  events: {
-    "DAOCreated(uint256,uint256)": EventFragment;
-    "LinkAdded(uint256,uint256)": EventFragment;
-    "LinkRemoved(uint256,uint256)": EventFragment;
+interface IZNSHubInterface extends ethers.utils.Interface {
+  functions: {
+    "ownerOf(uint256)": FunctionFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
+  encodeFunctionData(
+    functionFragment: "ownerOf",
+    values: [BigNumberish]
+  ): string;
+
+  decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+
+  events: {};
 }
 
-export class IZDAOCore extends BaseContract {
+export class IZNSHub extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -72,39 +74,34 @@ export class IZDAOCore extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IZDAOCoreInterface;
+  interface: IZNSHubInterface;
 
-  functions: {};
-
-  callStatic: {};
-
-  filters: {
-    DAOCreated(
-      daoId?: BigNumberish | null,
-      ens?: null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; ens: BigNumber }
-    >;
-
-    LinkAdded(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
-
-    LinkRemoved(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
+  functions: {
+    ownerOf(
+      domainId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
   };
 
-  estimateGas: {};
+  ownerOf(domainId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
-  populateTransaction: {};
+  callStatic: {
+    ownerOf(domainId: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  };
+
+  filters: {};
+
+  estimateGas: {
+    ownerOf(
+      domainId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+  };
+
+  populateTransaction: {
+    ownerOf(
+      domainId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+  };
 }

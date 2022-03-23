@@ -17,21 +17,21 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IZDAOCoreInterface extends ethers.utils.Interface {
+interface ERC1967UpgradeInterface extends ethers.utils.Interface {
   functions: {};
 
   events: {
-    "DAOCreated(uint256,uint256)": EventFragment;
-    "LinkAdded(uint256,uint256)": EventFragment;
-    "LinkRemoved(uint256,uint256)": EventFragment;
+    "AdminChanged(address,address)": EventFragment;
+    "BeaconUpgraded(address)": EventFragment;
+    "Upgraded(address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
-export class IZDAOCore extends BaseContract {
+export class ERC1967Upgrade extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -72,36 +72,28 @@ export class IZDAOCore extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IZDAOCoreInterface;
+  interface: ERC1967UpgradeInterface;
 
   functions: {};
 
   callStatic: {};
 
   filters: {
-    DAOCreated(
-      daoId?: BigNumberish | null,
-      ens?: null
+    AdminChanged(
+      previousAdmin?: null,
+      newAdmin?: null
     ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; ens: BigNumber }
+      [string, string],
+      { previousAdmin: string; newAdmin: string }
     >;
 
-    LinkAdded(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
+    BeaconUpgraded(
+      beacon?: string | null
+    ): TypedEventFilter<[string], { beacon: string }>;
 
-    LinkRemoved(
-      daoId?: BigNumberish | null,
-      zNA?: BigNumberish | null
-    ): TypedEventFilter<
-      [BigNumber, BigNumber],
-      { daoId: BigNumber; zNA: BigNumber }
-    >;
+    Upgraded(
+      implementation?: string | null
+    ): TypedEventFilter<[string], { implementation: string }>;
   };
 
   estimateGas: {};

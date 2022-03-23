@@ -21,78 +21,75 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface ZDAOCoreInterface extends ethers.utils.Interface {
   functions: {
-    "addNewDAO(string,string,address[])": FunctionFragment;
-    "addZNAAssociation(string,string)": FunctionFragment;
-    "getDAOIds()": FunctionFragment;
-    "getDAOMetadataUri(string)": FunctionFragment;
-    "getDAOZNAs(string)": FunctionFragment;
+    "addNewDAO(uint256,address)": FunctionFragment;
+    "addZNAAssociation(uint256,uint256)": FunctionFragment;
+    "ensPresence(uint256)": FunctionFragment;
+    "getDAOZNAs(uint256)": FunctionFragment;
+    "getEnsHashes()": FunctionFragment;
+    "initialize(address)": FunctionFragment;
     "owner()": FunctionFragment;
-    "removeZNAAssociation(string,string)": FunctionFragment;
+    "removeZNAAssociation(uint256,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "setDAOAdmin(string,address,bool)": FunctionFragment;
-    "setDAOMetadataUri(string,string)": FunctionFragment;
-    "setManager(address,bool)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
-    "zDAOIDPresence(string)": FunctionFragment;
-    "zNATozDAO(string)": FunctionFragment;
+    "zNATozDAO(uint256)": FunctionFragment;
+    "znsHub()": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "addNewDAO",
-    values: [string, string, string[]]
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "addZNAAssociation",
-    values: [string, string]
+    values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "getDAOIds", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "getDAOMetadataUri",
-    values: [string]
+    functionFragment: "ensPresence",
+    values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "getDAOZNAs", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "getDAOZNAs",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getEnsHashes",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "initialize", values: [string]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "removeZNAAssociation",
-    values: [string, string]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "setDAOAdmin",
-    values: [string, string, boolean]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setDAOMetadataUri",
-    values: [string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setManager",
-    values: [string, boolean]
-  ): string;
-  encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "zDAOIDPresence",
-    values: [string]
+    functionFragment: "zNATozDAO",
+    values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "zNATozDAO", values: [string]): string;
+  encodeFunctionData(functionFragment: "znsHub", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "addNewDAO", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "addZNAAssociation",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getDAOIds", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getDAOMetadataUri",
+    functionFragment: "ensPresence",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "getDAOZNAs", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getEnsHashes",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "removeZNAAssociation",
@@ -103,34 +100,22 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setDAOAdmin",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setDAOMetadataUri",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "setManager", data: BytesLike): Result;
-  decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "zDAOIDPresence",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "zNATozDAO", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "znsHub", data: BytesLike): Result;
 
   events: {
-    "DAOCreated(string,string)": EventFragment;
-    "DAOzNAAdded(string,string)": EventFragment;
-    "DAOzNARemoved(string,string)": EventFragment;
+    "DAOCreated(uint256,uint256)": EventFragment;
+    "LinkAdded(uint256,uint256)": EventFragment;
+    "LinkRemoved(uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DAOzNAAdded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "DAOzNARemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
 
@@ -179,55 +164,43 @@ export class ZDAOCore extends BaseContract {
 
   functions: {
     addNewDAO(
-      daoId: string,
-      metadataUri: string,
-      admins: string[],
+      ens: BigNumberish,
+      gnosis: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     addZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    getDAOIds(overrides?: CallOverrides): Promise<[string[]]>;
-
-    getDAOMetadataUri(
-      daoId: string,
+    ensPresence(
+      arg0: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string] & { metadataUri: string }>;
+    ): Promise<[boolean]>;
 
-    getDAOZNAs(daoId: string, overrides?: CallOverrides): Promise<[string[]]>;
+    getDAOZNAs(
+      daoId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber[]]>;
+
+    getEnsHashes(overrides?: CallOverrides): Promise<[BigNumber[]]>;
+
+    initialize(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     removeZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setDAOAdmin(
-      daoId: string,
-      admin: string,
-      flag: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setDAOMetadataUri(
-      daoId: string,
-      metadataUri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setManager(
-      manager: string,
-      allowed: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -236,58 +209,49 @@ export class ZDAOCore extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    zDAOIDPresence(arg0: string, overrides?: CallOverrides): Promise<[boolean]>;
+    zNATozDAO(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    zNATozDAO(arg0: string, overrides?: CallOverrides): Promise<[string]>;
+    znsHub(overrides?: CallOverrides): Promise<[string]>;
   };
 
   addNewDAO(
-    daoId: string,
-    metadataUri: string,
-    admins: string[],
+    ens: BigNumberish,
+    gnosis: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   addZNAAssociation(
-    daoId: string,
-    zNA: string,
+    daoId: BigNumberish,
+    zNA: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  getDAOIds(overrides?: CallOverrides): Promise<string[]>;
+  ensPresence(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
-  getDAOMetadataUri(daoId: string, overrides?: CallOverrides): Promise<string>;
+  getDAOZNAs(
+    daoId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber[]>;
 
-  getDAOZNAs(daoId: string, overrides?: CallOverrides): Promise<string[]>;
+  getEnsHashes(overrides?: CallOverrides): Promise<BigNumber[]>;
+
+  initialize(
+    _znsHub: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
   removeZNAAssociation(
-    daoId: string,
-    zNA: string,
+    daoId: BigNumberish,
+    zNA: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   renounceOwnership(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setDAOAdmin(
-    daoId: string,
-    admin: string,
-    flag: boolean,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setDAOMetadataUri(
-    daoId: string,
-    metadataUri: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setManager(
-    manager: string,
-    allowed: boolean,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -296,90 +260,84 @@ export class ZDAOCore extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  zDAOIDPresence(arg0: string, overrides?: CallOverrides): Promise<boolean>;
+  zNATozDAO(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
-  zNATozDAO(arg0: string, overrides?: CallOverrides): Promise<string>;
+  znsHub(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     addNewDAO(
-      daoId: string,
-      metadataUri: string,
-      admins: string[],
+      ens: BigNumberish,
+      gnosis: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     addZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getDAOIds(overrides?: CallOverrides): Promise<string[]>;
-
-    getDAOMetadataUri(
-      daoId: string,
+    ensPresence(
+      arg0: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<string>;
+    ): Promise<boolean>;
 
-    getDAOZNAs(daoId: string, overrides?: CallOverrides): Promise<string[]>;
+    getDAOZNAs(
+      daoId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber[]>;
+
+    getEnsHashes(overrides?: CallOverrides): Promise<BigNumber[]>;
+
+    initialize(_znsHub: string, overrides?: CallOverrides): Promise<void>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
     removeZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
-
-    setDAOAdmin(
-      daoId: string,
-      admin: string,
-      flag: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setDAOMetadataUri(
-      daoId: string,
-      metadataUri: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setManager(
-      manager: string,
-      allowed: boolean,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    zDAOIDPresence(arg0: string, overrides?: CallOverrides): Promise<boolean>;
+    zNATozDAO(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    zNATozDAO(arg0: string, overrides?: CallOverrides): Promise<string>;
+    znsHub(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
     DAOCreated(
-      daoId?: string | null,
-      metadataUri?: string | null
+      daoId?: BigNumberish | null,
+      ens?: null
     ): TypedEventFilter<
-      [string, string],
-      { daoId: string; metadataUri: string }
+      [BigNumber, BigNumber],
+      { daoId: BigNumber; ens: BigNumber }
     >;
 
-    DAOzNAAdded(
-      daoId?: string | null,
-      zNA?: string | null
-    ): TypedEventFilter<[string, string], { daoId: string; zNA: string }>;
+    LinkAdded(
+      daoId?: BigNumberish | null,
+      zNA?: BigNumberish | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { daoId: BigNumber; zNA: BigNumber }
+    >;
 
-    DAOzNARemoved(
-      daoId?: string | null,
-      zNA?: string | null
-    ): TypedEventFilter<[string, string], { daoId: string; zNA: string }>;
+    LinkRemoved(
+      daoId?: BigNumberish | null,
+      zNA?: BigNumberish | null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { daoId: BigNumber; zNA: BigNumber }
+    >;
 
     OwnershipTransferred(
       previousOwner?: string | null,
@@ -392,55 +350,43 @@ export class ZDAOCore extends BaseContract {
 
   estimateGas: {
     addNewDAO(
-      daoId: string,
-      metadataUri: string,
-      admins: string[],
+      ens: BigNumberish,
+      gnosis: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     addZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    getDAOIds(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getDAOMetadataUri(
-      daoId: string,
+    ensPresence(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getDAOZNAs(daoId: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getDAOZNAs(
+      daoId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getEnsHashes(overrides?: CallOverrides): Promise<BigNumber>;
+
+    initialize(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     removeZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setDAOAdmin(
-      daoId: string,
-      admin: string,
-      flag: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setDAOMetadataUri(
-      daoId: string,
-      metadataUri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setManager(
-      manager: string,
-      allowed: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -449,65 +395,53 @@ export class ZDAOCore extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    zDAOIDPresence(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+    zNATozDAO(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    zNATozDAO(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
+    znsHub(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
     addNewDAO(
-      daoId: string,
-      metadataUri: string,
-      admins: string[],
+      ens: BigNumberish,
+      gnosis: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     addZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    getDAOIds(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getDAOMetadataUri(
-      daoId: string,
+    ensPresence(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getDAOZNAs(
-      daoId: string,
+      daoId: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getEnsHashes(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    initialize(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     removeZNAAssociation(
-      daoId: string,
-      zNA: string,
+      daoId: BigNumberish,
+      zNA: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setDAOAdmin(
-      daoId: string,
-      admin: string,
-      flag: boolean,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setDAOMetadataUri(
-      daoId: string,
-      metadataUri: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setManager(
-      manager: string,
-      allowed: boolean,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -516,14 +450,11 @@ export class ZDAOCore extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    zDAOIDPresence(
-      arg0: string,
+    zNATozDAO(
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    zNATozDAO(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    znsHub(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
