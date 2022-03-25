@@ -3,10 +3,11 @@
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 
-import { ZDAOCore } from "../types";
+// import { ZDAOCore } from "../types";
 
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
+import namehash from "@ensdomains/eth-ens-namehash";
 
 async function main() {
   // Hardhat always runs the compile task when running scripts with its command
@@ -18,12 +19,8 @@ async function main() {
 
   // We get the contract to deploy
   // const zDAOCore = await zDAOCoreFactory.deploy();
-  const zDAOCore: ZDAOCore = await ethers.getContractAt(
-    "ZDAOCore",
-    "0xBDeC025bF32440e070007c9654583012eb8E021d"
-  );
-  await zDAOCore.addNewDAO("joshupgig.eth", ["0xFe035df35C6fE5578EdE6267883638DB7634DE82"]);
-  console.log(await zDAOCore.owner());
+  const ens = namehash.hash("joshupgig.eth");
+  console.log(ens);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

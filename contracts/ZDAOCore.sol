@@ -6,47 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./interfaces/IZDAOCore.sol";
 import "./interfaces/IZNSHub.sol";
 
-/*
-zDAO
-  - ID ~ Primary Key (increments for each new zDAO) (zDAO id)
-  - snapshotId uint256
-  - zNA uint256[]
-  - ..... metadata and what not
-*/
-
-/* @feedback:
-
-zNA association process:
-
-Transaction 1: (By the owner of a zNA)*:
-  - Make a request to associate zNA to zDAO
-  - Store this request in this contract
-
-Transaction 2: (By the Gnosis Safe)*:
-  - Accepts the request to associate zNA to zDAO
-  - Adds the zNA to the list + sets up any mappings
-
-*for testing/debugging/initial development, these transactions can also
-  be done by the contract owner (.owner())
-
-
------
-
-zNA disassociation:
-
-Either the owner of zNA or the Gnosis Safe of a zDAO*:
-  - Can make a transaction to remove the association from zNA <-> zDAO
-
-*for testing/debugging/initial development, these transactions can also
-  be done by the contract owner (.owner())
-
-*/
-
-//@feedback: These contracts need to be upgradeable using OZ upgrade pattern
 contract ZDAOCore is IZDAOCore, OwnableUpgradeable {
-  // @feedback: use uint256 instead of strings
-  // https://docs.ens.domains/contract-api-reference/name-processing
-  // zNA's work a similar way
   using Counters for Counters.Counter;
 
   Counters.Counter private daoCounter;
