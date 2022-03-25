@@ -73,8 +73,19 @@ contract ZDAOCore is IZDAOCore, OwnableUpgradeable {
     return ensHashes;
   }
 
-  function getDAOZNAs(uint256 daoId) external view returns (uint256[] memory) {
-    return zDAOs[daoId].zNAs;
+  function getZDAO(uint256 daoId)
+    external
+    view
+    onlyValidDAOId(daoId)
+    returns (
+      uint256,
+      uint256,
+      address,
+      uint256[] memory
+    )
+  {
+    DAO storage dao = zDAOs[daoId];
+    return (dao.id, dao.ens, dao.gnosis, dao.zNAs);
   }
 
   // @feedback: Create ZDAO

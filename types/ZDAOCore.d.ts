@@ -24,12 +24,13 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     "addNewDAO(uint256,address)": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
     "ensPresence(uint256)": FunctionFragment;
-    "getDAOZNAs(uint256)": FunctionFragment;
     "getEnsHashes()": FunctionFragment;
+    "getZDAO(uint256)": FunctionFragment;
     "initialize(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "removeZNAAssociation(uint256,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
+    "setZNSHub(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "zNATozDAO(uint256)": FunctionFragment;
     "znsHub()": FunctionFragment;
@@ -48,12 +49,12 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "getDAOZNAs",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "getEnsHashes",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getZDAO",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "initialize", values: [string]): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -65,6 +66,7 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "setZNSHub", values: [string]): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
@@ -84,11 +86,11 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     functionFragment: "ensPresence",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "getDAOZNAs", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getEnsHashes",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getZDAO", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(
@@ -99,6 +101,7 @@ interface ZDAOCoreInterface extends ethers.utils.Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setZNSHub", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -180,12 +183,12 @@ export class ZDAOCore extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    getDAOZNAs(
+    getEnsHashes(overrides?: CallOverrides): Promise<[BigNumber[]]>;
+
+    getZDAO(
       daoId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[BigNumber[]]>;
-
-    getEnsHashes(overrides?: CallOverrides): Promise<[BigNumber[]]>;
+    ): Promise<[BigNumber, BigNumber, string, BigNumber[]]>;
 
     initialize(
       _znsHub: string,
@@ -201,6 +204,11 @@ export class ZDAOCore extends BaseContract {
     ): Promise<ContractTransaction>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -231,12 +239,12 @@ export class ZDAOCore extends BaseContract {
 
   ensPresence(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
-  getDAOZNAs(
+  getEnsHashes(overrides?: CallOverrides): Promise<BigNumber[]>;
+
+  getZDAO(
     daoId: BigNumberish,
     overrides?: CallOverrides
-  ): Promise<BigNumber[]>;
-
-  getEnsHashes(overrides?: CallOverrides): Promise<BigNumber[]>;
+  ): Promise<[BigNumber, BigNumber, string, BigNumber[]]>;
 
   initialize(
     _znsHub: string,
@@ -252,6 +260,11 @@ export class ZDAOCore extends BaseContract {
   ): Promise<ContractTransaction>;
 
   renounceOwnership(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setZNSHub(
+    _znsHub: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -282,12 +295,12 @@ export class ZDAOCore extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    getDAOZNAs(
+    getEnsHashes(overrides?: CallOverrides): Promise<BigNumber[]>;
+
+    getZDAO(
       daoId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
-
-    getEnsHashes(overrides?: CallOverrides): Promise<BigNumber[]>;
+    ): Promise<[BigNumber, BigNumber, string, BigNumber[]]>;
 
     initialize(_znsHub: string, overrides?: CallOverrides): Promise<void>;
 
@@ -300,6 +313,8 @@ export class ZDAOCore extends BaseContract {
     ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
+
+    setZNSHub(_znsHub: string, overrides?: CallOverrides): Promise<void>;
 
     transferOwnership(
       newOwner: string,
@@ -366,12 +381,9 @@ export class ZDAOCore extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getDAOZNAs(
-      daoId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getEnsHashes(overrides?: CallOverrides): Promise<BigNumber>;
+
+    getZDAO(daoId: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     initialize(
       _znsHub: string,
@@ -387,6 +399,11 @@ export class ZDAOCore extends BaseContract {
     ): Promise<BigNumber>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -421,12 +438,12 @@ export class ZDAOCore extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getDAOZNAs(
+    getEnsHashes(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getZDAO(
       daoId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    getEnsHashes(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     initialize(
       _znsHub: string,
@@ -442,6 +459,11 @@ export class ZDAOCore extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

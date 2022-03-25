@@ -1,10 +1,9 @@
-import { ZDAOCore } from "./../types/ZDAOCore.d";
 // We require the Hardhat Runtime Environment explicitly here. This is optional
 // but useful for running the script in a standalone fashion through `node <script>`.
 //
 // When running the script with `hardhat run <script>` you'll find the Hardhat
 
-import { ZDAOCore__factory } from "../types";
+import { ZDAOCore } from "../types";
 
 // Runtime Environment's members available in the global scope.
 import { ethers } from "hardhat";
@@ -20,8 +19,8 @@ async function main() {
   // We get the contract to deploy
   // const zDAOCore = await zDAOCoreFactory.deploy();
   const zDAOCore: ZDAOCore = await ethers.getContractAt(
-    "zDAOCore",
-    "0xe90c505c8092e1c6f2be8b4812ad86bf127ae5df"
+    "ZDAOCore",
+    "0xBDeC025bF32440e070007c9654583012eb8E021d"
   );
   await zDAOCore.addNewDAO("joshupgig.eth", ["0xFe035df35C6fE5578EdE6267883638DB7634DE82"]);
   console.log(await zDAOCore.owner());
