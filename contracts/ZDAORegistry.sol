@@ -45,12 +45,14 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
   function addNewDAO(uint256 ensId, address gnosisSafe) external onlyOwner {
     uint256 newZDAOId = newDaoIndexTracker.current();
 
-    zDAORecords[newZDAOId] = ZDAORecord({
-      id: newZDAOId,
-      ensId: ensId,
-      gnosisSafe: gnosisSafe,
-      associatedzNAs: new uint256[](0)
-    });
+    zDAORecords.push(
+      ZDAORecord({
+        id: zDAORecords.length,
+        ensId: ensId,
+        gnosisSafe: gnosisSafe,
+        associatedzNAs: new uint256[](0)
+      })
+    );
 
     newDaoIndexTracker.increment();
 
@@ -88,7 +90,7 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
   }
 
   function numberOfzDAOs() external view returns (uint256) {
-    return newDaoIndexTracker.current() - 1;
+    return zDAORecords.length - 1;
   }
 
   function getzDAOById(uint256 daoId) external view returns (ZDAORecord memory) {
@@ -100,12 +102,12 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     view
     returns (ZDAORecord[] memory)
   {
-    uint256 numDaos = newDaoIndexTracker.current() - 1;
+    uint256 numDaos = zDAORecords.length - 1;
     if (numDaos == 0) {
       return new ZDAORecord[](0);
     }
     require(startIndex < endIndex, "start index > end");
-    require(startIndex < numDaos - 1, "start index > length");
+    require(startIndex < numDaos, "start index > length");
     require(endIndex <= numDaos, "end index > length");
 
     uint256 numRecords = endIndex - startIndex;
