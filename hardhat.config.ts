@@ -1,9 +1,9 @@
 import { HardhatUserConfig } from "hardhat/config";
 
-import "hardhat-deploy";
-import "hardhat-deploy-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
+import "@openzeppelin/hardhat-upgrades";
+
 // TS Support
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
@@ -20,7 +20,7 @@ dotenv.config();
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      PRIVATE_KEY: string;
+      TESTNET_PRIVATE_KEY: string;
       ALCHEMY_KEY: string;
       ETHERSCAN_API_KEY: string;
       PROXY_ADMIN: string;
@@ -51,7 +51,7 @@ const config: HardhatUserConfig = {
   networks: {
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-      accounts: [process.env.PRIVATE_KEY],
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
   },
   etherscan: {
@@ -61,6 +61,10 @@ const config: HardhatUserConfig = {
     alphaSort: true,
     runOnCompile: true,
     disambiguatePaths: false,
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
   },
   typechain: {
     outDir: "types",

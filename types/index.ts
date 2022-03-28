@@ -2,25 +2,13 @@
 /* tslint:disable */
 /* eslint-disable */
 export type { OwnableUpgradeable } from "./OwnableUpgradeable";
-export type { IBeacon } from "./IBeacon";
-export type { ERC1967Proxy } from "./ERC1967Proxy";
-export type { ERC1967Upgrade } from "./ERC1967Upgrade";
-export type { Proxy } from "./Proxy";
-export type { TransparentUpgradeableProxy } from "./TransparentUpgradeableProxy";
 export type { ZNSHubTest } from "./ZNSHubTest";
 export type { IZDAORegistry } from "./IZDAORegistry";
 export type { IZNSHub } from "./IZNSHub";
-export type { ZDAOCore } from "./ZDAOCore";
 export type { ZDAORegistry } from "./ZDAORegistry";
 
 export { OwnableUpgradeable__factory } from "./factories/OwnableUpgradeable__factory";
-export { IBeacon__factory } from "./factories/IBeacon__factory";
-export { ERC1967Proxy__factory } from "./factories/ERC1967Proxy__factory";
-export { ERC1967Upgrade__factory } from "./factories/ERC1967Upgrade__factory";
-export { Proxy__factory } from "./factories/Proxy__factory";
-export { TransparentUpgradeableProxy__factory } from "./factories/TransparentUpgradeableProxy__factory";
 export { ZNSHubTest__factory } from "./factories/ZNSHubTest__factory";
 export { IZDAORegistry__factory } from "./factories/IZDAORegistry__factory";
 export { IZNSHub__factory } from "./factories/IZNSHub__factory";
-export { ZDAOCore__factory } from "./factories/ZDAOCore__factory";
 export { ZDAORegistry__factory } from "./factories/ZDAORegistry__factory";
