@@ -9,6 +9,11 @@
       "address": "0x0FE5c0564E5F2dcE6a2c77A14A32d12461D23E78",
       "txHash": "0x6a2644ee2fc599a29bad0e07673958824d923cfd24ecc3a24525446f661e293d",
       "kind": "transparent"
+    },
+    {
+      "address": "0x73D44dEa3A3334aB2504443479aD531FfeD2d2D9",
+      "txHash": "0x4707d8afe036b34e2673d0e9f542b305d0fd98fecf8453f3ac9580ab77dd654e",
+      "kind": "transparent"
     }
   ],
   "impls": {
@@ -491,6 +496,158 @@
               {
                 "label": "ensId",
                 "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "gnosisSafe",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "associatedzNAs",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    },
+    "f506ffa37392557ebb6040e24dc0b6f9db747bf5908c26a72d11790d1509f95a": {
+      "address": "0x60da39Bc9670A7620edfd42aBfd5C7275756ce43",
+      "txHash": "0x9a35931025b2e4b1f4dadf1fd3621dc567162eab6bf7e01cdae1eff04e76c1d4",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:21"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:26"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\utils\\ContextUpgradeable.sol:30"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:21"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:77"
+          },
+          {
+            "label": "znsHub",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IZNSHub)857",
+            "contract": "ZDAORegistry",
+            "src": "contracts\\ZDAORegistry.sol:9"
+          },
+          {
+            "label": "ensTozDAO",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "ZDAORegistry",
+            "src": "contracts\\ZDAORegistry.sol:11"
+          },
+          {
+            "label": "zNATozDAOId",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "ZDAORegistry",
+            "src": "contracts\\ZDAORegistry.sol:12"
+          },
+          {
+            "label": "zDAORecords",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_array(t_struct(ZDAORecord)778_storage)dyn_storage",
+            "contract": "ZDAORegistry",
+            "src": "contracts\\ZDAORegistry.sol:13"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_struct(ZDAORecord)778_storage)dyn_storage": {
+            "label": "struct IZDAORegistry.ZDAORecord[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IZNSHub)857": {
+            "label": "contract IZNSHub",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ZDAORecord)778_storage": {
+            "label": "struct IZDAORegistry.ZDAORecord",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ensSpace",
+                "type": "t_string_storage",
                 "offset": 0,
                 "slot": "1"
               },

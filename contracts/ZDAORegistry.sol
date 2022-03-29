@@ -1,19 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "./interfaces/IZDAORegistry.sol";
 import "./interfaces/IZNSHub.sol";
 
 contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
-  using Counters for Counters.Counter;
-
-  Counters.Counter public newDaoIndexTracker;
-
   IZNSHub public znsHub;
 
-  mapping(uint256 => uint256) public ensTozDAO;
+  mapping(uint256 => uint256) private ensTozDAO;
   mapping(uint256 => uint256) private zNATozDAOId;
   ZDAORecord[] public zDAORecords;
 
@@ -23,7 +18,7 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
   }
 
   modifier onlyValidZDAO(uint256 daoId) {
-    require(daoId > 0 && daoId < newDaoIndexTracker.current(), "Invalid daoId");
+    require(daoId > 0 && daoId < zDAORecords.length, "Invalid daoId");
     _;
   }
 
@@ -32,31 +27,26 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
 
     znsHub = IZNSHub(_znsHub);
     zDAORecords.push(
-      ZDAORecord({id: 0, ensId: 0, gnosisSafe: address(0), associatedzNAs: new uint256[](0)})
+      ZDAORecord({id: 0, ensSpace: "", gnosisSafe: address(0), associatedzNAs: new uint256[](0)})
     );
-
-    newDaoIndexTracker.increment(); // Starting from 1
   }
 
   function setZNSHub(address _znsHub) external onlyOwner {
     znsHub = IZNSHub(_znsHub);
   }
 
-  function addNewDAO(uint256 ensId, address gnosisSafe) external onlyOwner {
-    uint256 newZDAOId = newDaoIndexTracker.current();
-
+  function addNewDAO(string calldata ensSpace, address gnosisSafe) external onlyOwner {
+    uint256 zDAOId = zDAORecords.length;
     zDAORecords.push(
       ZDAORecord({
-        id: zDAORecords.length,
-        ensId: ensId,
+        id: zDAOId,
+        ensSpace: ensSpace,
         gnosisSafe: gnosisSafe,
         associatedzNAs: new uint256[](0)
       })
     );
 
-    newDaoIndexTracker.increment();
-
-    emit DAOCreated(newZDAOId, ensId, gnosisSafe);
+    emit DAOCreated(zDAOId, ensSpace, gnosisSafe);
   }
 
   function addZNAAssociation(uint256 daoId, uint256 zNA)
@@ -102,15 +92,17 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     view
     returns (ZDAORecord[] memory)
   {
-    uint256 numDaos = zDAORecords.length - 1;
-    if (numDaos == 0) {
+    uint256 numDaos = zDAORecords.length;
+    require(startIndex != 0, "start index = 0, use 1");
+    require(startIndex <= endIndex, "start index > end");
+    require(startIndex < numDaos, "start index > length");
+    require(endIndex < numDaos, "end index > length");
+
+    if (numDaos == 1) {
       return new ZDAORecord[](0);
     }
-    require(startIndex < endIndex, "start index > end");
-    require(startIndex < numDaos, "start index > length");
-    require(endIndex <= numDaos, "end index > length");
 
-    uint256 numRecords = endIndex - startIndex;
+    uint256 numRecords = endIndex - startIndex + 1;
     ZDAORecord[] memory records = new ZDAORecord[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
@@ -122,7 +114,14 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
 
   function getzDaoByZNA(uint256 zNA) external view returns (ZDAORecord memory) {
     uint256 daoId = zNATozDAOId[zNA];
-    require(daoId != 0 && daoId < newDaoIndexTracker.current(), "No zDAO associated with zNA");
+    require(daoId != 0 && daoId < zDAORecords.length, "No zDAO associated with zNA");
+    return zDAORecords[daoId];
+  }
+
+  function getzDAOByEns(string calldata ensSpace) external view returns (ZDAORecord memory) {
+    uint256 ensHash = uint256(keccak256(abi.encodePacked(ensSpace)));
+    uint256 daoId = ensTozDAO[ensHash];
+    require(daoId != 0, "No zDAO at ens space");
     return zDAORecords[daoId];
   }
 

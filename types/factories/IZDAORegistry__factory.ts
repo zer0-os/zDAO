@@ -18,9 +18,9 @@ const _abi = [
       },
       {
         indexed: false,
-        internalType: "uint256",
-        name: "ensId",
-        type: "uint256",
+        internalType: "string",
+        name: "ensSpace",
+        type: "string",
       },
       {
         indexed: false,
@@ -92,17 +92,39 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "ens",
-        type: "uint256",
+        internalType: "string",
+        name: "ensSpace",
+        type: "string",
       },
     ],
-    name: "ensTozDAO",
+    name: "getzDAOByEns",
     outputs: [
       {
-        internalType: "uint256",
+        components: [
+          {
+            internalType: "uint256",
+            name: "id",
+            type: "uint256",
+          },
+          {
+            internalType: "string",
+            name: "ensSpace",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "gnosisSafe",
+            type: "address",
+          },
+          {
+            internalType: "uint256[]",
+            name: "associatedzNAs",
+            type: "uint256[]",
+          },
+        ],
+        internalType: "struct IZDAORegistry.ZDAORecord",
         name: "",
-        type: "uint256",
+        type: "tuple",
       },
     ],
     stateMutability: "view",
@@ -126,9 +148,9 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "uint256",
-            name: "ensId",
-            type: "uint256",
+            internalType: "string",
+            name: "ensSpace",
+            type: "string",
           },
           {
             internalType: "address",
@@ -167,9 +189,9 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "uint256",
-            name: "ensId",
-            type: "uint256",
+            internalType: "string",
+            name: "ensSpace",
+            type: "string",
           },
           {
             internalType: "address",
@@ -213,9 +235,9 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "uint256",
-            name: "ensId",
-            type: "uint256",
+            internalType: "string",
+            name: "ensSpace",
+            type: "string",
           },
           {
             internalType: "address",
