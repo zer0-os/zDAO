@@ -1,36 +1,18 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// When running the script with `hardhat run <script>` you'll find the Hardhat
+import * as hre from "hardhat";
+import { ZDAORegistry__factory } from "../types";
 
-import { ZDAOCore__factory } from "../types";
+// mainnet hub: 0x6141d5cb3517215a03519a464bf9c39814df7479
+// rinkeby hub: 0x90098737eB7C3e73854daF1Da20dFf90d521929a
 
-// Runtime Environment's members available in the global scope.
-import { ethers } from "hardhat";
+const znsHubAddress = "0x90098737eB7C3e73854daF1Da20dFf90d521929a";
 
-async function main() {
-  // Hardhat always runs the compile task when running scripts with its command
-  // line interface.
-  //
-  // If this script is run directly using `node` you may want to call compile
-  // manually to make sure everything is compiled
-  // await hre.run('compile');
+const main = async () => {
+  const signers = await hre.ethers.getSigners();
+  const deployer = signers[0];
 
-  // We get the contract to deploy
-  const zDAOCoreFactory: ZDAOCore__factory = await ethers.getContractFactory("zDAOCore");
+  const registryFactory = new ZDAORegistry__factory(deployer);
+  const proxy = await hre.upgrades.deployProxy(registryFactory, [znsHubAddress]);
+  console.log(`Deployed to ${proxy.address}`);
+};
 
-  console.log(process.env.INFURA_API_KEY);
-  const zDAOCore = await zDAOCoreFactory.deploy();
-  await zDAOCore.deployed();
-
-  console.log("deployed to:", zDAOCore.address);
-}
-
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch(console.error);

@@ -1,10 +1,13 @@
 {
   "compilerOptions": {
     "target": "es2018",
+    "lib": ["ES2018", "DOM", "ES2018.PROMISE"],
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "dist",
+    "outDir": "./dist",
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
     "resolveJsonModule": true
   },
   "include": ["./scripts", "./test", "./deploy", "./types"],
