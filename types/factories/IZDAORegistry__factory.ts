@@ -41,6 +41,44 @@ const _abi = [
         name: "daoId",
         type: "uint256",
       },
+    ],
+    name: "DAODestroyed",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "daoId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "endSpace",
+        type: "string",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "gnosisSafe",
+        type: "address",
+      },
+    ],
+    name: "DAOModified",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "daoId",
+        type: "uint256",
+      },
       {
         indexed: true,
         internalType: "uint256",
@@ -121,6 +159,11 @@ const _abi = [
             name: "associatedzNAs",
             type: "uint256[]",
           },
+          {
+            internalType: "bool",
+            name: "destroyed",
+            type: "bool",
+          },
         ],
         internalType: "struct IZDAORegistry.ZDAORecord",
         name: "",
@@ -162,6 +205,11 @@ const _abi = [
             name: "associatedzNAs",
             type: "uint256[]",
           },
+          {
+            internalType: "bool",
+            name: "destroyed",
+            type: "bool",
+          },
         ],
         internalType: "struct IZDAORegistry.ZDAORecord",
         name: "",
@@ -202,6 +250,11 @@ const _abi = [
             internalType: "uint256[]",
             name: "associatedzNAs",
             type: "uint256[]",
+          },
+          {
+            internalType: "bool",
+            name: "destroyed",
+            type: "bool",
           },
         ],
         internalType: "struct IZDAORegistry.ZDAORecord",
@@ -248,6 +301,11 @@ const _abi = [
             internalType: "uint256[]",
             name: "associatedzNAs",
             type: "uint256[]",
+          },
+          {
+            internalType: "bool",
+            name: "destroyed",
+            type: "bool",
           },
         ],
         internalType: "struct IZDAORegistry.ZDAORecord[]",

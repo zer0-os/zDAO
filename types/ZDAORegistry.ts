@@ -23,18 +23,21 @@ export declare namespace IZDAORegistry {
     ensSpace: string;
     gnosisSafe: string;
     associatedzNAs: BigNumberish[];
+    destroyed: boolean;
   };
 
   export type ZDAORecordStructOutput = [
     BigNumber,
     string,
     string,
-    BigNumber[]
+    BigNumber[],
+    boolean
   ] & {
     id: BigNumber;
     ensSpace: string;
     gnosisSafe: string;
     associatedzNAs: BigNumber[];
+    destroyed: boolean;
   };
 }
 
@@ -43,6 +46,11 @@ export interface ZDAORegistryInterface extends utils.Interface {
   functions: {
     "addNewDAO(string,address)": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
+    "adminAssociateZNA(uint256,uint256)": FunctionFragment;
+    "adminDisassociateZNA(uint256,uint256)": FunctionFragment;
+    "adminModifyZDAO(uint256,string,address)": FunctionFragment;
+    "adminRemoveDAO(uint256)": FunctionFragment;
+    "adminSetZNSHub(address)": FunctionFragment;
     "doeszDAOExistForzNA(uint256)": FunctionFragment;
     "getzDAOByEns(string)": FunctionFragment;
     "getzDAOById(uint256)": FunctionFragment;
@@ -53,7 +61,6 @@ export interface ZDAORegistryInterface extends utils.Interface {
     "owner()": FunctionFragment;
     "removeZNAAssociation(uint256,uint256)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "setZNSHub(address)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "zDAORecords(uint256)": FunctionFragment;
     "znsHub()": FunctionFragment;
@@ -66,6 +73,26 @@ export interface ZDAORegistryInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "addZNAAssociation",
     values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminAssociateZNA",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminDisassociateZNA",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminModifyZDAO",
+    values: [BigNumberish, string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminRemoveDAO",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "adminSetZNSHub",
+    values: [string]
   ): string;
   encodeFunctionData(
     functionFragment: "doeszDAOExistForzNA",
@@ -101,7 +128,6 @@ export interface ZDAORegistryInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "setZNSHub", values: [string]): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
@@ -115,6 +141,26 @@ export interface ZDAORegistryInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "addNewDAO", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "addZNAAssociation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "adminAssociateZNA",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "adminDisassociateZNA",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "adminModifyZDAO",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "adminRemoveDAO",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "adminSetZNSHub",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -148,7 +194,6 @@ export interface ZDAORegistryInterface extends utils.Interface {
     functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setZNSHub", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
@@ -161,12 +206,16 @@ export interface ZDAORegistryInterface extends utils.Interface {
 
   events: {
     "DAOCreated(uint256,string,address)": EventFragment;
+    "DAODestroyed(uint256)": EventFragment;
+    "DAOModified(uint256,string,address)": EventFragment;
     "LinkAdded(uint256,uint256)": EventFragment;
     "LinkRemoved(uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOModified"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
@@ -178,6 +227,17 @@ export type DAOCreatedEvent = TypedEvent<
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
+
+export type DAODestroyedEvent = TypedEvent<[BigNumber], { daoId: BigNumber }>;
+
+export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
+
+export type DAOModifiedEvent = TypedEvent<
+  [BigNumber, string, string],
+  { daoId: BigNumber; endSpace: string; gnosisSafe: string }
+>;
+
+export type DAOModifiedEventFilter = TypedEventFilter<DAOModifiedEvent>;
 
 export type LinkAddedEvent = TypedEvent<
   [BigNumber, BigNumber],
@@ -241,6 +301,35 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    adminAssociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    adminDisassociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    adminModifyZDAO(
+      daoId: BigNumberish,
+      ensSpace: string,
+      gnosisSafe: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    adminRemoveDAO(
+      daoId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    adminSetZNSHub(
+      _znsHub: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     doeszDAOExistForzNA(
       zNA: BigNumberish,
       overrides?: CallOverrides
@@ -286,11 +375,6 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setZNSHub(
-      _znsHub: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -300,10 +384,11 @@ export interface ZDAORegistry extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, string, string] & {
+      [BigNumber, string, string, boolean] & {
         id: BigNumber;
         ensSpace: string;
         gnosisSafe: string;
+        destroyed: boolean;
       }
     >;
 
@@ -319,6 +404,35 @@ export interface ZDAORegistry extends BaseContract {
   addZNAAssociation(
     daoId: BigNumberish,
     zNA: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  adminAssociateZNA(
+    daoId: BigNumberish,
+    zNA: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  adminDisassociateZNA(
+    daoId: BigNumberish,
+    zNA: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  adminModifyZDAO(
+    daoId: BigNumberish,
+    ensSpace: string,
+    gnosisSafe: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  adminRemoveDAO(
+    daoId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  adminSetZNSHub(
+    _znsHub: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -367,11 +481,6 @@ export interface ZDAORegistry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setZNSHub(
-    _znsHub: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   transferOwnership(
     newOwner: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -381,10 +490,11 @@ export interface ZDAORegistry extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, string, string] & {
+    [BigNumber, string, string, boolean] & {
       id: BigNumber;
       ensSpace: string;
       gnosisSafe: string;
+      destroyed: boolean;
     }
   >;
 
@@ -402,6 +512,32 @@ export interface ZDAORegistry extends BaseContract {
       zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    adminAssociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    adminDisassociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    adminModifyZDAO(
+      daoId: BigNumberish,
+      ensSpace: string,
+      gnosisSafe: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    adminRemoveDAO(
+      daoId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    adminSetZNSHub(_znsHub: string, overrides?: CallOverrides): Promise<void>;
 
     doeszDAOExistForzNA(
       zNA: BigNumberish,
@@ -443,8 +579,6 @@ export interface ZDAORegistry extends BaseContract {
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    setZNSHub(_znsHub: string, overrides?: CallOverrides): Promise<void>;
-
     transferOwnership(
       newOwner: string,
       overrides?: CallOverrides
@@ -454,10 +588,11 @@ export interface ZDAORegistry extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, string, string] & {
+      [BigNumber, string, string, boolean] & {
         id: BigNumber;
         ensSpace: string;
         gnosisSafe: string;
+        destroyed: boolean;
       }
     >;
 
@@ -475,6 +610,22 @@ export interface ZDAORegistry extends BaseContract {
       ensSpace?: null,
       gnosisSafe?: null
     ): DAOCreatedEventFilter;
+
+    "DAODestroyed(uint256)"(
+      daoId?: BigNumberish | null
+    ): DAODestroyedEventFilter;
+    DAODestroyed(daoId?: BigNumberish | null): DAODestroyedEventFilter;
+
+    "DAOModified(uint256,string,address)"(
+      daoId?: BigNumberish | null,
+      endSpace?: null,
+      gnosisSafe?: null
+    ): DAOModifiedEventFilter;
+    DAOModified(
+      daoId?: BigNumberish | null,
+      endSpace?: null,
+      gnosisSafe?: null
+    ): DAOModifiedEventFilter;
 
     "LinkAdded(uint256,uint256)"(
       daoId?: BigNumberish | null,
@@ -514,6 +665,35 @@ export interface ZDAORegistry extends BaseContract {
     addZNAAssociation(
       daoId: BigNumberish,
       zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    adminAssociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    adminDisassociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    adminModifyZDAO(
+      daoId: BigNumberish,
+      ensSpace: string,
+      gnosisSafe: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    adminRemoveDAO(
+      daoId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    adminSetZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -562,11 +742,6 @@ export interface ZDAORegistry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setZNSHub(
-      _znsHub: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     transferOwnership(
       newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -590,6 +765,35 @@ export interface ZDAORegistry extends BaseContract {
     addZNAAssociation(
       daoId: BigNumberish,
       zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    adminAssociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    adminDisassociateZNA(
+      daoId: BigNumberish,
+      zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    adminModifyZDAO(
+      daoId: BigNumberish,
+      ensSpace: string,
+      gnosisSafe: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    adminRemoveDAO(
+      daoId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    adminSetZNSHub(
+      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -635,11 +839,6 @@ export interface ZDAORegistry extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setZNSHub(
-      _znsHub: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

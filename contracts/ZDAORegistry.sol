@@ -10,7 +10,13 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
 
   mapping(uint256 => uint256) private ensTozDAO;
   mapping(uint256 => uint256) private zNATozDAOId;
-  ZDAORecord[] public zDAORecords;
+
+  // The zdao at index 0 is a null zDAO
+  // We use a mapping instead of an array for upgradeability
+  mapping(uint256 => ZDAORecord) public zDAORecords;
+
+  // More of a 'new zdao index' tracker
+  uint256 private numZDAOs;
 
   modifier onlyZNAOwner(uint256 zNA) {
     require(znsHub.ownerOf(zNA) == msg.sender, "Not zNA owner");
@@ -18,7 +24,7 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
   }
 
   modifier onlyValidZDAO(uint256 daoId) {
-    require(daoId > 0 && daoId < zDAORecords.length, "Invalid daoId");
+    require(daoId > 0 && daoId < numZDAOs && !zDAORecords[daoId].destroyed, "Invalid zDAO");
     _;
   }
 
@@ -26,27 +32,34 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     __Ownable_init();
 
     znsHub = IZNSHub(_znsHub);
-    zDAORecords.push(
-      ZDAORecord({id: 0, ensSpace: "", gnosisSafe: address(0), associatedzNAs: new uint256[](0)})
-    );
-  }
+    zDAORecords[0] = ZDAORecord({
+      id: 0,
+      ensSpace: "",
+      gnosisSafe: address(0),
+      associatedzNAs: new uint256[](0),
+      destroyed: false
+    });
 
-  function setZNSHub(address _znsHub) external onlyOwner {
-    znsHub = IZNSHub(_znsHub);
+    numZDAOs = 1;
   }
 
   function addNewDAO(string calldata ensSpace, address gnosisSafe) external onlyOwner {
-    uint256 zDAOId = zDAORecords.length;
-    zDAORecords.push(
-      ZDAORecord({
-        id: zDAOId,
-        ensSpace: ensSpace,
-        gnosisSafe: gnosisSafe,
-        associatedzNAs: new uint256[](0)
-      })
-    );
+    uint256 ensId = _ensId(ensSpace);
+    require(ensTozDAO[ensId] == 0, "ENS already has zDAO");
 
-    emit DAOCreated(zDAOId, ensSpace, gnosisSafe);
+    zDAORecords[numZDAOs] = ZDAORecord({
+      id: numZDAOs,
+      ensSpace: ensSpace,
+      gnosisSafe: gnosisSafe,
+      associatedzNAs: new uint256[](0),
+      destroyed: false
+    });
+
+    ensTozDAO[ensId] = numZDAOs;
+
+    emit DAOCreated(numZDAOs, ensSpace, gnosisSafe);
+
+    numZDAOs += 1;
   }
 
   function addZNAAssociation(uint256 daoId, uint256 zNA)
@@ -54,18 +67,7 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     onlyValidZDAO(daoId)
     onlyZNAOwner(zNA)
   {
-    uint256 currentDAOAssociation = zNATozDAOId[zNA];
-    require(currentDAOAssociation != daoId, "zNA already linked to DAO");
-
-    // If an association already exists, remove it
-    if (currentDAOAssociation != 0) {
-      _removeZNAAssociation(currentDAOAssociation, zNA);
-    }
-
-    zNATozDAOId[zNA] = daoId;
-    zDAORecords[daoId].associatedzNAs.push(zNA);
-
-    emit LinkAdded(daoId, zNA);
+    _associatezNA(daoId, zNA);
   }
 
   function removeZNAAssociation(uint256 daoId, uint256 zNA)
@@ -76,11 +78,63 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     uint256 currentDAOAssociation = zNATozDAOId[zNA];
     require(currentDAOAssociation == daoId, "zNA not associated");
 
-    _removeZNAAssociation(daoId, zNA);
+    _disassociatezNA(daoId, zNA);
   }
 
+  /* --- Admin functions  --- */
+
+  function adminSetZNSHub(address _znsHub) external onlyOwner {
+    znsHub = IZNSHub(_znsHub);
+  }
+
+  function adminRemoveDAO(uint256 daoId) external onlyValidZDAO(daoId) onlyOwner {
+    zDAORecords[daoId].destroyed = true;
+    ensTozDAO[_ensId(zDAORecords[daoId].ensSpace)] = 0;
+
+    emit DAODestroyed(daoId);
+  }
+
+  function adminAssociateZNA(uint256 daoId, uint256 zNA) external onlyOwner onlyValidZDAO(daoId) {
+    _associatezNA(daoId, zNA);
+  }
+
+  function adminDisassociateZNA(uint256 daoId, uint256 zNA)
+    external
+    onlyOwner
+    onlyValidZDAO(daoId)
+  {
+    uint256 currentDAOAssociation = zNATozDAOId[zNA];
+    require(currentDAOAssociation == daoId, "zNA not associated");
+
+    _disassociatezNA(daoId, zNA);
+  }
+
+  function adminModifyZDAO(
+    uint256 daoId,
+    string calldata ensSpace,
+    address gnosisSafe
+  ) external onlyOwner onlyValidZDAO(daoId) {
+    ZDAORecord storage zDAO = zDAORecords[daoId];
+
+    uint256 newEnsId = _ensId(ensSpace);
+    uint256 existingEnsId = _ensId(zDAO.ensSpace);
+
+    if (newEnsId != existingEnsId) {
+      ensTozDAO[existingEnsId] = 0;
+      ensTozDAO[newEnsId] = daoId;
+    }
+
+    zDAO.ensSpace = ensSpace;
+    zDAO.gnosisSafe = gnosisSafe;
+
+    emit DAOModified(daoId, ensSpace, gnosisSafe);
+  }
+
+  /* --- View Methods --- */
+
+  // The number of actual zDAO's (excludes '0' which is null)
   function numberOfzDAOs() external view returns (uint256) {
-    return zDAORecords.length - 1;
+    return numZDAOs - 1;
   }
 
   function getzDAOById(uint256 daoId) external view returns (ZDAORecord memory) {
@@ -92,7 +146,7 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     view
     returns (ZDAORecord[] memory)
   {
-    uint256 numDaos = zDAORecords.length;
+    uint256 numDaos = numZDAOs;
     require(startIndex != 0, "start index = 0, use 1");
     require(startIndex <= endIndex, "start index > end");
     require(startIndex < numDaos, "start index > length");
@@ -114,14 +168,19 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
 
   function getzDaoByZNA(uint256 zNA) external view returns (ZDAORecord memory) {
     uint256 daoId = zNATozDAOId[zNA];
-    require(daoId != 0 && daoId < zDAORecords.length, "No zDAO associated with zNA");
+    require(
+      daoId != 0 && daoId < numZDAOs && !zDAORecords[daoId].destroyed,
+      "No zDAO associated with zNA"
+    );
     return zDAORecords[daoId];
   }
 
   function getzDAOByEns(string calldata ensSpace) external view returns (ZDAORecord memory) {
-    uint256 ensHash = uint256(keccak256(abi.encodePacked(ensSpace)));
+    uint256 ensHash = _ensId(ensSpace);
     uint256 daoId = ensTozDAO[ensHash];
     require(daoId != 0, "No zDAO at ens space");
+    require(!zDAORecords[daoId].destroyed, "zDAO destroyed");
+
     return zDAORecords[daoId];
   }
 
@@ -129,7 +188,24 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     return zNATozDAOId[zNA] != 0;
   }
 
-  function _removeZNAAssociation(uint256 daoId, uint256 zNA) internal {
+  /* --- Internal Methods ---  */
+
+  function _associatezNA(uint256 daoId, uint256 zNA) internal {
+    uint256 currentDAOAssociation = zNATozDAOId[zNA];
+    require(currentDAOAssociation != daoId, "zNA already linked to DAO");
+
+    // If an association already exists, remove it
+    if (currentDAOAssociation != 0) {
+      _disassociatezNA(currentDAOAssociation, zNA);
+    }
+
+    zNATozDAOId[zNA] = daoId;
+    zDAORecords[daoId].associatedzNAs.push(zNA);
+
+    emit LinkAdded(daoId, zNA);
+  }
+
+  function _disassociatezNA(uint256 daoId, uint256 zNA) internal {
     ZDAORecord storage dao = zDAORecords[daoId];
     uint256 length = zDAORecords[daoId].associatedzNAs.length;
 
@@ -143,5 +219,10 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
         break;
       }
     }
+  }
+
+  function _ensId(string memory ensSpace) private pure returns (uint256) {
+    uint256 ensHash = uint256(keccak256(abi.encodePacked(ensSpace)));
+    return ensHash;
   }
 }

@@ -21,18 +21,21 @@ export declare namespace IZDAORegistry {
     ensSpace: string;
     gnosisSafe: string;
     associatedzNAs: BigNumberish[];
+    destroyed: boolean;
   };
 
   export type ZDAORecordStructOutput = [
     BigNumber,
     string,
     string,
-    BigNumber[]
+    BigNumber[],
+    boolean
   ] & {
     id: BigNumber;
     ensSpace: string;
     gnosisSafe: string;
     associatedzNAs: BigNumber[];
+    destroyed: boolean;
   };
 }
 
@@ -96,11 +99,15 @@ export interface IZDAORegistryInterface extends utils.Interface {
 
   events: {
     "DAOCreated(uint256,string,address)": EventFragment;
+    "DAODestroyed(uint256)": EventFragment;
+    "DAOModified(uint256,string,address)": EventFragment;
     "LinkAdded(uint256,uint256)": EventFragment;
     "LinkRemoved(uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOModified"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
 }
@@ -111,6 +118,17 @@ export type DAOCreatedEvent = TypedEvent<
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
+
+export type DAODestroyedEvent = TypedEvent<[BigNumber], { daoId: BigNumber }>;
+
+export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
+
+export type DAOModifiedEvent = TypedEvent<
+  [BigNumber, string, string],
+  { daoId: BigNumber; endSpace: string; gnosisSafe: string }
+>;
+
+export type DAOModifiedEventFilter = TypedEventFilter<DAOModifiedEvent>;
 
 export type LinkAddedEvent = TypedEvent<
   [BigNumber, BigNumber],
@@ -252,6 +270,22 @@ export interface IZDAORegistry extends BaseContract {
       ensSpace?: null,
       gnosisSafe?: null
     ): DAOCreatedEventFilter;
+
+    "DAODestroyed(uint256)"(
+      daoId?: BigNumberish | null
+    ): DAODestroyedEventFilter;
+    DAODestroyed(daoId?: BigNumberish | null): DAODestroyedEventFilter;
+
+    "DAOModified(uint256,string,address)"(
+      daoId?: BigNumberish | null,
+      endSpace?: null,
+      gnosisSafe?: null
+    ): DAOModifiedEventFilter;
+    DAOModified(
+      daoId?: BigNumberish | null,
+      endSpace?: null,
+      gnosisSafe?: null
+    ): DAOModifiedEventFilter;
 
     "LinkAdded(uint256,uint256)"(
       daoId?: BigNumberish | null,
