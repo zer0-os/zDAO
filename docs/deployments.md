@@ -2,7 +2,7 @@
 
 ## Mainnet
 
-None
+- zDAO Registry: 0x7701913b65C9bCDa4d353F77EC12123d57D77f1e
 
 ## Rinkeby
 

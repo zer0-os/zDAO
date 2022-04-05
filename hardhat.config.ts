@@ -20,6 +20,7 @@ dotenv.config();
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
+      MAINNET_PRIVATE_KEY: string;
       TESTNET_PRIVATE_KEY: string;
       ALCHEMY_KEY: string;
       ETHERSCAN_API_KEY: string;
@@ -52,6 +53,10 @@ const config: HardhatUserConfig = {
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
       accounts: [process.env.TESTNET_PRIVATE_KEY],
+    },
+    mainnet: {
+      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+      accounts: [process.env.MAINNET_PRIVATE_KEY],
     },
   },
   etherscan: {
