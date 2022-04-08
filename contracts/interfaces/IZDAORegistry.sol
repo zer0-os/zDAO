@@ -16,7 +16,10 @@ interface IZDAORegistry {
 
   function getzDAOById(uint256 daoId) external view returns (ZDAORecord memory);
 
-  function getzDAOByEns(string calldata ensSpace) external view returns (ZDAORecord memory);
+  function getzDAOByEns(string calldata ensSpace)
+    external
+    view
+    returns (ZDAORecord memory);
 
   function listzDAOs(uint256 startIndex, uint256 endIndex)
     external

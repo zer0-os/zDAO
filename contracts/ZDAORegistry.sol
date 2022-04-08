@@ -24,7 +24,10 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
   }
 
   modifier onlyValidZDAO(uint256 daoId) {
-    require(daoId > 0 && daoId < numZDAOs && !zDAORecords[daoId].destroyed, "Invalid zDAO");
+    require(
+      daoId > 0 && daoId < numZDAOs && !zDAORecords[daoId].destroyed,
+      "Invalid zDAO"
+    );
     _;
   }
 
@@ -43,7 +46,10 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     numZDAOs = 1;
   }
 
-  function addNewDAO(string calldata ensSpace, address gnosisSafe) external onlyOwner {
+  function addNewDAO(string calldata ensSpace, address gnosisSafe)
+    external
+    onlyOwner
+  {
     uint256 ensId = _ensId(ensSpace);
     require(ensTozDAO[ensId] == 0, "ENS already has zDAO");
 
@@ -87,14 +93,22 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     znsHub = IZNSHub(_znsHub);
   }
 
-  function adminRemoveDAO(uint256 daoId) external onlyValidZDAO(daoId) onlyOwner {
+  function adminRemoveDAO(uint256 daoId)
+    external
+    onlyValidZDAO(daoId)
+    onlyOwner
+  {
     zDAORecords[daoId].destroyed = true;
     ensTozDAO[_ensId(zDAORecords[daoId].ensSpace)] = 0;
 
     emit DAODestroyed(daoId);
   }
 
-  function adminAssociateZNA(uint256 daoId, uint256 zNA) external onlyOwner onlyValidZDAO(daoId) {
+  function adminAssociateZNA(uint256 daoId, uint256 zNA)
+    external
+    onlyOwner
+    onlyValidZDAO(daoId)
+  {
     _associatezNA(daoId, zNA);
   }
 
@@ -137,7 +151,11 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     return numZDAOs - 1;
   }
 
-  function getzDAOById(uint256 daoId) external view returns (ZDAORecord memory) {
+  function getzDAOById(uint256 daoId)
+    external
+    view
+    returns (ZDAORecord memory)
+  {
     return zDAORecords[daoId];
   }
 
@@ -175,7 +193,11 @@ contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
     return zDAORecords[daoId];
   }
 
-  function getzDAOByEns(string calldata ensSpace) external view returns (ZDAORecord memory) {
+  function getzDAOByEns(string calldata ensSpace)
+    external
+    view
+    returns (ZDAORecord memory)
+  {
     uint256 ensHash = _ensId(ensSpace);
     uint256 daoId = ensTozDAO[ensHash];
     require(daoId != 0, "No zDAO at ens space");
