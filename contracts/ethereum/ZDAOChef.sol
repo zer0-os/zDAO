@@ -128,6 +128,9 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     onlyValidZDAO(_daoId)
     onlyZNAOwner(_zNA)
   {
+    uint256 currentDAOAssociation = zNATozDAOId[_zNA];
+    require(currentDAOAssociation == _daoId, "zNA not associated");
+
     _disassociatezNA(_daoId, _zNA);
   }
 
