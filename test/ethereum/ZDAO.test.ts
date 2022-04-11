@@ -1,0 +1,139 @@
+import {
+  FakeContract,
+  MockContract,
+  MockContractFactory,
+  smock,
+} from "@defi-wonderland/smock";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import * as zns from "@zero-tech/zns-sdk";
+import chai, { expect } from "chai";
+import { BigNumber, ContractTransaction } from "ethers";
+import { ethers } from "hardhat";
+import ZDAOJson from "../../artifacts/contracts/ethereum/ZDAO.sol/ZDAO.json";
+import {
+  IERC20,
+  IZNSHub,
+  ZDAO,
+  ZDAOChef,
+  ZDAOChef__factory,
+} from "../../types";
+import { ZDAOLib } from "../../types/ZDAO";
+
+chai.use(smock.matchers);
+
+describe("ZDAO", async function () {
+  let owner: SignerWithAddress,
+    zNAOwner: SignerWithAddress,
+    userA: SignerWithAddress,
+    userB: SignerWithAddress;
+
+  const zNA = "wilder.wheels";
+  const zNAAsNumber = zns.domains.domainNameToId(zNA);
+
+  let zDAO: ZDAO,
+    vToken: FakeContract<IERC20>,
+    zDAOInfo: ZDAOLib.ZDAOInfoStruct;
+  let gnosisSafe: string;
+  const minAmount = BigNumber.from("10000");
+
+  beforeEach("init setup", async function () {
+    [owner, zNAOwner, userA, userB] = await ethers.getSigners();
+
+    const ZDAOChefFactory = (await smock.mock<ZDAOChef__factory>(
+      "ZDAOChef"
+    )) as MockContractFactory<ZDAOChef__factory>;
+
+    const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
+    const ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<ZDAOChef>;
+    await ZDAOChef.__ZDAOChef_init(znsHubAddress);
+
+    const ZNSHub = (await smock.fake("IZNSHub", {
+      address: znsHubAddress,
+    })) as FakeContract<IZNSHub>;
+    // make sure that `owner` is owner of zNA
+    ZNSHub.ownerOf.whenCalledWith(zNAAsNumber).returns(zNAOwner.address);
+
+    vToken = (await smock.fake("IERC20")) as FakeContract<IERC20>;
+
+    // add new DAO by default
+    gnosisSafe = await ethers.Wallet.createRandom().getAddress();
+    await ZDAOChef.connect(zNAOwner).addNewDAO(zNAAsNumber, {
+      id: 0,
+      owner: zNAOwner.address,
+      name: `${zNA}.dao`,
+      gnosisSafe: gnosisSafe,
+      token: vToken.address,
+      amount: minAmount,
+      destroyed: false,
+    });
+
+    const ZDAORecord = await ZDAOChef.getzDaoByZNA(zNAAsNumber);
+    zDAO = (await ethers.getContractAt(
+      ZDAOJson.abi,
+      ZDAORecord.zDAO,
+      zNAOwner
+    )) as ZDAO;
+
+    zDAOInfo = (await zDAO.zDAOInfo()) as ZDAOLib.ZDAOInfoStruct;
+  });
+
+  it("Check zDAO information", async function () {
+    expect(zDAOInfo.id).to.be.equal(1);
+    expect(zDAOInfo.owner).to.be.equal(zNAOwner.address);
+    expect(zDAOInfo.name).to.be.equal(`${zNA}.dao`);
+    expect(zDAOInfo.gnosisSafe).to.be.equal(gnosisSafe);
+    expect(zDAOInfo.token).to.be.equal(vToken.address);
+    expect(zDAOInfo.amount.toString()).to.be.equal(minAmount.toString());
+    expect(zDAOInfo.destroyed).to.be.equal(false);
+  });
+
+  const createProposal = async (
+    user: SignerWithAddress,
+    blocks = 30,
+    isRelativeMajority = false
+  ): Promise<ContractTransaction> => {
+    const blockNumber = await ethers.provider.getBlockNumber();
+    const blockTime = 13;
+    const startTimestamp = blockNumber * blockTime;
+    const endTimestamp = startTimestamp + (blockNumber + blocks) * blockTime;
+
+    return zDAO.connect(user).createProposal({
+      author: user.address,
+      startTimestamp,
+      endTimestamp,
+      token: zDAOInfo.token,
+      amount: zDAOInfo.amount.toString(),
+      threshold: 5000,
+      isRelativeMajority,
+      ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
+      executed: false,
+    });
+  };
+
+  it("Only valid token holder can create proposal", async function () {
+    await expect(createProposal(userA)).to.be.revertedWith(
+      "Not a valid token holder"
+    );
+
+    vToken.balanceOf.whenCalledWith(userA.address).returns(minAmount);
+    await expect(createProposal(userA)).to.be.not.reverted;
+
+    expect(await zDAO.numberOfProposals()).to.be.equal(1);
+
+    const proposals = await zDAO.listProposals(1, 1);
+    expect(proposals.length).to.be.equal(1);
+    expect(proposals[0].author).to.be.equal(userA.address);
+    expect(proposals[0].token).to.be.equal(vToken.address);
+  });
+
+  it("Should be callable by zDAO owner", async function () {
+    await expect(
+      zDAO.connect(userB).setVotingToken(vToken.address, minAmount.toString())
+    ).to.be.revertedWith("Not a zDAO Owner");
+    await expect(
+      zDAO
+        .connect(zNAOwner)
+        .setVotingToken(vToken.address, minAmount.toString())
+    ).to.be.not.reverted;
+  });
+});
