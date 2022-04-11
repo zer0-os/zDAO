@@ -40,6 +40,6 @@
     "typescript": "4.3.2"
   },
   "dependencies": {
-    "@ensdomains/eth-ens-namehash": "^2.0.15"
+    "@ensdomains/eth-ens-namehash": "2.0.15"
   }
 }
