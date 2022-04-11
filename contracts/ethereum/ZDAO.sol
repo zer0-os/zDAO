@@ -116,6 +116,11 @@ contract ZDAO is Ownable {
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
+
+  function zDAOOwner() external view returns (address) {
+    return zDAOInfo.owner;
+  }
+
   function destroyed() external view returns (bool) {
     return zDAOInfo.destroyed;
   }

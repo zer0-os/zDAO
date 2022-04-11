@@ -6,6 +6,7 @@ import "../abstracts/ZDAOUpgradeable.sol";
 import "../interfaces/IZNSHub.sol";
 import "../libraries/ZDAOLib.sol";
 import "./ZDAO.sol";
+import "hardhat/console.sol";
 
 contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   using SafeMathUpgradeable for uint256;
@@ -59,11 +60,19 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     _;
   }
 
+  modifier onlyDAOOwner(uint256 _daoId) {
+    require(
+      msg.sender == zDAORecords[_daoId].zDAO.zDAOOwner(),
+      "Invalid zDAO Owner"
+    );
+    _;
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOChefInitializer(IZNSHub _znsHub) public initializer {
+  function __ZDAOChef_init(IZNSHub _znsHub) public initializer {
     ZDAOUpgradeable.initialize();
 
     znsHub = _znsHub;
@@ -81,6 +90,9 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     external
     onlyZNAOwner(_zNA)
   {
+    uint256 daoId = zNATozDAOId[_zNA];
+    require(daoId == 0, "Do not allow to add new DAO with same zNA");
+
     lastZDAOId++;
 
     // Create zDAO contract
@@ -109,8 +121,12 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     _associatezNA(lastZDAOId, _zNA);
   }
 
-  function removeDAO(uint256 _daoId) external onlyOwner onlyValidZDAO(_daoId) {
-    zDAORecords[_daoId].zDAO.setDestroyed(false);
+  function removeDAO(uint256 _daoId)
+    external
+    onlyDAOOwner(_daoId)
+    onlyValidZDAO(_daoId)
+  {
+    zDAORecords[_daoId].zDAO.setDestroyed(true);
 
     emit DAODestroyed(_daoId);
   }
@@ -177,7 +193,11 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
   function numberOfzDAOs() external view returns (uint256) {
-    return lastZDAOId;
+    uint256 count = 0;
+    for (uint256 i = 1; i <= lastZDAOId; i++) {
+      count += !zDAORecords[i].zDAO.destroyed() ? 1 : 0;
+    }
+    return count;
   }
 
   function getzDAOById(uint256 _daoId)
@@ -193,15 +213,16 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     view
     returns (ZDAORecord[] memory)
   {
-    require(_startIndex <= _endIndex, "start index > end");
-    require(_startIndex <= lastZDAOId, "start index > length");
-    require(_endIndex <= lastZDAOId, "end index > length");
+    require(_startIndex > 0, "should start index > 0");
+    require(_startIndex <= _endIndex, "should start index <= end");
+    require(_startIndex <= lastZDAOId, "should start index <= length");
+    require(_endIndex <= lastZDAOId, "should end index <= length");
 
     uint256 numRecords = _endIndex - _startIndex + 1;
     ZDAORecord[] memory records = new ZDAORecord[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAORecords[_startIndex + i + 1];
+      records[i] = zDAORecords[_startIndex + i];
     }
 
     return records;
