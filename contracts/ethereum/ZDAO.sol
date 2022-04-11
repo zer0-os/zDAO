@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../libraries/ZDAOLib.sol";
 import "./interfaces/IRootTunnel.sol";
+import "hardhat/console.sol";
 
 contract ZDAO is Ownable {
   using ZDAOLib for ZDAOLib.ZDAOInfo;
@@ -18,7 +19,7 @@ contract ZDAO is Ownable {
     uint256 endTimestamp;
     IERC20 token;
     uint256 amount;
-    uint256 threshold;
+    uint256 threshold; // percent in 10000 as 100%
     bool isRelativeMajority;
     // ipfs hash: https://stackoverflow.com/questions/66927626/how-to-store-ipfs-hash-on-ethereum-blockchain-using-smart-contracts
     bytes32 ipfs;
@@ -134,15 +135,16 @@ contract ZDAO is Ownable {
     view
     returns (Proposal[] memory)
   {
-    require(_startIndex <= _endIndex, "start index > end");
-    require(_startIndex <= lastProposalId, "start index > length");
-    require(_endIndex <= lastProposalId, "end index > length");
+    require(_startIndex > 0, "should start index > 0");
+    require(_startIndex <= _endIndex, "should start index <= end");
+    require(_startIndex <= lastProposalId, "should start index <= length");
+    require(_endIndex <= lastProposalId, "should end index <= length");
 
     uint256 numRecords = _endIndex - _startIndex + 1;
     Proposal[] memory records = new Proposal[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = proposals[_startIndex + i + 1];
+      records[i] = proposals[_startIndex + i];
     }
 
     return records;
