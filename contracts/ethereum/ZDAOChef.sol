@@ -5,12 +5,13 @@ pragma solidity ^0.8.11;
 import "../abstracts/ZeroUpgradeable.sol";
 import "../interfaces/IZNSHub.sol";
 import "../helpers/Proxy.sol";
+import "../tunnel/FxBaseRootTunnel.sol";
 import "./interfaces/IRootTunnel.sol";
 import "./interfaces/IZDAOChef.sol";
 import "./ZDAO.sol";
 import "hardhat/console.sol";
 
-contract ZDAOChef is ZeroUpgradeable, IRootTunnel, IZDAOChef {
+contract ZDAOChef is ZeroUpgradeable, FxBaseRootTunnel, IRootTunnel, IZDAOChef {
   address public zDAOBase;
 
   mapping(uint256 => ZDAORecord) public zDAORecords;
@@ -123,8 +124,8 @@ contract ZDAOChef is ZeroUpgradeable, IRootTunnel, IZDAOChef {
     _disassociatezNA(_daoId, _zNA);
   }
 
-  function sendMessageToChild(bytes memory message) external override {
-    // TODO
+  function sendMessageToChild(bytes memory _message) external override {
+    _sendMessageToChild(_message);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -141,7 +142,7 @@ contract ZDAOChef is ZeroUpgradeable, IRootTunnel, IZDAOChef {
     returns (ZDAO zDAO)
   {
     lastZDAOId++;
-    
+
     zDAO = ZDAO(
       createProxy(
         zDAOBase,

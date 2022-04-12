@@ -33,13 +33,12 @@ contract ZDAO is ZeroUpgradeable, IZDAO {
     _;
   }
 
-  function __ZDAO_init(IRootTunnel _rootTunnel, 
+  function __ZDAO_init(
+    IRootTunnel _rootTunnel,
     uint256 _zDAOId,
     address _zDAOOwner,
-    IZDAOChef.ZDAOConfig calldata _zDAOConfig)
-    external
-    initializer
-  {
+    IZDAOChef.ZDAOConfig calldata _zDAOConfig
+  ) external initializer {
     ZeroUpgradeable.initialize();
 
     rootTunnel = _rootTunnel;
