@@ -2,49 +2,20 @@
 
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "../libraries/ZDAOLib.sol";
+import "../abstracts/ZeroUpgradeable.sol";
 import "./interfaces/IRootTunnel.sol";
+import "./interfaces/IZDAO.sol";
+import "./interfaces/IZDAOChef.sol";
 import "hardhat/console.sol";
 
-contract ZDAO is Ownable {
-  using ZDAOLib for ZDAOLib.ZDAOInfo;
-  using SafeERC20 for IERC20;
+contract ZDAO is ZeroUpgradeable, IZDAO {
+  using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  struct Proposal {
-    address author;
-    uint256 startTimestamp;
-    uint256 endTimestamp;
-    IERC20 token;
-    uint256 amount;
-    uint256 threshold; // percent in 10000 as 100%
-    bool isRelativeMajority;
-    // ipfs hash: https://stackoverflow.com/questions/66927626/how-to-store-ipfs-hash-on-ethereum-blockchain-using-smart-contracts
-    bytes32 ipfs;
-    bool executed;
-  }
-
-  ZDAOLib.ZDAOInfo public zDAOInfo;
+  ZDAOInfo public zDAOInfo;
 
   uint256 private lastProposalId;
   mapping(uint256 => Proposal) public proposals;
   IRootTunnel public rootTunnel;
-
-  /* -------------------------------------------------------------------------- */
-  /*                                   Events                                   */
-  /* -------------------------------------------------------------------------- */
-
-  event ProposalCreated(
-    uint256 indexed _zDAOId,
-    address indexed _proposalAuthor,
-    uint256 indexed _proposalId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
-  );
-
-  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -62,16 +33,35 @@ contract ZDAO is Ownable {
     _;
   }
 
-  constructor(IRootTunnel _rootTunnel, ZDAOLib.ZDAOInfo memory _zDAOInfo) {
+  function __ZDAO_init(IRootTunnel _rootTunnel, 
+    uint256 _zDAOId,
+    address _zDAOOwner,
+    IZDAOChef.ZDAOConfig calldata _zDAOConfig)
+    external
+    initializer
+  {
+    ZeroUpgradeable.initialize();
+
     rootTunnel = _rootTunnel;
-    zDAOInfo = _zDAOInfo;
+
+    zDAOInfo = ZDAOInfo({
+      zDAOId: _zDAOId,
+      owner: _zDAOOwner,
+      name: _zDAOConfig.name,
+      gnosisSafe: _zDAOConfig.gnosisSafe,
+      token: IERC20Upgradeable(_zDAOConfig.token),
+      amount: _zDAOConfig.amount,
+      minPeriod: _zDAOConfig.minPeriod,
+      threshold: _zDAOConfig.threshold,
+      destroyed: false
+    });
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setDestroyed(bool _destroyed) external onlyOwner {
+  function setDestroyed(bool _destroyed) external override onlyOwner {
     zDAOInfo.destroyed = _destroyed;
   }
 
@@ -79,7 +69,7 @@ contract ZDAO is Ownable {
     zDAOInfo.gnosisSafe = _gnosisSafe;
   }
 
-  function setVotingToken(IERC20 _token, uint256 _amount)
+  function setVotingToken(IERC20Upgradeable _token, uint256 _amount)
     external
     onlyZDAOOwner
   {
@@ -87,32 +77,69 @@ contract ZDAO is Ownable {
     zDAOInfo.amount = _amount;
   }
 
-  function createProposal(Proposal calldata _proposal)
-    external
-    onlyValidTokenHolder
-  {
-    lastProposalId++;
-
-    proposals[lastProposalId] = _proposal;
-    proposals[lastProposalId].author = msg.sender;
+  function createProposal(
+    uint256 _startTimestamp,
+    uint256 _endTimestamp,
+    bool _isRelativeMajority,
+    IERC20Upgradeable _token,
+    uint256 _amount,
+    bytes32 _ipfs
+  ) external override onlyValidTokenHolder {
+    uint256 proposalId = _createProposal(
+      _startTimestamp,
+      _endTimestamp,
+      _isRelativeMajority,
+      _token,
+      _amount,
+      _ipfs
+    );
 
     emit ProposalCreated(
-      zDAOInfo.id,
+      zDAOInfo.zDAOId,
       msg.sender,
-      lastProposalId,
-      _proposal.startTimestamp,
-      _proposal.endTimestamp
+      proposalId,
+      _startTimestamp,
+      _endTimestamp,
+      _isRelativeMajority
     );
   }
 
-  function executeProposal(uint256 _proposalId) external {
+  function executeProposal(uint256 _proposalId) external override {
     // TODO
-    emit ProposalExecuted(zDAOInfo.id, _proposalId);
+    emit ProposalExecuted(zDAOInfo.zDAOId, _proposalId);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
+
+  function _createProposal(
+    uint256 _startTimestamp,
+    uint256 _endTimestamp,
+    bool _isRelativeMajority,
+    IERC20Upgradeable _token,
+    uint256 _amount,
+    bytes32 _ipfs
+  ) internal virtual returns (uint256 proposalId) {
+    lastProposalId++;
+
+    proposals[lastProposalId] = Proposal({
+      proposalId: lastProposalId,
+      createdBy: msg.sender,
+      startTimestamp: _startTimestamp,
+      endTimestamp: _endTimestamp,
+      threshold: zDAOInfo.threshold,
+      yes: 0,
+      no: 0,
+      reserved: 0,
+      isRelativeMajority: _isRelativeMajority,
+      ipfs: _ipfs,
+      token: _token,
+      amount: _amount,
+      state: ProposalState.Active
+    });
+    return lastProposalId;
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
@@ -126,13 +153,14 @@ contract ZDAO is Ownable {
     return zDAOInfo.destroyed;
   }
 
-  function numberOfProposals() external view returns (uint256) {
+  function numberOfProposals() external view override returns (uint256) {
     return lastProposalId;
   }
 
   function listProposals(uint256 _startIndex, uint256 _endIndex)
     external
     view
+    override
     returns (Proposal[] memory)
   {
     require(_startIndex > 0, "should start index > 0");

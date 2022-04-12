@@ -15,7 +15,7 @@ import "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 
-abstract contract ZDAOUpgradeable is
+abstract contract ZeroUpgradeable is
   Initializable,
   OwnableUpgradeable,
   AccessControlUpgradeable,

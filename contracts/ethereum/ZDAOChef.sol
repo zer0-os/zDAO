@@ -2,21 +2,16 @@
 
 pragma solidity ^0.8.11;
 
-import "../abstracts/ZDAOUpgradeable.sol";
+import "../abstracts/ZeroUpgradeable.sol";
 import "../interfaces/IZNSHub.sol";
-import "../libraries/ZDAOLib.sol";
+import "../helpers/Proxy.sol";
+import "./interfaces/IRootTunnel.sol";
+import "./interfaces/IZDAOChef.sol";
 import "./ZDAO.sol";
 import "hardhat/console.sol";
 
-contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
-  using SafeMathUpgradeable for uint256;
-  using ZDAOLib for ZDAOLib.ZDAOInfo;
-
-  struct ZDAORecord {
-    uint256 id;
-    ZDAO zDAO; // address to newly created ZDAO contract
-    uint256[] associatedzNAs;
-  }
+contract ZDAOChef is ZeroUpgradeable, IRootTunnel, IZDAOChef {
+  address public zDAOBase;
 
   mapping(uint256 => ZDAORecord) public zDAORecords;
   mapping(uint256 => uint256) private zNATozDAOId;
@@ -24,22 +19,6 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   uint256 private lastZDAOId;
 
   IZNSHub public znsHub;
-
-  /* -------------------------------------------------------------------------- */
-  /*                                   Events                                   */
-  /* -------------------------------------------------------------------------- */
-
-  event DAOCreated(
-    uint256 indexed _daoId,
-    address indexed _creator,
-    address indexed _zDAO
-  );
-
-  event DAODestroyed(uint256 indexed _daoId);
-
-  event LinkAdded(uint256 indexed _daoId, uint256 indexed _zNA);
-
-  event LinkRemoved(uint256 indexed _daoId, uint256 indexed _zNA);
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -52,9 +31,7 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
 
   modifier onlyValidZDAO(uint256 _daoId) {
     require(
-      _daoId > 0 &&
-        _daoId <= lastZDAOId &&
-        !zDAORecords[_daoId].zDAO.destroyed(),
+      _daoId > 0 && _daoId <= lastZDAOId && !_isZDAODestroyed(_daoId),
       "Invalid zDAO"
     );
     _;
@@ -72,10 +49,15 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOChef_init(IZNSHub _znsHub) public initializer {
-    ZDAOUpgradeable.initialize();
+  function __ZDAOChef_init(IZNSHub _znsHub, address _zDAOBase)
+    public
+    initializer
+  {
+    ZeroUpgradeable.initialize();
 
     znsHub = _znsHub;
+
+    zDAOBase = _zDAOBase;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -86,28 +68,16 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     znsHub = IZNSHub(_znsHub);
   }
 
-  function addNewDAO(uint256 _zNA, ZDAOLib.ZDAOInfo calldata _zDAOInfo)
+  function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig)
     external
+    override
     onlyZNAOwner(_zNA)
   {
     uint256 daoId = zNATozDAOId[_zNA];
     require(daoId == 0, "Do not allow to add new DAO with same zNA");
 
-    lastZDAOId++;
-
     // Create zDAO contract
-    ZDAO zDAO = new ZDAO(
-      IRootTunnel(this),
-      ZDAOLib.ZDAOInfo({
-        id: lastZDAOId,
-        owner: msg.sender,
-        name: _zDAOInfo.name,
-        gnosisSafe: _zDAOInfo.gnosisSafe,
-        token: _zDAOInfo.token,
-        amount: _zDAOInfo.amount,
-        destroyed: false
-      })
-    );
+    ZDAO zDAO = _createZDAO(_zDAOConfig);
 
     zDAORecords[lastZDAOId] = ZDAORecord({
       id: lastZDAOId,
@@ -123,6 +93,7 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
 
   function removeDAO(uint256 _daoId)
     external
+    override
     onlyDAOOwner(_daoId)
     onlyValidZDAO(_daoId)
   {
@@ -133,6 +104,7 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
 
   function addZNAAssociation(uint256 _daoId, uint256 _zNA)
     external
+    override
     onlyValidZDAO(_daoId)
     onlyZNAOwner(_zNA)
   {
@@ -141,6 +113,7 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
 
   function removeZNAAssociation(uint256 _daoId, uint256 _zNA)
     external
+    override
     onlyValidZDAO(_daoId)
     onlyZNAOwner(_zNA)
   {
@@ -150,13 +123,38 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
     _disassociatezNA(_daoId, _zNA);
   }
 
-  function sendMessageToChild(bytes memory message) external {
+  function sendMessageToChild(bytes memory message) external override {
     // TODO
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
+
+  function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
+    return zDAORecords[_index].zDAO.destroyed();
+  }
+
+  function _createZDAO(ZDAOConfig calldata _zDAOConfig)
+    internal
+    virtual
+    returns (ZDAO zDAO)
+  {
+    lastZDAOId++;
+    
+    zDAO = ZDAO(
+      createProxy(
+        zDAOBase,
+        abi.encodeWithSelector(
+          ZDAO.__ZDAO_init.selector,
+          IRootTunnel(this),
+          lastZDAOId,
+          msg.sender,
+          _zDAOConfig
+        )
+      )
+    );
+  }
 
   function _associatezNA(uint256 _daoId, uint256 _zNA) internal {
     uint256 currentDAOAssociation = zNATozDAOId[_zNA];
@@ -192,10 +190,11 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
-  function numberOfzDAOs() external view returns (uint256) {
+
+  function numberOfzDAOs() external view override returns (uint256) {
     uint256 count = 0;
     for (uint256 i = 1; i <= lastZDAOId; i++) {
-      count += !zDAORecords[i].zDAO.destroyed() ? 1 : 0;
+      count += !_isZDAODestroyed(i) ? 1 : 0;
     }
     return count;
   }
@@ -203,6 +202,7 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   function getzDAOById(uint256 _daoId)
     external
     view
+    override
     returns (ZDAORecord memory)
   {
     return zDAORecords[_daoId];
@@ -211,6 +211,7 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   function listzDAOs(uint256 _startIndex, uint256 _endIndex)
     external
     view
+    override
     returns (ZDAORecord[] memory)
   {
     require(_startIndex > 0, "should start index > 0");
@@ -231,17 +232,23 @@ contract ZDAOChef is ZDAOUpgradeable, IRootTunnel {
   function getzDaoByZNA(uint256 _zNA)
     external
     view
+    override
     returns (ZDAORecord memory)
   {
     uint256 daoId = zNATozDAOId[_zNA];
     require(
-      daoId > 0 && daoId <= lastZDAOId && !zDAORecords[daoId].zDAO.destroyed(),
+      daoId > 0 && daoId <= lastZDAOId && !_isZDAODestroyed(daoId),
       "No zDAO associated with zNA"
     );
     return zDAORecords[daoId];
   }
 
-  function doeszDAOExistForzNA(uint256 _zNA) external view returns (bool) {
+  function doeszDAOExistForzNA(uint256 _zNA)
+    external
+    view
+    override
+    returns (bool)
+  {
     return zNATozDAOId[_zNA] != 0;
   }
 }

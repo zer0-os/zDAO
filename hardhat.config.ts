@@ -38,7 +38,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 2000
           },
           outputSelection: {
             "*": {
@@ -49,6 +49,7 @@ const config: HardhatUserConfig = {
       },
     ],
   },
+  defaultNetwork: 'hardhat',
   networks: {
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
@@ -57,6 +58,10 @@ const config: HardhatUserConfig = {
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
       accounts: [process.env.MAINNET_PRIVATE_KEY],
+    },
+    hardhat: {
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
     },
   },
   etherscan: {

@@ -11,13 +11,13 @@ import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import ZDAOJson from "../../artifacts/contracts/ethereum/ZDAO.sol/ZDAO.json";
 import {
-  IERC20,
+  IERC20Upgradeable,
   IZNSHub,
   ZDAO,
   ZDAOChef,
   ZDAOChef__factory,
 } from "../../types";
-import { ZDAOLib } from "../../types/ZDAO";
+import { IZDAO } from "../../types/IZDAO";
 
 chai.use(smock.matchers);
 
@@ -30,11 +30,11 @@ describe("ZDAO", async function () {
   const zNA = "wilder.wheels";
   const zNAAsNumber = zns.domains.domainNameToId(zNA);
 
-  let zDAO: ZDAO,
-    vToken: FakeContract<IERC20>,
-    zDAOInfo: ZDAOLib.ZDAOInfoStruct;
+  let zDAO: ZDAO, vToken: FakeContract<IERC20Upgradeable>, zDAOInfo: any;
   let gnosisSafe: string;
   const minAmount = BigNumber.from("10000");
+  const minPeriod = 30; // unit in seconds
+  const threshold = 5000; // 100% percent in 10000
 
   beforeEach("init setup", async function () {
     [owner, zNAOwner, userA, userB] = await ethers.getSigners();
@@ -42,10 +42,12 @@ describe("ZDAO", async function () {
     const ZDAOChefFactory = (await smock.mock<ZDAOChef__factory>(
       "ZDAOChef"
     )) as MockContractFactory<ZDAOChef__factory>;
+    const ZDAOFactory = await ethers.getContractFactory("ZDAO");
+    const zDAOBase = await ZDAOFactory.deploy();
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
     const ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<ZDAOChef>;
-    await ZDAOChef.__ZDAOChef_init(znsHubAddress);
+    await ZDAOChef.__ZDAOChef_init(znsHubAddress, zDAOBase.address);
 
     const ZNSHub = (await smock.fake("IZNSHub", {
       address: znsHubAddress,
@@ -53,18 +55,19 @@ describe("ZDAO", async function () {
     // make sure that `owner` is owner of zNA
     ZNSHub.ownerOf.whenCalledWith(zNAAsNumber).returns(zNAOwner.address);
 
-    vToken = (await smock.fake("IERC20")) as FakeContract<IERC20>;
+    vToken = (await smock.fake(
+      "IERC20Upgradeable"
+    )) as FakeContract<IERC20Upgradeable>;
 
     // add new DAO by default
     gnosisSafe = await ethers.Wallet.createRandom().getAddress();
     await ZDAOChef.connect(zNAOwner).addNewDAO(zNAAsNumber, {
-      id: 0,
-      owner: zNAOwner.address,
       name: `${zNA}.dao`,
       gnosisSafe: gnosisSafe,
       token: vToken.address,
       amount: minAmount,
-      destroyed: false,
+      minPeriod: minPeriod,
+      threshold: threshold
     });
 
     const ZDAORecord = await ZDAOChef.getzDaoByZNA(zNAAsNumber);
@@ -74,11 +77,11 @@ describe("ZDAO", async function () {
       zNAOwner
     )) as ZDAO;
 
-    zDAOInfo = (await zDAO.zDAOInfo()) as ZDAOLib.ZDAOInfoStruct;
+    zDAOInfo = await zDAO.zDAOInfo();
   });
 
   it("Check zDAO information", async function () {
-    expect(zDAOInfo.id).to.be.equal(1);
+    expect(zDAOInfo.zDAOId).to.be.equal(1);
     expect(zDAOInfo.owner).to.be.equal(zNAOwner.address);
     expect(zDAOInfo.name).to.be.equal(`${zNA}.dao`);
     expect(zDAOInfo.gnosisSafe).to.be.equal(gnosisSafe);
@@ -97,17 +100,14 @@ describe("ZDAO", async function () {
     const startTimestamp = blockNumber * blockTime;
     const endTimestamp = startTimestamp + (blockNumber + blocks) * blockTime;
 
-    return zDAO.connect(user).createProposal({
-      author: user.address,
+    return zDAO.connect(user).createProposal(
       startTimestamp,
       endTimestamp,
-      token: zDAOInfo.token,
-      amount: zDAOInfo.amount.toString(),
-      threshold: 5000,
       isRelativeMajority,
-      ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
-      executed: false,
-    });
+      zDAOInfo.token,
+      zDAOInfo.amount.toString(),
+      "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486" // random byte32 string
+    );
   };
 
   it("Only valid token holder can create proposal", async function () {
@@ -122,7 +122,7 @@ describe("ZDAO", async function () {
 
     const proposals = await zDAO.listProposals(1, 1);
     expect(proposals.length).to.be.equal(1);
-    expect(proposals[0].author).to.be.equal(userA.address);
+    expect(proposals[0].createdBy).to.be.equal(userA.address);
     expect(proposals[0].token).to.be.equal(vToken.address);
   });
 

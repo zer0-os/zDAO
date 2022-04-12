@@ -7,11 +7,11 @@ import {
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as zns from "@zero-tech/zns-sdk";
 import chai, { expect } from "chai";
-import { ContractTransaction } from "ethers";
+import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import ZDAOJson from "../../artifacts/contracts/ethereum/ZDAO.sol/ZDAO.json";
 import {
-  IERC20,
+  IERC20Upgradeable,
   IZNSHub,
   ZDAO,
   ZDAOChef,
@@ -33,9 +33,11 @@ describe("ZDAOChef", async function () {
 
   let ZNSHub: FakeContract<IZNSHub>,
     ZDAOChef: MockContract<ZDAOChef>,
-    vToken: FakeContract<IERC20>;
+    vToken: FakeContract<IERC20Upgradeable>;
   let gnosisSafe: string;
-  const minAmount = 1000;
+  const minAmount = BigNumber.from("10000");
+  const minPeriod = 30; // unit in seconds
+  const threshold = 5000; // 100% percent in 10000
 
   beforeEach("init setup", async function () {
     [owner, zNAOwner, zNAOwner2, userA] = await ethers.getSigners();
@@ -43,10 +45,12 @@ describe("ZDAOChef", async function () {
     const ZDAOChefFactory = (await smock.mock<ZDAOChef__factory>(
       "ZDAOChef"
     )) as MockContractFactory<ZDAOChef__factory>;
+    const ZDAOFactory = await ethers.getContractFactory("ZDAO");
+    const zDAOBase = await ZDAOFactory.deploy();
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
     ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<ZDAOChef>;
-    await ZDAOChef.__ZDAOChef_init(znsHubAddress);
+    await ZDAOChef.__ZDAOChef_init(znsHubAddress, zDAOBase.address);
 
     ZNSHub = (await smock.fake("IZNSHub", {
       address: znsHubAddress,
@@ -55,20 +59,21 @@ describe("ZDAOChef", async function () {
     ZNSHub.ownerOf.whenCalledWith(zNAAsNumber).returns(zNAOwner.address);
     ZNSHub.ownerOf.whenCalledWith(zNAAsNumber2).returns(zNAOwner2.address);
 
-    vToken = (await smock.fake("IERC20")) as FakeContract<IERC20>;
+    vToken = (await smock.fake(
+      "IERC20Upgradeable"
+    )) as FakeContract<IERC20Upgradeable>;
 
     gnosisSafe = await ethers.Wallet.createRandom().getAddress();
   });
 
   const addNewDAO = (user: SignerWithAddress): Promise<ContractTransaction> => {
     return ZDAOChef.connect(user).addNewDAO(zNAAsNumber, {
-      id: 0,
-      owner: zNAOwner.address,
       name: `${zNA}.dao`,
       gnosisSafe: gnosisSafe,
       token: vToken.address,
       amount: minAmount,
-      destroyed: false,
+      minPeriod: minPeriod,
+      threshold: threshold
     });
   };
 
