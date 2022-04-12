@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {RLPReader} from "../lib/RLPReader.sol";
-import {MerklePatriciaProof} from "../lib/MerklePatriciaProof.sol";
-import {Merkle} from "../lib/Merkle.sol";
+import {RLPReader} from "./lib/RLPReader.sol";
+import {MerklePatriciaProof} from "./lib/MerklePatriciaProof.sol";
+import {Merkle} from "./lib/Merkle.sol";
 
 interface IFxStateSender {
   function sendMessageToChild(address _receiver, bytes calldata _data) external;
@@ -43,11 +43,6 @@ abstract contract FxBaseRootTunnel {
 
   // storage to avoid duplicate exits
   mapping(bytes32 => bool) public processedExits;
-
-  constructor(address _checkpointManager, address _fxRoot) {
-    checkpointManager = ICheckpointManager(_checkpointManager);
-    fxRoot = IFxStateSender(_fxRoot);
-  }
 
   // set fxChildTunnel if not set already
   function setFxChildTunnel(address _fxChildTunnel) public {

@@ -4,7 +4,7 @@ pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-interface IZDAO {
+interface IEtherZDAO {
   struct ZDAOInfo {
     uint256 zDAOId; // zDAO id
     address owner; // zDAO owner

@@ -4,11 +4,11 @@ pragma solidity ^0.8.11;
 
 import "../abstracts/ZeroUpgradeable.sol";
 import "./interfaces/IRootTunnel.sol";
-import "./interfaces/IZDAO.sol";
-import "./interfaces/IZDAOChef.sol";
+import "./interfaces/IEtherZDAO.sol";
+import "./interfaces/IEtherZDAOChef.sol";
 import "hardhat/console.sol";
 
-contract ZDAO is ZeroUpgradeable, IZDAO {
+contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   ZDAOInfo public zDAOInfo;
@@ -37,7 +37,7 @@ contract ZDAO is ZeroUpgradeable, IZDAO {
     IRootTunnel _rootTunnel,
     uint256 _zDAOId,
     address _zDAOOwner,
-    IZDAOChef.ZDAOConfig calldata _zDAOConfig
+    IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external initializer {
     ZeroUpgradeable.initialize();
 

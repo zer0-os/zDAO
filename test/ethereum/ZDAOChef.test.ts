@@ -9,13 +9,13 @@ import * as zns from "@zero-tech/zns-sdk";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import ZDAOJson from "../../artifacts/contracts/ethereum/ZDAO.sol/ZDAO.json";
+import ZDAOJson from "../../artifacts/contracts/ethereum/EtherZDAO.sol/EtherZDAO.json";
 import {
+  EtherZDAO,
+  EtherZDAOChef,
+  EtherZDAOChef__factory,
   IERC20Upgradeable,
   IZNSHub,
-  ZDAO,
-  ZDAOChef,
-  ZDAOChef__factory,
 } from "../../types";
 
 chai.use(smock.matchers);
@@ -32,7 +32,7 @@ describe("ZDAOChef", async function () {
   const zNAAsNumber2 = zns.domains.domainNameToId(zNA2);
 
   let ZNSHub: FakeContract<IZNSHub>,
-    ZDAOChef: MockContract<ZDAOChef>,
+    ZDAOChef: MockContract<EtherZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
   let gnosisSafe: string;
   const minAmount = BigNumber.from("10000");
@@ -42,15 +42,22 @@ describe("ZDAOChef", async function () {
   beforeEach("init setup", async function () {
     [owner, zNAOwner, zNAOwner2, userA] = await ethers.getSigners();
 
-    const ZDAOChefFactory = (await smock.mock<ZDAOChef__factory>(
-      "ZDAOChef"
-    )) as MockContractFactory<ZDAOChef__factory>;
-    const ZDAOFactory = await ethers.getContractFactory("ZDAO");
+    const ZDAOChefFactory = (await smock.mock<EtherZDAOChef__factory>(
+      "EtherZDAOChef"
+    )) as MockContractFactory<EtherZDAOChef__factory>;
+    const ZDAOFactory = await ethers.getContractFactory("EtherZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
-    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<ZDAOChef>;
-    await ZDAOChef.__ZDAOChef_init(znsHubAddress, zDAOBase.address);
+    const checkPointManager = await ethers.Wallet.createRandom().getAddress();
+    const fxRoot = await ethers.Wallet.createRandom().getAddress();
+    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<EtherZDAOChef>;
+    await ZDAOChef.__ZDAOChef_init(
+      znsHubAddress,
+      zDAOBase.address,
+      checkPointManager,
+      fxRoot
+    );
 
     ZNSHub = (await smock.fake("IZNSHub", {
       address: znsHubAddress,
@@ -73,7 +80,7 @@ describe("ZDAOChef", async function () {
       token: vToken.address,
       amount: minAmount,
       minPeriod: minPeriod,
-      threshold: threshold
+      threshold: threshold,
     });
   };
 
@@ -107,11 +114,11 @@ describe("ZDAOChef", async function () {
 
     expect(zDAORecord.id).to.be.equal(daoId);
     // check if zNA owner is zDAO owner
-    const zDAO: ZDAO = (await ethers.getContractAt(
+    const zDAO = (await ethers.getContractAt(
       ZDAOJson.abi,
       zDAORecord.zDAO,
       zNAOwner
-    )) as ZDAO;
+    )) as EtherZDAO;
     expect(await zDAO.zDAOOwner()).to.be.equal(zNAOwner.address);
     // only one zNA association
     expect(zDAORecord.associatedzNAs.length).to.be.equal(1);

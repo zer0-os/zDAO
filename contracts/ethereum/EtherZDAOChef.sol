@@ -7,11 +7,16 @@ import "../interfaces/IZNSHub.sol";
 import "../helpers/Proxy.sol";
 import "../tunnel/FxBaseRootTunnel.sol";
 import "./interfaces/IRootTunnel.sol";
-import "./interfaces/IZDAOChef.sol";
-import "./ZDAO.sol";
+import "./interfaces/IEtherZDAOChef.sol";
+import "./EtherZDAO.sol";
 import "hardhat/console.sol";
 
-contract ZDAOChef is ZeroUpgradeable, FxBaseRootTunnel, IRootTunnel, IZDAOChef {
+contract EtherZDAOChef is
+  ZeroUpgradeable,
+  FxBaseRootTunnel,
+  IRootTunnel,
+  IEtherZDAOChef
+{
   address public zDAOBase;
 
   mapping(uint256 => ZDAORecord) public zDAORecords;
@@ -50,15 +55,19 @@ contract ZDAOChef is ZeroUpgradeable, FxBaseRootTunnel, IRootTunnel, IZDAOChef {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOChef_init(IZNSHub _znsHub, address _zDAOBase)
-    public
-    initializer
-  {
+  function __ZDAOChef_init(
+    IZNSHub _znsHub,
+    address _zDAOBase,
+    address _checkpointManager,
+    address _fxRoot
+  ) public initializer {
     ZeroUpgradeable.initialize();
 
     znsHub = _znsHub;
-
     zDAOBase = _zDAOBase;
+
+    checkpointManager = ICheckpointManager(_checkpointManager);
+    fxRoot = IFxStateSender(_fxRoot);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -78,7 +87,7 @@ contract ZDAOChef is ZeroUpgradeable, FxBaseRootTunnel, IRootTunnel, IZDAOChef {
     require(daoId == 0, "Do not allow to add new DAO with same zNA");
 
     // Create zDAO contract
-    ZDAO zDAO = _createZDAO(_zDAOConfig);
+    EtherZDAO zDAO = _createZDAO(_zDAOConfig);
 
     zDAORecords[lastZDAOId] = ZDAORecord({
       id: lastZDAOId,
@@ -132,6 +141,10 @@ contract ZDAOChef is ZeroUpgradeable, FxBaseRootTunnel, IRootTunnel, IZDAOChef {
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function _processMessageFromChild(bytes memory message) internal override {
+    // todo
+  }
+
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
     return zDAORecords[_index].zDAO.destroyed();
   }
@@ -139,15 +152,15 @@ contract ZDAOChef is ZeroUpgradeable, FxBaseRootTunnel, IRootTunnel, IZDAOChef {
   function _createZDAO(ZDAOConfig calldata _zDAOConfig)
     internal
     virtual
-    returns (ZDAO zDAO)
+    returns (EtherZDAO zDAO)
   {
     lastZDAOId++;
 
-    zDAO = ZDAO(
+    zDAO = EtherZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          ZDAO.__ZDAO_init.selector,
+          EtherZDAO.__ZDAO_init.selector,
           IRootTunnel(this),
           lastZDAOId,
           msg.sender,

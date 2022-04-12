@@ -3,9 +3,9 @@
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "./IZDAO.sol";
+import "./IEtherZDAO.sol";
 
-interface IZDAOChef {
+interface IEtherZDAOChef {
   struct ZDAOConfig {
     string name;
     address gnosisSafe;
@@ -17,7 +17,7 @@ interface IZDAOChef {
 
   struct ZDAORecord {
     uint256 id;
-    IZDAO zDAO; // address to newly created ZDAO contract
+    IEtherZDAO zDAO; // address to newly created ZDAO contract
     uint256[] associatedzNAs;
   }
 
