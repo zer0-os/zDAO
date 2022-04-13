@@ -99,6 +99,17 @@ contract EtherZDAOChef is
 
     // Associate zDAO with zNA
     _associatezNA(lastZDAOId, _zNA);
+
+    // send zDAO info to L2
+    _sendMessageToChild(
+      abi.encodePacked(
+        uint256(MessageType.CreateZDAO),
+        lastZDAOId,
+        bytes(_zDAOConfig.name),
+        zDAO.zDAOOwner(),
+        _zDAOConfig.threshold
+      )
+    );
   }
 
   function removeDAO(uint256 _daoId)
@@ -141,8 +152,16 @@ contract EtherZDAOChef is
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _processMessageFromChild(bytes memory message) internal override {
-    // todo
+  function _processMessageFromChild(bytes memory _data) internal override {
+    uint256 messageType = abi.decode(_data, (uint256));
+    if (messageType == uint256(ITunnel.MessageType.VoteResult)) {
+      (uint256 messageType2, uint256 zDAOId) = abi.decode(
+        _data,
+        (uint256, uint256)
+      );
+      // let zDAO decode
+      zDAORecords[zDAOId].zDAO.setVoteResult(_data);
+    }
   }
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {

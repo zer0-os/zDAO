@@ -2,6 +2,8 @@
 
 pragma solidity ^0.8.11;
 
-interface IChildTunnel {
+import "../../interfaces/ITunnel.sol";
+
+interface IChildTunnel is ITunnel {
   function sendMessageToRoot(bytes memory message) external;
 }

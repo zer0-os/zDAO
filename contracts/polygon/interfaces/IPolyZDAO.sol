@@ -4,13 +4,13 @@ pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-interface IEtherZDAO {
+interface IPolyZDAO {
   struct ZDAOInfo {
     uint256 zDAOId; // zDAO id
     address owner; // zDAO owner
     string name; // zDAO name
-    address gnosisSafe;
     IERC20Upgradeable token; // voting token
+    IERC20Upgradeable mappedToken; // mapped voting token
     uint256 amount; // minimum voting token amount to create a proposal
     uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;
@@ -22,6 +22,12 @@ interface IEtherZDAO {
     Active,
     Executed,
     Deleted
+  }
+
+  enum VoterChoice {
+    None,
+    Yes,
+    No
   }
 
   struct Proposal {
@@ -41,7 +47,8 @@ interface IEtherZDAO {
 
   /* -------------------------------------------------------------------------- */
   /*                                   Events                                   */
-  /* -------------------------------------------------------------------------- */
+  /* --------------------------------------------------------------------------
+   */
 
   event ProposalCreated(
     uint256 indexed _zDAOId,
@@ -53,20 +60,19 @@ interface IEtherZDAO {
 
   event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
 
-  event ProposalCollected(
+  event CastVote(
     uint256 indexed _zDAOId,
-    uint256 indexed _propoalId,
-    uint256 yes,
-    uint256 no
+    uint256 indexed _proposalId,
+    uint256 _choice
   );
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setDestroyed(bool _destroyed) external;
-
   function createProposal(
+    uint256 _proposalId,
+    address _createdBy,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
     IERC20Upgradeable _token,
@@ -74,13 +80,15 @@ interface IEtherZDAO {
     bytes32 _ipfs
   ) external;
 
-  function executeProposal(uint256 _proposalId) external;
+  function vote(uint256 _proposalId, VoterChoice _choice) external;
 
-  function setVoteResult(bytes calldata _data) external;
+  function collectResult(uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
+
+  function zDAOId() external view returns (uint256);
 
   function zDAOOwner() external view returns (address);
 
@@ -92,4 +100,16 @@ interface IEtherZDAO {
     external
     view
     returns (Proposal[] memory);
+
+  function canVote(uint256 _proposalId, address _voter)
+    external
+    view
+    returns (bool);
+
+  function canCollectResult(uint256 _proposalId) external view returns (bool);
+
+  function getVoterChoice(uint256 _proposalId, address _voter)
+    external
+    view
+    returns (VoterChoice);
 }

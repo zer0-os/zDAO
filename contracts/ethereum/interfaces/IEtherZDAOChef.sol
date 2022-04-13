@@ -12,6 +12,7 @@ interface IEtherZDAOChef {
     IERC20Upgradeable token;
     uint256 amount;
     uint256 minPeriod; // minimum voting period
+    bool isRelativeMajority;
     uint256 threshold; // percent in 10000 as 100%
   }
 

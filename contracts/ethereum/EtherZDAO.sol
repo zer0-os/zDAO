@@ -15,13 +15,21 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   uint256 private lastProposalId;
   mapping(uint256 => Proposal) public proposals;
+  uint256[] public proposalIds;
+
   IRootTunnel public rootTunnel;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
+
   modifier onlyZDAOOwner() {
     require(msg.sender == zDAOInfo.owner, "Not a zDAO Owner");
+    _;
+  }
+
+  modifier onlyRootTunnel() {
+    require(msg.sender == address(rootTunnel), "Not a ZDAOChef");
     _;
   }
 
@@ -51,6 +59,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       token: IERC20Upgradeable(_zDAOConfig.token),
       amount: _zDAOConfig.amount,
       minPeriod: _zDAOConfig.minPeriod,
+      isRelativeMajority: _zDAOConfig.isRelativeMajority,
       threshold: _zDAOConfig.threshold,
       destroyed: false
     });
@@ -79,7 +88,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   function createProposal(
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    bool _isRelativeMajority,
     IERC20Upgradeable _token,
     uint256 _amount,
     bytes32 _ipfs
@@ -87,7 +95,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     uint256 proposalId = _createProposal(
       _startTimestamp,
       _endTimestamp,
-      _isRelativeMajority,
       _token,
       _amount,
       _ipfs
@@ -98,14 +105,51 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       msg.sender,
       proposalId,
       _startTimestamp,
-      _endTimestamp,
-      _isRelativeMajority
+      _endTimestamp
+    );
+
+    // send proposal info to L2
+    rootTunnel.sendMessageToChild(
+      abi.encodePacked(
+        uint256(ITunnel.MessageType.CreateProposal),
+        zDAOInfo.zDAOId,
+        proposalId,
+        msg.sender,
+        _startTimestamp,
+        _endTimestamp,
+        address(_token),
+        _amount,
+        _ipfs
+      )
     );
   }
 
   function executeProposal(uint256 _proposalId) external override {
     // TODO
     emit ProposalExecuted(zDAOInfo.zDAOId, _proposalId);
+  }
+
+  function setVoteResult(bytes calldata _data)
+    external
+    override
+    onlyRootTunnel
+  {
+    (
+      uint256 messageType,
+      uint256 zDAOId,
+      uint256 proposalId,
+      uint256 yes,
+      uint256 no
+    ) = abi.decode(_data, (uint256, uint256, uint256, uint256, uint256));
+
+    require(zDAOInfo.zDAOId == zDAOId);
+
+    Proposal storage proposal = proposals[proposalId];
+    require(proposal.proposalId == proposalId, "Invalid proposal");
+    proposal.yes = yes;
+    proposal.no = no;
+
+    emit ProposalCollected(zDAOInfo.zDAOId, proposalId, yes, no);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -115,7 +159,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   function _createProposal(
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    bool _isRelativeMajority,
     IERC20Upgradeable _token,
     uint256 _amount,
     bytes32 _ipfs
@@ -127,16 +170,16 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       createdBy: msg.sender,
       startTimestamp: _startTimestamp,
       endTimestamp: _endTimestamp,
-      threshold: zDAOInfo.threshold,
       yes: 0,
       no: 0,
       reserved: 0,
-      isRelativeMajority: _isRelativeMajority,
       ipfs: _ipfs,
       token: _token,
       amount: _amount,
       state: ProposalState.Active
     });
+    proposalIds.push(lastProposalId);
+
     return lastProposalId;
   }
 
