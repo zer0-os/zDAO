@@ -9,12 +9,13 @@ interface IPolyZDAO {
     uint256 zDAOId; // zDAO id
     address owner; // zDAO owner
     string name; // zDAO name
-    IERC20Upgradeable token; // voting token
-    IERC20Upgradeable mappedToken; // mapped voting token
-    uint256 amount; // minimum voting token amount to create a proposal
-    uint256 minPeriod; // minimum voting period
+    // IERC20Upgradeable token; // voting token
+    // IERC20Upgradeable mappedToken; // mapped voting token
+    // uint256 amount; // minimum voting token amount to create a proposal
+    // uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;
     uint256 threshold; // percent in 10000 as 100%
+    uint256 snapshot;
     bool destroyed;
   }
 
@@ -42,6 +43,7 @@ interface IPolyZDAO {
     bytes32 ipfs;
     IERC20Upgradeable token;
     uint256 amount;
+    uint256 snapshot;
     ProposalState state;
   }
 

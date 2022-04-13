@@ -71,8 +71,9 @@ contract PolyZDAOChef is
       uint256 zDAOId,
       bytes memory name,
       address owner,
+      bool isRelativeMajority,
       uint256 threshold
-    ) = abi.decode(data, (uint256, uint256, bytes, address, uint256));
+    ) = abi.decode(data, (uint256, uint256, bytes, address, bool, uint256));
 
     PolyZDAO zDAO = PolyZDAO(
       createProxy(
@@ -81,8 +82,9 @@ contract PolyZDAOChef is
           PolyZDAO.__ZDAO_init.selector,
           IChildTunnel(this),
           zDAOId,
-          owner,
           string(name),
+          owner,
+          isRelativeMajority,
           threshold
         )
       )
@@ -161,7 +163,7 @@ contract PolyZDAOChef is
     IPolyZDAO[] memory records = new IPolyZDAO[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAOs[zDAOIds[_startIndex + i]];
+      records[i] = zDAOs[zDAOIds[_startIndex + i - 1]];
     }
 
     return records;

@@ -47,9 +47,13 @@ describe("ZDAO", async function () {
     const zDAOBase = await ZDAOFactory.deploy();
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
-    const checkPointManager = (await smock.fake("ICheckpointManager")) as FakeContract<ICheckpointManager>;
-    const fxRoot = (await smock.fake("IFxStateSender")) as FakeContract<IFxStateSender>;
-    
+    const checkPointManager = (await smock.fake(
+      "ICheckpointManager"
+    )) as FakeContract<ICheckpointManager>;
+    const fxRoot = (await smock.fake(
+      "IFxStateSender"
+    )) as FakeContract<IFxStateSender>;
+
     const ZDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<EtherZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
@@ -112,8 +116,8 @@ describe("ZDAO", async function () {
     return zDAO.connect(user).createProposal(
       startTimestamp,
       endTimestamp,
-      zDAOInfo.token,
-      zDAOInfo.amount.toString(),
+      vToken.address,
+      minAmount.toString(),
       "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486" // random byte32 string
     );
   };

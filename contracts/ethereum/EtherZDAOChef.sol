@@ -107,6 +107,7 @@ contract EtherZDAOChef is
         lastZDAOId,
         bytes(_zDAOConfig.name),
         zDAO.zDAOOwner(),
+        _zDAOConfig.isRelativeMajority,
         _zDAOConfig.threshold
       )
     );

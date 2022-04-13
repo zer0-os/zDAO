@@ -15,6 +15,7 @@ interface IEtherZDAO {
     uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;
     uint256 threshold; // percent in 10000 as 100%
+    uint256 snapshot;
     bool destroyed;
   }
 
@@ -36,6 +37,7 @@ interface IEtherZDAO {
     bytes32 ipfs;
     IERC20Upgradeable token;
     uint256 amount;
+    uint256 snapshot;
     ProposalState state;
   }
 

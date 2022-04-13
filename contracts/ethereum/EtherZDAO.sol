@@ -61,6 +61,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       minPeriod: _zDAOConfig.minPeriod,
       isRelativeMajority: _zDAOConfig.isRelativeMajority,
       threshold: _zDAOConfig.threshold,
+      snapshot: block.number,
       destroyed: false
     });
   }
@@ -176,6 +177,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       ipfs: _ipfs,
       token: _token,
       amount: _amount,
+      snapshot: block.number,
       state: ProposalState.Active
     });
     proposalIds.push(lastProposalId);

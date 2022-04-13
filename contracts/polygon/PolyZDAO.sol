@@ -30,10 +30,26 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAO_init(IChildTunnel _childTunnel) public initializer {
+  function __ZDAO_init(
+    IChildTunnel _childTunnel,
+    uint256 _zDAOId,
+    string memory _name,
+    address _zDAOOwner,
+    bool _isRelativeMajority,
+    uint256 _threshold
+  ) public initializer {
     ZeroUpgradeable.initialize();
 
     childTunnel = _childTunnel;
+    zDAOInfo = ZDAOInfo({
+      zDAOId: _zDAOId,
+      owner: _zDAOOwner,
+      name: _name,
+      isRelativeMajority: _isRelativeMajority,
+      threshold: _threshold,
+      snapshot: block.number,
+      destroyed: false
+    });
   }
 
   /* -------------------------------------------------------------------------- */
@@ -49,7 +65,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     uint256 _amount,
     bytes32 _ipfs
   ) external onlyChildTunnel {
-    uint256 proposalId = _createProposal(
+    _createProposal(
       _proposalId,
       _createdBy,
       _startTimestamp,
@@ -62,7 +78,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     emit ProposalCreated(
       zDAOInfo.zDAOId,
       _createdBy,
-      proposalId,
+      _proposalId,
       _startTimestamp,
       _endTimestamp
     );
@@ -126,7 +142,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     IERC20Upgradeable _token,
     uint256 _amount,
     bytes32 _ipfs
-  ) internal virtual returns (uint256) {
+  ) internal virtual {
     require(proposals[_proposalId].proposalId == 0, "Already proposal created");
     proposals[_proposalId] = Proposal({
       proposalId: _proposalId,
@@ -139,6 +155,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       ipfs: _ipfs,
       token: _token,
       amount: _amount,
+      snapshot: block.number,
       state: IPolyZDAO.ProposalState.Active
     });
     proposalIds.push(_proposalId);
@@ -221,7 +238,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     Proposal[] memory records = new Proposal[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = proposals[proposalIds[_startIndex + i]];
+      records[i] = proposals[proposalIds[_startIndex + i - 1]];
     }
 
     return records;
