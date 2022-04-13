@@ -16,6 +16,8 @@ import {
   EtherZDAOChef__factory,
   EtherZDAO,
   EtherZDAOChef,
+  ICheckpointManager,
+  IFxStateSender,
 } from "../../types";
 
 chai.use(smock.matchers);
@@ -45,15 +47,16 @@ describe("ZDAO", async function () {
     const zDAOBase = await ZDAOFactory.deploy();
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
-    const checkPointManager = await ethers.Wallet.createRandom().getAddress();
-    const fxRoot = await ethers.Wallet.createRandom().getAddress();
+    const checkPointManager = (await smock.fake("ICheckpointManager")) as FakeContract<ICheckpointManager>;
+    const fxRoot = (await smock.fake("IFxStateSender")) as FakeContract<IFxStateSender>;
+    
     const ZDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<EtherZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       znsHubAddress,
       zDAOBase.address,
-      checkPointManager,
-      fxRoot
+      checkPointManager.address,
+      fxRoot.address
     );
 
     const ZNSHub = (await smock.fake("IZNSHub", {
@@ -99,8 +102,7 @@ describe("ZDAO", async function () {
 
   const createProposal = async (
     user: SignerWithAddress,
-    blocks = 30,
-    isRelativeMajority = false
+    blocks = 30
   ): Promise<ContractTransaction> => {
     const blockNumber = await ethers.provider.getBlockNumber();
     const blockTime = 13;
@@ -110,7 +112,6 @@ describe("ZDAO", async function () {
     return zDAO.connect(user).createProposal(
       startTimestamp,
       endTimestamp,
-      isRelativeMajority,
       zDAOInfo.token,
       zDAOInfo.amount.toString(),
       "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486" // random byte32 string

@@ -14,7 +14,9 @@ import {
   EtherZDAO,
   EtherZDAOChef,
   EtherZDAOChef__factory,
+  ICheckpointManager,
   IERC20Upgradeable,
+  IFxStateSender,
   IZNSHub,
 } from "../../types";
 
@@ -49,14 +51,15 @@ describe("ZDAOChef", async function () {
     const zDAOBase = await ZDAOFactory.deploy();
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
-    const checkPointManager = await ethers.Wallet.createRandom().getAddress();
-    const fxRoot = await ethers.Wallet.createRandom().getAddress();
+    const checkPointManager = (await smock.fake("ICheckpointManager")) as FakeContract<ICheckpointManager>;
+    const fxRoot = (await smock.fake("IFxStateSender")) as FakeContract<IFxStateSender>;
+
     ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<EtherZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       znsHubAddress,
       zDAOBase.address,
-      checkPointManager,
-      fxRoot
+      checkPointManager.address,
+      fxRoot.address
     );
 
     ZNSHub = (await smock.fake("IZNSHub", {
