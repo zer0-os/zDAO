@@ -20,6 +20,8 @@ export interface PolyZDAOConfig {
   zDAOId: number;
   name: string;
   owner: string;
+  token: string;
+  mappedToken: string;
   isRelativeMajority: boolean;
   threshold: number;
 }

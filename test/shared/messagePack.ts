@@ -11,18 +11,20 @@ export interface CreateZDAOPack {
   lastZDAOId: number;
   name: string;
   zDAOOwner: string;
+  token: string;
   isRelativeMajority: boolean;
   threshold: number;
 }
 
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "string", "address", "bool", "uint256"],
+    ["uint256", "uint256", "string", "address", "address", "bool", "uint256"],
     [
       MessageType.CreateZDAO,
       pack.lastZDAOId,
       pack.name,
       pack.zDAOOwner,
+      pack.token,
       pack.isRelativeMajority,
       pack.threshold,
     ]

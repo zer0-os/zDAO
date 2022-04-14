@@ -7,10 +7,10 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 interface IPolyZDAO {
   struct ZDAOInfo {
     uint256 zDAOId; // zDAO id
-    address owner; // zDAO owner
     string name; // zDAO name
-    // IERC20Upgradeable token; // voting token
-    // IERC20Upgradeable mappedToken; // mapped voting token
+    address owner; // zDAO owner
+    IERC20Upgradeable token; // voting token
+    IERC20Upgradeable mappedToken; // mapped voting token
     // uint256 amount; // minimum voting token amount to create a proposal
     // uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;
@@ -60,12 +60,17 @@ interface IPolyZDAO {
     uint256 _endTimestamp
   );
 
-  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
+  event CollectResult(
+    uint256 indexed _zDAOId,
+    uint256 indexed _proposalId,
+    uint256 yes,
+    uint256 no
+  );
 
   event CastVote(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
-    uint256 indexed _voter,
+    address indexed _voter,
     uint256 _choice
   );
 

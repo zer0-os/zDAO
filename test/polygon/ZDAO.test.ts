@@ -14,6 +14,8 @@ import {
   PolyZDAO__factory,
   IChildTunnel,
 } from "../../types";
+import { Staking__factory } from "../../types/factories/Staking__factory";
+import { Staking } from "../../types/Staking";
 import { PolyProposalConfig, PolyZDAOConfig } from "../shared/types";
 import { increaseTime, now } from "../shared/utilities";
 
@@ -26,8 +28,10 @@ describe("ZDAO", async function () {
     userC: SignerWithAddress;
 
   let childTunnel: FakeContract<IChildTunnel>,
+    staking: MockContract<Staking>,
     zDAO: MockContract<PolyZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
+    vPolyToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
   let zDAOConfig: PolyZDAOConfig, proposalConfig: PolyProposalConfig;
@@ -44,6 +48,21 @@ describe("ZDAO", async function () {
       "IChildTunnel"
     )) as FakeContract<IChildTunnel>;
 
+    const StakingFactory = (await smock.mock<Staking__factory>(
+      "Staking"
+    )) as MockContractFactory<Staking__factory>;
+    staking = (await StakingFactory.deploy()) as MockContract<Staking>;
+    await staking.__Staking_init();
+
+    vToken = (await smock.fake(
+      "IERC20Upgradeable"
+    )) as FakeContract<IERC20Upgradeable>;
+
+    // vPolyToken is mapped token on Polygon from vToken
+    vPolyToken = (await smock.fake(
+      "IERC20Upgradeable"
+    )) as FakeContract<IERC20Upgradeable>;
+
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
     const minPeriod = 30; // unit in seconds
@@ -52,18 +71,25 @@ describe("ZDAO", async function () {
       zDAOId,
       name: "Mock zDAO",
       owner: owner.address,
+      token: vToken.address,
+      mappedToken: vPolyToken.address,
       isRelativeMajority: false,
       threshold: 5000,
     };
 
     await zDAO.__ZDAO_init(
       childTunnel.address,
+      staking.address,
       zDAOConfig.zDAOId,
       zDAOConfig.name,
       zDAOConfig.owner,
+      zDAOConfig.token,
+      zDAOConfig.mappedToken,
       zDAOConfig.isRelativeMajority,
       zDAOConfig.threshold
     );
+
+    await staking.grantRole(await staking.LOCKER_ROLE(), zDAO.address);
 
     vToken = (await smock.fake(
       "IERC20Upgradeable"
@@ -76,7 +102,7 @@ describe("ZDAO", async function () {
       createdBy: userA.address,
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
-      token: vToken.address,
+      token: vToken.address, // should be token address on Ethereum
       amount: minAmount.toNumber(),
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
@@ -86,6 +112,8 @@ describe("ZDAO", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOConfig.zDAOId);
     expect(zDAOInfo.owner).to.be.equal(zDAOConfig.owner);
     expect(zDAOInfo.name).to.be.equal(zDAOConfig.name);
+    expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
+    expect(zDAOInfo.mappedToken).to.be.equal(zDAOConfig.mappedToken);
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );
@@ -125,12 +153,19 @@ describe("ZDAO", async function () {
     expect(proposals[0].token).to.be.equal(vToken.address);
   });
 
-  it("Anyone should be able to vote on proposal", async function () {
+  it("Any staker should be able to vote on proposal", async function () {
     await zDAO.setVariable("childTunnel", userA.address);
     await createProposal(userA);
 
+    staking.userStaked
+      .whenCalledWith(userB.address, zDAOConfig.mappedToken)
+      .returns(BigNumber.from(100000));
+
     const proposalId = 1;
     const choice = 1; // yes
+
+    await zDAO.connect(userB).vote(proposalId, choice);
+
     await expect(zDAO.connect(userB).vote(proposalId, choice)).to.be.not
       .reverted;
 
@@ -145,6 +180,18 @@ describe("ZDAO", async function () {
   it("Only can collect voting result after proposal ends", async function () {
     await zDAO.setVariable("childTunnel", userA.address);
     await createProposal(userA);
+
+    staking.userStaked
+      .whenCalledWith(userA.address, zDAOConfig.mappedToken)
+      .returns(BigNumber.from(100000));
+
+    staking.userStaked
+      .whenCalledWith(userB.address, zDAOConfig.mappedToken)
+      .returns(BigNumber.from(100000));
+
+    staking.userStaked
+      .whenCalledWith(userC.address, zDAOConfig.mappedToken)
+      .returns(BigNumber.from(100000));
 
     const proposalId = 1;
     const choice = 1; // yes

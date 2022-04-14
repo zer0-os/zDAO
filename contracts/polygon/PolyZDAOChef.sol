@@ -9,6 +9,8 @@ import "./interfaces/IChildTunnel.sol";
 import "./interfaces/IPolyZDAOChef.sol";
 import "../helpers/Proxy.sol";
 import "./PolyZDAO.sol";
+import "./Registry.sol";
+import "./Staking.sol";
 
 contract PolyZDAOChef is
   ZeroUpgradeable,
@@ -16,6 +18,8 @@ contract PolyZDAOChef is
   IChildTunnel,
   IPolyZDAOChef
 {
+  Staking public staking;
+  Registry public registry;
   address public zDAOBase;
 
   mapping(uint256 => PolyZDAO) public zDAOs;
@@ -29,12 +33,16 @@ contract PolyZDAOChef is
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOChef_init(address _zDAOBase, address _fxChild)
-    public
-    initializer
-  {
+  function __ZDAOChef_init(
+    Staking _stakingBase,
+    Registry _registry,
+    address _zDAOBase,
+    address _fxChild
+  ) public initializer {
     ZeroUpgradeable.initialize();
 
+    staking = _stakingBase;
+    registry = _registry;
     zDAOBase = _zDAOBase;
     fxChild = _fxChild;
   }
@@ -73,9 +81,13 @@ contract PolyZDAOChef is
       uint256 zDAOId,
       bytes memory name,
       address owner,
+      address token,
       bool isRelativeMajority,
       uint256 threshold
-    ) = abi.decode(data, (uint256, uint256, bytes, address, bool, uint256));
+    ) = abi.decode(
+        data,
+        (uint256, uint256, bytes, address, address, bool, uint256)
+      );
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
@@ -85,9 +97,12 @@ contract PolyZDAOChef is
         abi.encodeWithSelector(
           PolyZDAO.__ZDAO_init.selector,
           IChildTunnel(this),
+          staking,
           zDAOId,
           string(name),
           owner,
+          token,
+          registry.rootToChildToken(token), // mapped token from Ethereum
           isRelativeMajority,
           threshold
         )
@@ -96,6 +111,9 @@ contract PolyZDAOChef is
 
     zDAOs[zDAOId] = zDAO;
     zDAOIds.push(zDAOId);
+
+    // grant locker role to new zDAO
+    staking.grantRole(staking.LOCKER_ROLE(), address(zDAO));
 
     emit DAOCreated(zDAOId, msg.sender, address(zDAO));
 

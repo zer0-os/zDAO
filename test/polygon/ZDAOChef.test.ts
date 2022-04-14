@@ -6,7 +6,7 @@ import {
 } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
-import { BigNumber, ContractTransaction } from "ethers";
+import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
 import ZDAOJson from "../../artifacts/contracts/polygon/PolyZDAO.sol/PolyZDAO.json";
 import {
@@ -14,8 +14,11 @@ import {
   PolyZDAOChef,
   PolyZDAOChef__factory,
   IERC20Upgradeable,
-  IZNSHub,
 } from "../../types";
+import { Registry__factory } from "../../types/factories/Registry__factory";
+import { Staking__factory } from "../../types/factories/Staking__factory";
+import { Registry } from "../../types/Registry";
+import { Staking } from "../../types/Staking";
 import {
   CreateProposalPack,
   CreateZDAOPack,
@@ -33,13 +36,11 @@ describe("ZDAOChef", async function () {
     zDAOOwner: SignerWithAddress,
     userA: SignerWithAddress;
 
-  let ZNSHub: FakeContract<IZNSHub>,
+  let staking: MockContract<Staking>,
+    registry: MockContract<Registry>,
     ZDAOChef: MockContract<PolyZDAOChef>,
-    vToken: FakeContract<IERC20Upgradeable>;
-  let gnosisSafe: string;
-  const minAmount = BigNumber.from("10000");
-  const minPeriod = 300; // unit in seconds
-  const threshold = 5000; // 100% percent in 10000
+    vToken: FakeContract<IERC20Upgradeable>,
+    vPolyToken: FakeContract<IERC20Upgradeable>;
 
   let zDAOPack: CreateZDAOPack, proposalPack: CreateProposalPack;
 
@@ -52,19 +53,58 @@ describe("ZDAOChef", async function () {
     const ZDAOFactory = await ethers.getContractFactory("PolyZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
+    const StakingFactory = (await smock.mock<Staking__factory>(
+      "Staking"
+    )) as MockContractFactory<Staking__factory>;
+    staking = (await StakingFactory.deploy()) as MockContract<Staking>;
+    await staking.__Staking_init();
+
+    const RegistryFactory = (await smock.mock<Registry__factory>(
+      "Registry"
+    )) as MockContractFactory<Registry__factory>;
+    registry = (await RegistryFactory.deploy()) as MockContract<Registry>;
+    await registry.__Registry_init();
+
     ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<PolyZDAOChef>;
-    await ZDAOChef.__ZDAOChef_init(zDAOBase.address, fxChild.address);
+    await ZDAOChef.__ZDAOChef_init(
+      staking.address,
+      registry.address,
+      zDAOBase.address,
+      fxChild.address
+    );
+
+    // remember: transfer admin role to zDAOChef
+    await staking.grantRole(
+      await staking.DEFAULT_ADMIN_ROLE(),
+      ZDAOChef.address
+    );
 
     vToken = (await smock.fake(
       "IERC20Upgradeable"
     )) as FakeContract<IERC20Upgradeable>;
 
-    gnosisSafe = await ethers.Wallet.createRandom().getAddress();
+    // vPolyToken is mapped token on Polygon from vToken
+    vPolyToken = (await smock.fake(
+      "IERC20Upgradeable"
+    )) as FakeContract<IERC20Upgradeable>;
+
+    // remember: mapping tokens between Ethereum and Polygon
+    registry.rootToChildToken
+      .whenCalledWith(vToken.address)
+      .returns(vPolyToken.address);
+    registry.childToRootToken
+      .whenCalledWith(vPolyToken.address)
+      .returns(vToken.address);
+
+    const minAmount = BigNumber.from("10000");
+    const minPeriod = 300; // unit in seconds
+    const threshold = 5000; // 100% percent in 10000
 
     zDAOPack = {
       lastZDAOId: 1,
       name: "Mock ZDAO",
       zDAOOwner: zDAOOwner.address,
+      token: vToken.address, // token address on Ethereum
       isRelativeMajority: true,
       threshold: threshold,
     };
@@ -75,7 +115,7 @@ describe("ZDAOChef", async function () {
       createdBy: userA.address,
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
-      token: vToken.address,
+      token: vToken.address, // token address on Ethereum
       amount: minAmount.toNumber(),
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
@@ -127,6 +167,8 @@ describe("ZDAOChef", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOPack.lastZDAOId);
     expect(zDAOInfo.name).to.be.equal(zDAOPack.name);
     expect(zDAOInfo.owner).to.be.equal(zDAOPack.zDAOOwner);
+    expect(zDAOInfo.token).to.be.equal(zDAOPack.token);
+    // mapped token
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOPack.isRelativeMajority
     );
