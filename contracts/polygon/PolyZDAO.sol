@@ -104,7 +104,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
     _vote(_proposalId, msg.sender, _choice);
 
-    emit CastVote(zDAOInfo.zDAOId, _proposalId, uint256(_choice));
+    emit CastVote(zDAOInfo.zDAOId, _proposalId, msg.sender, uint256(_choice));
   }
 
   function collectResult(uint256 _proposalId) external isActiveDAO {

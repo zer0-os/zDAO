@@ -65,6 +65,7 @@ interface IPolyZDAO {
   event CastVote(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
+    uint256 indexed _voter,
     uint256 _choice
   );
 
