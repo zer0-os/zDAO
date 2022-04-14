@@ -75,6 +75,8 @@ contract PolyZDAOChef is
       uint256 threshold
     ) = abi.decode(data, (uint256, uint256, bytes, address, bool, uint256));
 
+    require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
+
     PolyZDAO zDAO = PolyZDAO(
       createProxy(
         zDAOBase,
@@ -124,7 +126,8 @@ contract PolyZDAOChef is
         )
       );
 
-    require(zDAOs[zDAOId].zDAOId() == zDAOId, "zDAO Not created yet");
+    require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
+    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
 
     zDAOs[zDAOId].createProposal(
       proposalId,

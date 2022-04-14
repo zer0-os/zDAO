@@ -102,7 +102,7 @@ contract EtherZDAOChef is
 
     // send zDAO info to L2
     _sendMessageToChild(
-      abi.encodePacked(
+      abi.encode(
         uint256(MessageType.CreateZDAO),
         lastZDAOId,
         bytes(_zDAOConfig.name),

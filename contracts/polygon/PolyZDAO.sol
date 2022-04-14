@@ -65,6 +65,11 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     uint256 _amount,
     bytes32 _ipfs
   ) external onlyChildTunnel {
+    require(
+      _proposalId > 0 && proposals[_proposalId].proposalId == 0,
+      "Proposal was already created"
+    );
+
     _createProposal(
       _proposalId,
       _createdBy,
@@ -99,7 +104,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     Proposal storage proposal = proposals[_proposalId];
     // send collected result to L1
     childTunnel.sendMessageToRoot(
-      abi.encodePacked(
+      abi.encode(
         uint256(ITunnel.MessageType.VoteResult),
         zDAOInfo.zDAOId,
         _proposalId,

@@ -111,7 +111,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
     // send proposal info to L2
     rootTunnel.sendMessageToChild(
-      abi.encodePacked(
+      abi.encode(
         uint256(ITunnel.MessageType.CreateProposal),
         zDAOInfo.zDAOId,
         proposalId,

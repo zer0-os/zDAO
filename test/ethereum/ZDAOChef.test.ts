@@ -19,6 +19,7 @@ import {
   IFxStateSender,
   IZNSHub,
 } from "../../types";
+import { ZDAOConfig } from "../shared/types";
 
 chai.use(smock.matchers);
 
@@ -36,10 +37,8 @@ describe("ZDAOChef", async function () {
   let ZNSHub: FakeContract<IZNSHub>,
     ZDAOChef: MockContract<EtherZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
-  let gnosisSafe: string;
-  const minAmount = BigNumber.from("10000");
-  const minPeriod = 30; // unit in seconds
-  const threshold = 5000; // 100% percent in 10000
+
+  let zDAOConfig: ZDAOConfig;
 
   beforeEach("init setup", async function () {
     [owner, zNAOwner, zNAOwner2, userA] = await ethers.getSigners();
@@ -77,18 +76,24 @@ describe("ZDAOChef", async function () {
       "IERC20Upgradeable"
     )) as FakeContract<IERC20Upgradeable>;
 
-    gnosisSafe = await ethers.Wallet.createRandom().getAddress();
-  });
+    const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
+    const minAmount = BigNumber.from("10000");
+    const minPeriod = 30; // unit in seconds
+    const threshold = 5000; // 100% percent in 10000
 
-  const addNewDAO = (user: SignerWithAddress): Promise<ContractTransaction> => {
-    return ZDAOChef.connect(user).addNewDAO(zNAAsNumber, {
+    zDAOConfig = {
       name: `${zNA}.dao`,
       gnosisSafe: gnosisSafe,
       token: vToken.address,
-      amount: minAmount,
+      amount: minAmount.toNumber(),
       minPeriod: minPeriod,
+      isRelativeMajority: true,
       threshold: threshold,
-    });
+    };
+  });
+
+  const addNewDAO = (user: SignerWithAddress): Promise<ContractTransaction> => {
+    return ZDAOChef.connect(user).addNewDAO(zNAAsNumber, zDAOConfig);
   };
 
   it("Only zNA owner can add new DAO", async function () {
