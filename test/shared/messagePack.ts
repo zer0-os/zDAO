@@ -2,8 +2,9 @@ import { ethers } from "ethers";
 
 enum MessageType {
   CreateZDAO = 1,
-  CreateProposal = 2,
-  VoteResult = 3,
+  DeleteZDAO = 2,
+  CreateProposal = 3,
+  VoteResult = 4,
 }
 
 export interface CreateZDAOPack {
@@ -25,6 +26,17 @@ export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
       pack.isRelativeMajority,
       pack.threshold,
     ]
+  );
+};
+
+export interface DeleteZDAOPack {
+  zDAOId: number;
+}
+
+export const encodeDeleteZDAO = (pack: DeleteZDAOPack): string => {
+  return ethers.utils.defaultAbiCoder.encode(
+    ["uint256", "uint256"],
+    [MessageType.DeleteZDAO, pack.zDAOId]
   );
 };
 

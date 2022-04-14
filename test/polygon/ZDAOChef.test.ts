@@ -21,6 +21,7 @@ import {
   CreateZDAOPack,
   encodeCreateProposal,
   encodeCreateZDAO,
+  encodeDeleteZDAO,
 } from "../shared/messagePack";
 import { now } from "../shared/utilities";
 
@@ -90,6 +91,18 @@ describe("ZDAOChef", async function () {
     );
   };
 
+  const deleteZDAO = () => {
+    const message = encodeDeleteZDAO({
+      zDAOId: zDAOPack.lastZDAOId,
+    });
+
+    return ZDAOChef.connect(fxChild).processMessageFromRoot(
+      1,
+      userA.address,
+      message
+    );
+  };
+
   const createProposal = () => {
     const messageProposal = encodeCreateProposal(proposalPack);
 
@@ -142,8 +155,23 @@ describe("ZDAOChef", async function () {
     expect(zDAOAddrs[0]).to.be.equal(zDAOAddr);
   });
 
-  it("Only owner can remove DAO", async function () {
-    // todo
+  it("Should be able to delete zDAO from the message", async function () {
+    await createZDAO();
+
+    await expect(deleteZDAO()).to.be.not.reverted;
+
+    // check if zDAO is destroyed
+    const zDAOAddr = await ZDAOChef.getzDAOById(1);
+    const zDAO = (await ethers.getContractAt(
+      ZDAOJson.abi,
+      zDAOAddr,
+      zDAOOwner
+    )) as PolyZDAO;
+
+    expect(await zDAO.destroyed()).to.be.equal(true);
+
+    // check if revert to create proposal on deleted zDAO
+    await expect(createProposal()).to.be.revertedWith("Already destroyed");
   });
 
   it("Should be able to create proposal from the message", async function () {

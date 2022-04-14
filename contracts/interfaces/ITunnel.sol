@@ -6,6 +6,7 @@ interface ITunnel {
   enum MessageType {
     None,
     CreateZDAO,
+    DeleteZDAO,
     CreateProposal,
     VoteResult
   }

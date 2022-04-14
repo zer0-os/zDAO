@@ -26,6 +26,11 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     _;
   }
 
+  modifier isActiveDAO() {
+    require(!zDAOInfo.destroyed, "Already destroyed");
+    _;
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
@@ -56,6 +61,10 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setDestroyed(bool _destroyed) external override onlyChildTunnel {
+    zDAOInfo.destroyed = _destroyed;
+  }
+
   function createProposal(
     uint256 _proposalId,
     address _createdBy,
@@ -64,7 +73,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     IERC20Upgradeable _token, // token on Etherem
     uint256 _amount,
     bytes32 _ipfs
-  ) external onlyChildTunnel {
+  ) external isActiveDAO onlyChildTunnel {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
@@ -89,7 +98,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     );
   }
 
-  function vote(uint256 _proposalId, VoterChoice _choice) external {
+  function vote(uint256 _proposalId, VoterChoice _choice) external isActiveDAO {
     require(_choice != VoterChoice.None, "Invalid choice");
     require(_canVote(_proposalId, msg.sender), "Not valid for voting");
 
@@ -98,7 +107,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     emit CastVote(zDAOInfo.zDAOId, _proposalId, uint256(_choice));
   }
 
-  function collectResult(uint256 _proposalId) external {
+  function collectResult(uint256 _proposalId) external isActiveDAO {
     require(_canCollectResult(_proposalId), "Not valid for collecting result");
 
     Proposal storage proposal = proposals[_proposalId];

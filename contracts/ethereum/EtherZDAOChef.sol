@@ -122,6 +122,9 @@ contract EtherZDAOChef is
     zDAORecords[_daoId].zDAO.setDestroyed(true);
 
     emit DAODestroyed(_daoId);
+
+    // send zDAO info to L2
+    _sendMessageToChild(abi.encode(uint256(MessageType.DeleteZDAO), _daoId));
   }
 
   function addZNAAssociation(uint256 _daoId, uint256 _zNA)

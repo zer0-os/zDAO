@@ -14,10 +14,7 @@ import {
   PolyZDAO__factory,
   IChildTunnel,
 } from "../../types";
-import {
-  PolyProposalConfig,
-  PolyZDAOConfig,
-} from "../shared/types";
+import { PolyProposalConfig, PolyZDAOConfig } from "../shared/types";
 import { increaseTime, now } from "../shared/utilities";
 
 chai.use(smock.matchers);

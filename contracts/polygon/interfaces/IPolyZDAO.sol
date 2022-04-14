@@ -72,6 +72,8 @@ interface IPolyZDAO {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setDestroyed(bool _destroyed) external;
+
   function createProposal(
     uint256 _proposalId,
     address _createdBy,

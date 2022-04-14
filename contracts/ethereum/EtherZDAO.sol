@@ -41,6 +41,11 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     _;
   }
 
+  modifier isActiveDAO() {
+    require(!zDAOInfo.destroyed, "Already destroyed");
+    _;
+  }
+
   function __ZDAO_init(
     IRootTunnel _rootTunnel,
     uint256 _zDAOId,
@@ -70,7 +75,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setDestroyed(bool _destroyed) external override onlyOwner {
+  function setDestroyed(bool _destroyed) external override onlyRootTunnel {
     zDAOInfo.destroyed = _destroyed;
   }
 
@@ -92,7 +97,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     IERC20Upgradeable _token,
     uint256 _amount,
     bytes32 _ipfs
-  ) external override onlyValidTokenHolder {
+  ) external override isActiveDAO onlyValidTokenHolder {
     uint256 proposalId = _createProposal(
       _startTimestamp,
       _endTimestamp,
@@ -125,7 +130,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     );
   }
 
-  function executeProposal(uint256 _proposalId) external override {
+  function executeProposal(uint256 _proposalId) external override isActiveDAO {
     // TODO
     emit ProposalExecuted(zDAOInfo.zDAOId, _proposalId);
   }

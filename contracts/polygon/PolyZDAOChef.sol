@@ -60,6 +60,8 @@ contract PolyZDAOChef is
     if (messageType == uint256(MessageType.CreateZDAO)) {
       // create zDAO
       _createZDAO(data);
+    } else if (messageType == uint256(MessageType.DeleteZDAO)) {
+      _deleteZDAO(data);
     } else if (messageType == uint256(MessageType.CreateProposal)) {
       _createProposal(data);
     }
@@ -98,6 +100,19 @@ contract PolyZDAOChef is
     emit DAOCreated(zDAOId, msg.sender, address(zDAO));
 
     return zDAO;
+  }
+
+  function _deleteZDAO(bytes memory data) internal virtual {
+    (uint256 messageType, uint256 zDAOId) = abi.decode(
+      data,
+      (uint256, uint256)
+    );
+
+    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Invalid zDAO");
+
+    zDAOs[zDAOId].setDestroyed(true);
+
+    emit DAODestroyed(zDAOId);
   }
 
   function _createProposal(bytes memory data) internal virtual {
