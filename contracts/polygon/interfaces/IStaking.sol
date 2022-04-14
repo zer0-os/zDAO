@@ -25,17 +25,9 @@ interface IStaking {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function stake(
-    address _user,
-    address _token,
-    uint256 _amount
-  ) external;
+  function stake(address _token, uint256 _amount) external;
 
-  function unstake(
-    address _user,
-    address _token,
-    uint256 _amount
-  ) external;
+  function unstake(address _token, uint256 _amount) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

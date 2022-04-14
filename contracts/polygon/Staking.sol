@@ -55,20 +55,15 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function stake(
-    address _user,
-    address _token,
-    uint256 _amount
-  ) external {
-    _stake(_user, _token, _amount);
+  function stake(address _token, uint256 _amount) external {
+    _stake(msg.sender, _token, _amount);
   }
 
-  function unstake(
-    address _user,
-    address _token,
-    uint256 _amount
-  ) external isUnlocked(_token) {
-    _unstake(_user, _token, _amount);
+  function unstake(address _token, uint256 _amount)
+    external
+    isUnlocked(_token)
+  {
+    _unstake(msg.sender, _token, _amount);
   }
 
   function lock(address _token) external isLocker {
@@ -88,10 +83,11 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
     address _token,
     uint256 _amount
   ) internal virtual {
+    IERC20Upgradeable(_token).safeTransferFrom(_user, address(this), _amount);
+
     accounts[_user].user = _user;
     accounts[_user].staked[_token] += _amount;
-
-    IERC20Upgradeable(_token).safeTransferFrom(_user, address(this), _amount);
+    lockable[_token].staked += _amount;
 
     emit Staked(_user, _token, _amount, accounts[_user].staked[_token]);
   }
@@ -106,6 +102,7 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
       "Should not exceed staked amount"
     );
     accounts[_user].staked[_token] -= _amount;
+    lockable[_token].staked -= _amount;
 
     IERC20Upgradeable(_token).safeTransfer(_user, _amount);
 
