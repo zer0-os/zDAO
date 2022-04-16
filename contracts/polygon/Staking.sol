@@ -2,11 +2,19 @@
 
 pragma solidity ^0.8.11;
 
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
 import "../abstracts/ZeroUpgradeable.sol";
 import "./interfaces/IStaking.sol";
 import "./interfaces/ILockable.sol";
 
-contract Staking is ZeroUpgradeable, IStaking, ILockable {
+contract Staking is
+  ZeroUpgradeable,
+  IStaking,
+  ILockable,
+  IERC721ReceiverUpgradeable
+{
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   bytes32 public constant LOCKER_ROLE = keccak256("LOCKER_ROLE");
@@ -14,6 +22,7 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
   struct Account {
     address user;
     // <IERC20, token amount>
+    // <IERC721, token id>
     mapping(address => uint256) staked;
   }
 
@@ -23,9 +32,11 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
   }
 
   // <user addres, <IERC20, Account>>
+  // <user addres, <IERC721, Account>>
   mapping(address => Account) public accounts;
 
   // <IERC20, Lockable>
+  // <IERC721, Lockable>
   mapping(address => Lockable) public lockable;
 
   /* -------------------------------------------------------------------------- */
@@ -55,15 +66,28 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function stake(address _token, uint256 _amount) external {
-    _stake(msg.sender, _token, _amount);
+  function stakeERC20(address _token, uint256 _amount) external {
+    // require(_isERC20(_token), "Should ERC20 token address");
+    _stakeERC20(msg.sender, _token, _amount);
   }
 
-  function unstake(address _token, uint256 _amount)
+  function stakeERC721(address _token, uint256 _tokenId) external {
+    // require(_isERC721(_token), "Should ERC721 token address");
+    _stakeERC721(msg.sender, _token, _tokenId);
+  }
+
+  function unstakeERC20(address _token, uint256 _amount)
     external
     isUnlocked(_token)
   {
-    _unstake(msg.sender, _token, _amount);
+    _unstakeERC20(msg.sender, _token, _amount);
+  }
+
+  function unstakeERC721(address _token, uint256 _tokenId)
+    external
+    isUnlocked(_token)
+  {
+    _unstakeERC721(msg.sender, _token, _tokenId);
   }
 
   function lock(address _token) external isLocker {
@@ -74,11 +98,34 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
     _unlock(_token);
   }
 
+  function onERC721Received(
+    address operator,
+    address from,
+    uint256 tokenId,
+    bytes calldata data
+  ) external pure returns (bytes4) {
+    return this.onERC721Received.selector;
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _stake(
+  function _isERC721(address _token) internal view returns (bool) {
+    return
+      IERC165Upgradeable(_token).supportsInterface(
+        type(IERC721Upgradeable).interfaceId
+      );
+  }
+
+  function _isERC20(address _token) internal view returns (bool) {
+    return
+      IERC165Upgradeable(_token).supportsInterface(
+        type(IERC20Upgradeable).interfaceId
+      );
+  }
+
+  function _stakeERC20(
     address _user,
     address _token,
     uint256 _amount
@@ -89,10 +136,24 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
     accounts[_user].staked[_token] += _amount;
     lockable[_token].staked += _amount;
 
-    emit Staked(_user, _token, _amount, accounts[_user].staked[_token]);
+    emit StakedERC20(_user, _token, _amount, accounts[_user].staked[_token]);
   }
 
-  function _unstake(
+  function _stakeERC721(
+    address _user,
+    address _token,
+    uint256 _tokenId
+  ) internal virtual {
+    IERC721Upgradeable(_token).safeTransferFrom(_user, address(this), _tokenId);
+
+    accounts[_user].user = _user;
+    accounts[_user].staked[_token] = _tokenId;
+    lockable[_token].staked += 1;
+
+    emit StakedERC721(_user, _token, _tokenId, accounts[_user].staked[_token]);
+  }
+
+  function _unstakeERC20(
     address _user,
     address _token,
     uint256 _amount
@@ -106,7 +167,29 @@ contract Staking is ZeroUpgradeable, IStaking, ILockable {
 
     IERC20Upgradeable(_token).safeTransfer(_user, _amount);
 
-    emit Unstaked(_user, _token, _amount, accounts[_user].staked[_token]);
+    emit UnstakedERC20(_user, _token, _amount, accounts[_user].staked[_token]);
+  }
+
+  function _unstakeERC721(
+    address _user,
+    address _token,
+    uint256 _tokenId
+  ) internal virtual {
+    require(
+      accounts[_user].staked[_token] == _tokenId,
+      "Should be staked ERC721"
+    );
+    accounts[_user].staked[_token] -= _tokenId;
+    lockable[_token].staked -= 1;
+
+    IERC721Upgradeable(_token).safeTransferFrom(address(this), _user, _tokenId);
+
+    emit UnstakedERC721(
+      _user,
+      _token,
+      _tokenId,
+      accounts[_user].staked[_token]
+    );
   }
 
   function _lock(address _token) internal virtual {

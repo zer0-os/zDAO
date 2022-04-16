@@ -7,17 +7,31 @@ interface IStaking {
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
 
-  event Staked(
+  event StakedERC20(
+    address indexed _user,
+    address indexed _token,
+    uint256 indexed _amount,
+    uint256 _totalPerUser // total staked token amount
+  );
+
+  event StakedERC721(
+    address indexed _user,
+    address indexed _token,
+    uint256 indexed _tokenId,
+    uint256 _totalPerUser // total staked token amount
+  );
+
+  event UnstakedERC20(
     address indexed _user,
     address indexed _token,
     uint256 indexed _amount,
     uint256 _totalPerUser
   );
 
-  event Unstaked(
+  event UnstakedERC721(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _amount,
+    uint256 indexed _tokenId,
     uint256 _totalPerUser
   );
 
@@ -25,9 +39,13 @@ interface IStaking {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function stake(address _token, uint256 _amount) external;
+  function stakeERC20(address _token, uint256 _amount) external;
 
-  function unstake(address _token, uint256 _amount) external;
+  function stakeERC721(address _token, uint256 _tokenId) external;
+
+  function unstakeERC20(address _token, uint256 _amount) external;
+
+  function unstakeERC721(address _token, uint256 _tokenId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
