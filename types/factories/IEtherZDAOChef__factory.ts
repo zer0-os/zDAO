@@ -4,7 +4,10 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IZDAORegistry, IZDAORegistryInterface } from "../IZDAORegistry";
+import type {
+  IEtherZDAOChef,
+  IEtherZDAOChefInterface,
+} from "../IEtherZDAOChef";
 
 const _abi = [
   {
@@ -13,19 +16,19 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "daoId",
+        name: "_daoId",
         type: "uint256",
       },
       {
-        indexed: false,
-        internalType: "string",
-        name: "ensSpace",
-        type: "string",
+        indexed: true,
+        internalType: "address",
+        name: "_creator",
+        type: "address",
       },
       {
-        indexed: false,
+        indexed: true,
         internalType: "address",
-        name: "gnosisSafe",
+        name: "_zDAO",
         type: "address",
       },
     ],
@@ -38,7 +41,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "daoId",
+        name: "_daoId",
         type: "uint256",
       },
     ],
@@ -51,38 +54,13 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "daoId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "string",
-        name: "endSpace",
-        type: "string",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "gnosisSafe",
-        type: "address",
-      },
-    ],
-    name: "DAOModified",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "daoId",
+        name: "_daoId",
         type: "uint256",
       },
       {
         indexed: true,
         internalType: "uint256",
-        name: "zNA",
+        name: "_zNA",
         type: "uint256",
       },
     ],
@@ -95,13 +73,13 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "daoId",
+        name: "_daoId",
         type: "uint256",
       },
       {
         indexed: true,
         internalType: "uint256",
-        name: "zNA",
+        name: "_zNA",
         type: "uint256",
       },
     ],
@@ -112,7 +90,80 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "zNA",
+        name: "_zNA",
+        type: "uint256",
+      },
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "name",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "gnosisSafe",
+            type: "address",
+          },
+          {
+            internalType: "contract IERC20Upgradeable",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minPeriod",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "isRelativeMajority",
+            type: "bool",
+          },
+          {
+            internalType: "uint256",
+            name: "threshold",
+            type: "uint256",
+          },
+        ],
+        internalType: "struct IEtherZDAOChef.ZDAOConfig",
+        name: "_zDAOConfig",
+        type: "tuple",
+      },
+    ],
+    name: "addNewDAO",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_zNA",
+        type: "uint256",
+      },
+    ],
+    name: "addZNAAssociation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_zNA",
         type: "uint256",
       },
     ],
@@ -130,54 +181,8 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "string",
-        name: "ensSpace",
-        type: "string",
-      },
-    ],
-    name: "getzDAOByEns",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "id",
-            type: "uint256",
-          },
-          {
-            internalType: "string",
-            name: "ensSpace",
-            type: "string",
-          },
-          {
-            internalType: "address",
-            name: "gnosisSafe",
-            type: "address",
-          },
-          {
-            internalType: "uint256[]",
-            name: "associatedzNAs",
-            type: "uint256[]",
-          },
-          {
-            internalType: "bool",
-            name: "destroyed",
-            type: "bool",
-          },
-        ],
-        internalType: "struct IZDAORegistry.ZDAORecord",
-        name: "",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
-        name: "daoId",
+        name: "_daoId",
         type: "uint256",
       },
     ],
@@ -191,13 +196,8 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "string",
-            name: "ensSpace",
-            type: "string",
-          },
-          {
-            internalType: "address",
-            name: "gnosisSafe",
+            internalType: "contract IEtherZDAO",
+            name: "zDAO",
             type: "address",
           },
           {
@@ -205,13 +205,8 @@ const _abi = [
             name: "associatedzNAs",
             type: "uint256[]",
           },
-          {
-            internalType: "bool",
-            name: "destroyed",
-            type: "bool",
-          },
         ],
-        internalType: "struct IZDAORegistry.ZDAORecord",
+        internalType: "struct IEtherZDAOChef.ZDAORecord",
         name: "",
         type: "tuple",
       },
@@ -223,7 +218,7 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "zNA",
+        name: "_zNA",
         type: "uint256",
       },
     ],
@@ -237,13 +232,8 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "string",
-            name: "ensSpace",
-            type: "string",
-          },
-          {
-            internalType: "address",
-            name: "gnosisSafe",
+            internalType: "contract IEtherZDAO",
+            name: "zDAO",
             type: "address",
           },
           {
@@ -251,13 +241,8 @@ const _abi = [
             name: "associatedzNAs",
             type: "uint256[]",
           },
-          {
-            internalType: "bool",
-            name: "destroyed",
-            type: "bool",
-          },
         ],
-        internalType: "struct IZDAORegistry.ZDAORecord",
+        internalType: "struct IEtherZDAOChef.ZDAORecord",
         name: "",
         type: "tuple",
       },
@@ -269,12 +254,12 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
-        name: "startIndex",
+        name: "_startIndex",
         type: "uint256",
       },
       {
         internalType: "uint256",
-        name: "endIndex",
+        name: "_endIndex",
         type: "uint256",
       },
     ],
@@ -288,13 +273,8 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "string",
-            name: "ensSpace",
-            type: "string",
-          },
-          {
-            internalType: "address",
-            name: "gnosisSafe",
+            internalType: "contract IEtherZDAO",
+            name: "zDAO",
             type: "address",
           },
           {
@@ -302,13 +282,8 @@ const _abi = [
             name: "associatedzNAs",
             type: "uint256[]",
           },
-          {
-            internalType: "bool",
-            name: "destroyed",
-            type: "bool",
-          },
         ],
-        internalType: "struct IZDAORegistry.ZDAORecord[]",
+        internalType: "struct IEtherZDAOChef.ZDAORecord[]",
         name: "",
         type: "tuple[]",
       },
@@ -329,17 +304,48 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+    ],
+    name: "removeDAO",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_zNA",
+        type: "uint256",
+      },
+    ],
+    name: "removeZNAAssociation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ];
 
-export class IZDAORegistry__factory {
+export class IEtherZDAOChef__factory {
   static readonly abi = _abi;
-  static createInterface(): IZDAORegistryInterface {
-    return new utils.Interface(_abi) as IZDAORegistryInterface;
+  static createInterface(): IEtherZDAOChefInterface {
+    return new utils.Interface(_abi) as IEtherZDAOChefInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IZDAORegistry {
-    return new Contract(address, _abi, signerOrProvider) as IZDAORegistry;
+  ): IEtherZDAOChef {
+    return new Contract(address, _abi, signerOrProvider) as IEtherZDAOChef;
   }
 }

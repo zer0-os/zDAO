@@ -17,35 +17,32 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface ZNSHubTestInterface extends utils.Interface {
-  contractName: "ZNSHubTest";
+export interface IERC721ReceiverUpgradeableInterface extends utils.Interface {
+  contractName: "IERC721ReceiverUpgradeable";
   functions: {
-    "ownerOf(uint256)": FunctionFragment;
-    "setOwnerOf(uint256,address)": FunctionFragment;
+    "onERC721Received(address,address,uint256,bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "ownerOf",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setOwnerOf",
-    values: [BigNumberish, string]
+    functionFragment: "onERC721Received",
+    values: [string, string, BigNumberish, BytesLike]
   ): string;
 
-  decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "setOwnerOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "onERC721Received",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
 
-export interface ZNSHubTest extends BaseContract {
-  contractName: "ZNSHubTest";
+export interface IERC721ReceiverUpgradeable extends BaseContract {
+  contractName: "IERC721ReceiverUpgradeable";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: ZNSHubTestInterface;
+  interface: IERC721ReceiverUpgradeableInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -67,60 +64,51 @@ export interface ZNSHubTest extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    ownerOf(
-      domainId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
-
-    setOwnerOf(
-      domainId: BigNumberish,
-      newOwner: string,
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
-  ownerOf(domainId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  setOwnerOf(
-    domainId: BigNumberish,
-    newOwner: string,
+  onERC721Received(
+    operator: string,
+    from: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    ownerOf(domainId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    setOwnerOf(
-      domainId: BigNumberish,
-      newOwner: string,
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    ownerOf(
-      domainId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    setOwnerOf(
-      domainId: BigNumberish,
-      newOwner: string,
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    ownerOf(
-      domainId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    setOwnerOf(
-      domainId: BigNumberish,
-      newOwner: string,
+    onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
