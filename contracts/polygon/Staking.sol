@@ -3,8 +3,8 @@
 pragma solidity ^0.8.11;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721ReceiverUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/introspection/IERC165Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import "../abstracts/ZeroUpgradeable.sol";
 import "./interfaces/IStaking.sol";
 import "./interfaces/ILockable.sol";
@@ -13,9 +13,10 @@ contract Staking is
   ZeroUpgradeable,
   IStaking,
   ILockable,
-  IERC721ReceiverUpgradeable
+  ERC721HolderUpgradeable
 {
   using SafeERC20Upgradeable for IERC20Upgradeable;
+  using ERC165CheckerUpgradeable for address;
 
   bytes32 public constant LOCKER_ROLE = keccak256("LOCKER_ROLE");
 
@@ -59,6 +60,7 @@ contract Staking is
 
   function __Staking_init() public initializer {
     ZeroUpgradeable.initialize();
+    __ERC721Holder_init();
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
   }
 
@@ -67,12 +69,12 @@ contract Staking is
   /* -------------------------------------------------------------------------- */
 
   function stakeERC20(address _token, uint256 _amount) external {
-    // require(_isERC20(_token), "Should ERC20 token address");
+    require(!_isERC721(_token), "Should ERC20 token address");
     _stakeERC20(msg.sender, _token, _amount);
   }
 
   function stakeERC721(address _token, uint256 _tokenId) external {
-    // require(_isERC721(_token), "Should ERC721 token address");
+    require(_isERC721(_token), "Should ERC721 token address");
     _stakeERC721(msg.sender, _token, _tokenId);
   }
 
@@ -98,31 +100,16 @@ contract Staking is
     _unlock(_token);
   }
 
-  function onERC721Received(
-    address operator,
-    address from,
-    uint256 tokenId,
-    bytes calldata data
-  ) external pure returns (bytes4) {
-    return this.onERC721Received.selector;
-  }
-
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
   function _isERC721(address _token) internal view returns (bool) {
-    return
-      IERC165Upgradeable(_token).supportsInterface(
-        type(IERC721Upgradeable).interfaceId
-      );
+    return _token.supportsInterface(type(IERC721Upgradeable).interfaceId);
   }
 
   function _isERC20(address _token) internal view returns (bool) {
-    return
-      IERC165Upgradeable(_token).supportsInterface(
-        type(IERC20Upgradeable).interfaceId
-      );
+    return _token.supportsInterface(type(IERC20Upgradeable).interfaceId);
   }
 
   function _stakeERC20(
