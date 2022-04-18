@@ -1,17 +1,14 @@
-import { HardhatUserConfig } from "hardhat/config";
-
-import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-etherscan";
-import "@openzeppelin/hardhat-upgrades";
-
-// TS Support
-import "@typechain/hardhat";
-import "@nomiclabs/hardhat-ethers";
-import "@nomiclabs/hardhat-waffle";
-
-import "hardhat-contract-sizer";
-
 import * as dotenv from "dotenv";
+
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomiclabs/hardhat-etherscan";
+import "@nomiclabs/hardhat-waffle";
+import "@openzeppelin/hardhat-upgrades";
+import "@typechain/hardhat";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
+import { removeConsoleLog } from "hardhat-preprocessor";
+
 dotenv.config();
 
 // You need to export an object to set up your config
@@ -20,12 +17,16 @@ dotenv.config();
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      MAINNET_PRIVATE_KEY: string;
-      RINKEBY_PRIVATE_KEY: string;
-      ALCHEMY_KEY: string;
+      GOERLI_API_KEY: string;
+      RINKEBY_API_KEY: string;
+      MAINNET_API_KEY: string;
+      MUMBAI_API_KEY: string;
+      POLYGON_API_KEY: string;
       ETHERSCAN_API_KEY: string;
-      PROXY_ADMIN: string;
-      ZNS_HUB: string;
+      POLYGONSCAN_API_KEY: string;
+
+      TESTNET_PRIVATE_KEY: string;
+      MAINNET_PRIVATE_KEY: string;
     }
   }
 }
@@ -51,12 +52,24 @@ const config: HardhatUserConfig = {
   },
   defaultNetwork: 'hardhat',
   networks: {
+    goerli: {
+      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.GOERLI_API_KEY}`,
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
+    },
     rinkeby: {
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-      accounts: [process.env.RINKEBY_PRIVATE_KEY],
+      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.RINKEBY_API_KEY}`,
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
     mainnet: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
+      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.MAINNET_API_KEY}`,
+      accounts: [process.env.MAINNET_PRIVATE_KEY],
+    },
+    polygonMumbai: {
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.MUMBAI_API_KEY}`,
+      accounts: [process.env.TESTNET_PRIVATE_KEY],
+    },
+    polygon: {
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.POLYGON_API_KEY}`,
       accounts: [process.env.MAINNET_PRIVATE_KEY],
     },
     hardhat: {
@@ -65,7 +78,13 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: {
+      goerli: process.env.ETHERSCAN_API_KEY,
+      rinkeby: process.env.ETHERSCAN_API_KEY,
+      mainnet: process.env.ETHERSCAN_API_KEY,
+      polygonMumbai: process.env.POLYGONSCAN_API_KEY,
+      polygon: process.env.POLYGONSCAN_API_KEY,
+    },
   },
   contractSizer: {
     alphaSort: true,
@@ -79,6 +98,12 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: "types",
     target: "ethers-v5",
+  },
+  preprocess: {
+    eachLine: removeConsoleLog(
+      (hre) =>
+        hre.network.name !== "hardhat" && hre.network.name !== "localhost"
+    ),
   },
 };
 
