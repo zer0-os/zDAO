@@ -8,8 +8,8 @@ import { sleep, verifyContract } from "./shared/helpers";
 
 const contracts = {
   goerli: {
-    EtherZDAOBase: "0xFC5ffE1510Ee34c61b37456cff5Ef794d885D094",
-    EtherZDAOChef: "0xa83Ba072dc10740A5Cf5A80303e48Abae6c41c5D",
+    EtherZDAOBase: "0xbB576de2ca9E6807b151E8d4f710fACf9Eff5DeD",
+    EtherZDAOChef: "0x8bB8E594EA003865a4Fa49E3a100c4dFF3C30538",
   },
   mainnet: {
     EtherZDAOChef: "", // todo
@@ -47,7 +47,7 @@ const main = async () => {
 
     const zNAId = zns.domains.domainNameToId(zNA);
     console.log("zNAId", zNAId);
-    // await zDAOChef.addNewDAO(zNAId, zDAOConfig);
+    await zDAOChef.addNewDAO(zNAId, zDAOConfig);
 
     console.log("Sleeping for 60 seconds to wait until deploy");
     await sleep(60000);

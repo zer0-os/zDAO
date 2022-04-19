@@ -105,8 +105,6 @@ contract EtherZDAOChef is
       abi.encode(
         uint256(MessageType.CreateZDAO),
         lastZDAOId,
-        bytes(_zDAOConfig.name),
-        zDAO.zDAOOwner(),
         address(_zDAOConfig.token),
         _zDAOConfig.isRelativeMajority,
         _zDAOConfig.threshold
@@ -187,7 +185,7 @@ contract EtherZDAOChef is
           EtherZDAO.__ZDAO_init.selector,
           IRootTunnel(this),
           lastZDAOId,
-          msg.sender,
+          msg.sender, // zDAO owner
           _zDAOConfig
         )
       )

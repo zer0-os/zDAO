@@ -9,8 +9,6 @@ enum MessageType {
 
 export interface CreateZDAOPack {
   lastZDAOId: number;
-  name: string;
-  zDAOOwner: string;
   token: string;
   isRelativeMajority: boolean;
   threshold: number;
@@ -18,12 +16,10 @@ export interface CreateZDAOPack {
 
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "string", "address", "address", "bool", "uint256"],
+    ["uint256", "uint256", "address", "bool", "uint256"],
     [
       MessageType.CreateZDAO,
       pack.lastZDAOId,
-      pack.name,
-      pack.zDAOOwner,
       pack.token,
       pack.isRelativeMajority,
       pack.threshold,
@@ -45,37 +41,19 @@ export const encodeDeleteZDAO = (pack: DeleteZDAOPack): string => {
 export interface CreateProposalPack {
   zDAOId: number;
   proposalId: number;
-  createdBy: string;
   startTimestamp: number;
   endTimestamp: number;
-  token: string;
-  amount: number;
-  ipfs: string;
 }
 
 export const encodeCreateProposal = (pack: CreateProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    [
-      "uint256",
-      "uint256",
-      "uint256",
-      "address",
-      "uint256",
-      "uint256",
-      "address",
-      "uint256",
-      "bytes32",
-    ],
+    ["uint256", "uint256", "uint256", "uint256", "uint256"],
     [
       MessageType.CreateProposal,
       pack.zDAOId,
       pack.proposalId,
-      pack.createdBy,
       pack.startTimestamp,
       pack.endTimestamp,
-      pack.token,
-      pack.amount,
-      pack.ipfs,
     ]
   );
 };

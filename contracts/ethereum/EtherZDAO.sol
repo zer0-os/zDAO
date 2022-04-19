@@ -51,7 +51,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     uint256 _zDAOId,
     address _zDAOOwner,
     IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
-  ) external initializer {
+  ) public initializer {
     ZeroUpgradeable.initialize();
 
     rootTunnel = _rootTunnel;
@@ -120,12 +120,8 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
         uint256(ITunnel.MessageType.CreateProposal),
         zDAOInfo.zDAOId,
         proposalId,
-        msg.sender,
         _startTimestamp,
-        _endTimestamp,
-        address(_token),
-        _amount,
-        _ipfs
+        _endTimestamp
       )
     );
   }

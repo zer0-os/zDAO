@@ -49,9 +49,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     IChildTunnel _childTunnel,
     Staking _staking,
     uint256 _zDAOId,
-    string memory _name,
-    address _zDAOOwner,
-    address _token, // token address on Ethereum
     address _mappedToken, // token address on Polygon
     bool _isRelativeMajority,
     uint256 _threshold
@@ -62,9 +59,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     staking = _staking;
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      name: _name,
-      owner: _zDAOOwner,
-      token: IERC20Upgradeable(_token),
       mappedToken: IERC20Upgradeable(_mappedToken),
       isRelativeMajority: _isRelativeMajority,
       threshold: _threshold,
@@ -83,34 +77,21 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
   function createProposal(
     uint256 _proposalId,
-    address _createdBy,
     uint256 _startTimestamp,
-    uint256 _endTimestamp,
-    IERC20Upgradeable _token, // token on Etherem
-    uint256 _amount,
-    bytes32 _ipfs
+    uint256 _endTimestamp
   ) external isActiveDAO onlyChildTunnel {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
     );
 
-    _createProposal(
-      _proposalId,
-      _createdBy,
-      _startTimestamp,
-      _endTimestamp,
-      _token,
-      _amount,
-      _ipfs
-    );
+    _createProposal(_proposalId, _startTimestamp, _endTimestamp);
 
     // lock staked amount until proposal ends
-    staking.lock(address(_token));
+    staking.lock(address(zDAOInfo.mappedToken));
 
     emit ProposalCreated(
       zDAOInfo.zDAOId,
-      _createdBy,
       _proposalId,
       _startTimestamp,
       _endTimestamp
@@ -136,7 +117,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     Proposal storage proposal = proposals[_proposalId];
 
     // unlock staked tokens if proposal has been closed
-    staking.unlock(address(proposal.token));
+    staking.unlock(address(zDAOInfo.mappedToken));
 
     emit CollectResult(zDAOInfo.zDAOId, _proposalId, proposal.yes, proposal.no);
 
@@ -179,25 +160,17 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
   function _createProposal(
     uint256 _proposalId,
-    address _createdBy,
     uint256 _startTimestamp,
-    uint256 _endTimestamp,
-    IERC20Upgradeable _token,
-    uint256 _amount,
-    bytes32 _ipfs
+    uint256 _endTimestamp
   ) internal virtual {
     require(proposals[_proposalId].proposalId == 0, "Already proposal created");
     proposals[_proposalId] = Proposal({
       proposalId: _proposalId,
-      createdBy: _createdBy,
       startTimestamp: _startTimestamp,
       endTimestamp: _endTimestamp,
       yes: 0,
       no: 0,
       reserved: 0,
-      ipfs: _ipfs,
-      token: _token,
-      amount: _amount,
       snapshot: block.number,
       state: IPolyZDAO.ProposalState.Active
     });
@@ -252,10 +225,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
   function zDAOId() external view override returns (uint256) {
     return zDAOInfo.zDAOId;
-  }
-
-  function zDAOOwner() external view override returns (address) {
-    return zDAOInfo.owner;
   }
 
   function destroyed() external view override returns (bool) {

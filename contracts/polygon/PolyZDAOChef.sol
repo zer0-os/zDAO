@@ -79,15 +79,10 @@ contract PolyZDAOChef is
     (
       uint256 messageType,
       uint256 zDAOId,
-      bytes memory name,
-      address owner,
       address token,
       bool isRelativeMajority,
       uint256 threshold
-    ) = abi.decode(
-        data,
-        (uint256, uint256, bytes, address, address, bool, uint256)
-      );
+    ) = abi.decode(data, (uint256, uint256, address, bool, uint256));
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
@@ -99,9 +94,6 @@ contract PolyZDAOChef is
           IChildTunnel(this),
           staking,
           zDAOId,
-          string(name),
-          owner,
-          token,
           registry.rootToChildToken(token), // mapped token from Ethereum
           isRelativeMajority,
           threshold
@@ -115,7 +107,13 @@ contract PolyZDAOChef is
     // grant locker role to new zDAO
     staking.grantRole(staking.LOCKER_ROLE(), address(zDAO));
 
-    emit DAOCreated(zDAOId, msg.sender, address(zDAO));
+    emit DAOCreated(
+      address(zDAO),
+      zDAOId,
+      token,
+      isRelativeMajority,
+      threshold
+    );
 
     return zDAO;
   }
@@ -138,39 +136,14 @@ contract PolyZDAOChef is
       uint256 messageType,
       uint256 zDAOId,
       uint256 proposalId,
-      address createdBy,
       uint256 startTimestamp,
-      uint256 endTimestamp,
-      address token, // token on Etherem
-      uint256 amount,
-      bytes32 ipfs
-    ) = abi.decode(
-        data,
-        (
-          uint256,
-          uint256,
-          uint256,
-          address,
-          uint256,
-          uint256,
-          address,
-          uint256,
-          bytes32
-        )
-      );
+      uint256 endTimestamp
+    ) = abi.decode(data, (uint256, uint256, uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
 
-    zDAOs[zDAOId].createProposal(
-      proposalId,
-      createdBy,
-      startTimestamp,
-      endTimestamp,
-      IERC20Upgradeable(token),
-      amount,
-      ipfs
-    );
+    zDAOs[zDAOId].createProposal(proposalId, startTimestamp, endTimestamp);
   }
 
   /* -------------------------------------------------------------------------- */

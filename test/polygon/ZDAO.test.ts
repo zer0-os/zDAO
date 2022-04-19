@@ -69,9 +69,6 @@ describe("ZDAO", async function () {
 
     zDAOConfig = {
       zDAOId,
-      name: "Mock zDAO",
-      owner: owner.address,
-      token: vToken.address,
       mappedToken: vPolyToken.address,
       isRelativeMajority: false,
       threshold: 5000,
@@ -81,9 +78,6 @@ describe("ZDAO", async function () {
       childTunnel.address,
       staking.address,
       zDAOConfig.zDAOId,
-      zDAOConfig.name,
-      zDAOConfig.owner,
-      zDAOConfig.token,
       zDAOConfig.mappedToken,
       zDAOConfig.isRelativeMajority,
       zDAOConfig.threshold
@@ -99,20 +93,13 @@ describe("ZDAO", async function () {
 
     proposalConfig = {
       proposalId: 1,
-      createdBy: userA.address,
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
-      token: vToken.address, // should be token address on Ethereum
-      amount: minAmount.toNumber(),
-      ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOConfig.zDAOId);
-    expect(zDAOInfo.owner).to.be.equal(zDAOConfig.owner);
-    expect(zDAOInfo.name).to.be.equal(zDAOConfig.name);
-    expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
     expect(zDAOInfo.mappedToken).to.be.equal(zDAOConfig.mappedToken);
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
@@ -129,12 +116,8 @@ describe("ZDAO", async function () {
       .connect(user)
       .createProposal(
         proposalConfig.proposalId,
-        proposalConfig.createdBy,
         proposalConfig.startTimestamp,
-        proposalConfig.endTimestamp,
-        proposalConfig.token,
-        proposalConfig.amount,
-        proposalConfig.ipfs
+        proposalConfig.endTimestamp
       );
   };
 
@@ -149,8 +132,6 @@ describe("ZDAO", async function () {
 
     const proposals = await zDAO.listProposals(1, 1);
     expect(proposals.length).to.be.equal(1);
-    expect(proposals[0].createdBy).to.be.equal(userA.address);
-    expect(proposals[0].token).to.be.equal(vToken.address);
   });
 
   it("Any staker should be able to vote on proposal", async function () {

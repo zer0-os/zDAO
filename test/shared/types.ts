@@ -18,15 +18,13 @@ export interface ProposalConfig {
 
 export interface PolyZDAOConfig {
   zDAOId: number;
-  name: string;
-  owner: string;
-  token: string;
   mappedToken: string;
   isRelativeMajority: boolean;
   threshold: number;
 }
 
-export interface PolyProposalConfig extends ProposalConfig {
+export interface PolyProposalConfig {
   proposalId: number;
-  createdBy: string;
+  startTimestamp: number;
+  endTimestamp: number;
 }

@@ -10,9 +10,11 @@ interface IPolyZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   event DAOCreated(
+    address indexed _zDAO,
     uint256 indexed _daoId,
-    address indexed _creator,
-    address indexed _zDAO
+    address indexed _token, // token address on Ethereum
+    bool _isRelativeMajority,
+    uint256 _threshold
   );
 
   event DAODestroyed(uint256 indexed _daoId);
@@ -33,8 +35,4 @@ interface IPolyZDAOChef {
     external
     view
     returns (IPolyZDAO[] memory);
-
-  // function getzDaoByZNA(uint256 _zNA) external view returns (IZDAO);
-
-  // function doeszDAOExistForzNA(uint256 _zNA) external view returns (bool);
 }

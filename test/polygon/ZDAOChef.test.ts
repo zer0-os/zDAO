@@ -102,8 +102,6 @@ describe("ZDAOChef", async function () {
 
     zDAOPack = {
       lastZDAOId: 1,
-      name: "Mock ZDAO",
-      zDAOOwner: zDAOOwner.address,
       token: vToken.address, // token address on Ethereum
       isRelativeMajority: true,
       threshold: threshold,
@@ -112,12 +110,8 @@ describe("ZDAOChef", async function () {
     proposalPack = {
       zDAOId: 1,
       proposalId: 1,
-      createdBy: userA.address,
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
-      token: vToken.address, // token address on Ethereum
-      amount: minAmount.toNumber(),
-      ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
 
@@ -165,9 +159,6 @@ describe("ZDAOChef", async function () {
 
     const zDAOInfo = await zDAO.zDAOInfo();
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOPack.lastZDAOId);
-    expect(zDAOInfo.name).to.be.equal(zDAOPack.name);
-    expect(zDAOInfo.owner).to.be.equal(zDAOPack.zDAOOwner);
-    expect(zDAOInfo.token).to.be.equal(zDAOPack.token);
     // mapped token
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOPack.isRelativeMajority
@@ -242,16 +233,10 @@ describe("ZDAOChef", async function () {
     const proposals = await zDAO.listProposals(1, 1);
 
     expect(proposals[0].proposalId).to.be.equal(proposalPack.proposalId);
-    expect(proposals[0].createdBy).to.be.equal(proposalPack.createdBy);
     expect(proposals[0].startTimestamp).to.be.equal(
       proposalPack.startTimestamp
     );
     expect(proposals[0].endTimestamp).to.be.equal(proposalPack.endTimestamp);
-    expect(proposals[0].ipfs).to.be.equal(proposalPack.ipfs);
-    expect(proposals[0].token).to.be.equal(proposalPack.token);
-    expect(proposals[0].amount.toString()).to.be.equal(
-      proposalPack.amount.toString()
-    );
     expect(proposals[0].state).to.be.equal(0); // Active state
   });
 });
