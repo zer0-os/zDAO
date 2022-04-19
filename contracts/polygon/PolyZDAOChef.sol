@@ -51,6 +51,18 @@ contract PolyZDAOChef is
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setStaking(Staking _staking) external onlyOwner {
+    staking = _staking;
+  }
+
+  function setRegistry(Registry _registry) external onlyOwner {
+    registry = _registry;
+  }
+
+  function setZDAOBase(address _zDAOBase) external onlyOwner {
+    zDAOBase = _zDAOBase;
+  }
+
   function sendMessageToRoot(bytes memory _message) external {
     _sendMessageToRoot(_message);
   }

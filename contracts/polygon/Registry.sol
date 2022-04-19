@@ -38,7 +38,7 @@ contract Registry is ZeroUpgradeable {
     );
 
     rootToChildToken[_rootToken] = _childToken;
-    rootToChildToken[_childToken] = _rootToken;
+    childToRootToken[_childToken] = _rootToken;
 
     emit MapToken(_rootToken, _childToken);
   }

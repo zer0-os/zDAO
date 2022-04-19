@@ -78,6 +78,10 @@ contract EtherZDAOChef is
     znsHub = IZNSHub(_znsHub);
   }
 
+  function setZDAOBase(address _zDAOBase) external onlyOwner {
+    zDAOBase = _zDAOBase;
+  }
+
   function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig)
     external
     override
