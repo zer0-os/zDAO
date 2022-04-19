@@ -30,7 +30,7 @@ abstract contract ZeroUpgradeable is
   uint256 public version;
 
   /// @custom:oz-upgrades-unsafe-allow constructor
-  function initialize() public initializer {
+  function initialize() internal onlyInitializing {
     __Ownable_init();
     __AccessControl_init();
     __ReentrancyGuard_init();

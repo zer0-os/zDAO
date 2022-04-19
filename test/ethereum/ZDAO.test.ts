@@ -65,7 +65,7 @@ describe("ZDAO", async function () {
       threshold,
     };
 
-    zDAO.__ZDAO_init(rootTunnel.address, zDAOId, zNAOwner.address, zDAOConfig);
+    await zDAO.__ZDAO_init(rootTunnel.address, zDAOId, zNAOwner.address, zDAOConfig);
 
     zDAOInfo = await zDAO.zDAOInfo();
 
