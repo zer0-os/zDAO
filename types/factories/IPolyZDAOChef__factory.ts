@@ -12,6 +12,12 @@ const _abi = [
     inputs: [
       {
         indexed: true,
+        internalType: "address",
+        name: "_zDAO",
+        type: "address",
+      },
+      {
+        indexed: true,
         internalType: "uint256",
         name: "_daoId",
         type: "uint256",
@@ -19,14 +25,20 @@ const _abi = [
       {
         indexed: true,
         internalType: "address",
-        name: "_creator",
+        name: "_token",
         type: "address",
       },
       {
-        indexed: true,
-        internalType: "address",
-        name: "_zDAO",
-        type: "address",
+        indexed: false,
+        internalType: "bool",
+        name: "_isRelativeMajority",
+        type: "bool",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_threshold",
+        type: "uint256",
       },
     ],
     name: "DAOCreated",

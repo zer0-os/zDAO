@@ -47,7 +47,7 @@ export interface IPolyZDAOChefInterface extends utils.Interface {
   ): Result;
 
   events: {
-    "DAOCreated(uint256,address,address)": EventFragment;
+    "DAOCreated(address,uint256,address,bool,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
   };
 
@@ -56,8 +56,14 @@ export interface IPolyZDAOChefInterface extends utils.Interface {
 }
 
 export type DAOCreatedEvent = TypedEvent<
-  [BigNumber, string, string],
-  { _daoId: BigNumber; _creator: string; _zDAO: string }
+  [string, BigNumber, string, boolean, BigNumber],
+  {
+    _zDAO: string;
+    _daoId: BigNumber;
+    _token: string;
+    _isRelativeMajority: boolean;
+    _threshold: BigNumber;
+  }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -134,15 +140,19 @@ export interface IPolyZDAOChef extends BaseContract {
   };
 
   filters: {
-    "DAOCreated(uint256,address,address)"(
+    "DAOCreated(address,uint256,address,bool,uint256)"(
+      _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _creator?: string | null,
-      _zDAO?: string | null
+      _token?: string | null,
+      _isRelativeMajority?: null,
+      _threshold?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
+      _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _creator?: string | null,
-      _zDAO?: string | null
+      _token?: string | null,
+      _isRelativeMajority?: null,
+      _threshold?: null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(

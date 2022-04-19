@@ -80,12 +80,6 @@ const _abi = [
       },
       {
         indexed: true,
-        internalType: "address",
-        name: "_proposalAuthor",
-        type: "address",
-      },
-      {
-        indexed: true,
         internalType: "uint256",
         name: "_proposalId",
         type: "uint256",
@@ -170,11 +164,6 @@ const _abi = [
         type: "uint256",
       },
       {
-        internalType: "address",
-        name: "_createdBy",
-        type: "address",
-      },
-      {
         internalType: "uint256",
         name: "_startTimestamp",
         type: "uint256",
@@ -183,21 +172,6 @@ const _abi = [
         internalType: "uint256",
         name: "_endTimestamp",
         type: "uint256",
-      },
-      {
-        internalType: "contract IERC20Upgradeable",
-        name: "_token",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "_amount",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes32",
-        name: "_ipfs",
-        type: "bytes32",
       },
     ],
     name: "createProposal",
@@ -265,11 +239,6 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "address",
-            name: "createdBy",
-            type: "address",
-          },
-          {
             internalType: "uint256",
             name: "startTimestamp",
             type: "uint256",
@@ -292,21 +261,6 @@ const _abi = [
           {
             internalType: "uint256",
             name: "reserved",
-            type: "uint256",
-          },
-          {
-            internalType: "bytes32",
-            name: "ipfs",
-            type: "bytes32",
-          },
-          {
-            internalType: "contract IERC20Upgradeable",
-            name: "token",
-            type: "address",
-          },
-          {
-            internalType: "uint256",
-            name: "amount",
             type: "uint256",
           },
           {
@@ -380,19 +334,6 @@ const _abi = [
         internalType: "uint256",
         name: "",
         type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "zDAOOwner",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
       },
     ],
     stateMutability: "view",

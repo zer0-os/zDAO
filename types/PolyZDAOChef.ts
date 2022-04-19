@@ -211,7 +211,7 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
-    "DAOCreated(uint256,address,address)": EventFragment;
+    "DAOCreated(address,uint256,address,bool,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
     "MessageSent(bytes)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
@@ -249,8 +249,14 @@ export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
 export type DAOCreatedEvent = TypedEvent<
-  [BigNumber, string, string],
-  { _daoId: BigNumber; _creator: string; _zDAO: string }
+  [string, BigNumber, string, boolean, BigNumber],
+  {
+    _zDAO: string;
+    _daoId: BigNumber;
+    _token: string;
+    _isRelativeMajority: boolean;
+    _threshold: BigNumber;
+  }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -682,15 +688,19 @@ export interface PolyZDAOChef extends BaseContract {
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
 
-    "DAOCreated(uint256,address,address)"(
+    "DAOCreated(address,uint256,address,bool,uint256)"(
+      _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _creator?: string | null,
-      _zDAO?: string | null
+      _token?: string | null,
+      _isRelativeMajority?: null,
+      _threshold?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
+      _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _creator?: string | null,
-      _zDAO?: string | null
+      _token?: string | null,
+      _isRelativeMajority?: null,
+      _threshold?: null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(

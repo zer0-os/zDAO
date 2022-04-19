@@ -20,43 +20,31 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export declare namespace IPolyZDAO {
   export type ProposalStruct = {
     proposalId: BigNumberish;
-    createdBy: string;
     startTimestamp: BigNumberish;
     endTimestamp: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
     reserved: BigNumberish;
-    ipfs: BytesLike;
-    token: string;
-    amount: BigNumberish;
     snapshot: BigNumberish;
     state: BigNumberish;
   };
 
   export type ProposalStructOutput = [
     BigNumber,
-    string,
     BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
-    string,
-    string,
     BigNumber,
     BigNumber,
     number
   ] & {
     proposalId: BigNumber;
-    createdBy: string;
     startTimestamp: BigNumber;
     endTimestamp: BigNumber;
     yes: BigNumber;
     no: BigNumber;
     reserved: BigNumber;
-    ipfs: string;
-    token: string;
-    amount: BigNumber;
     snapshot: BigNumber;
     state: number;
   };
@@ -68,7 +56,7 @@ export interface IPolyZDAOInterface extends utils.Interface {
     "canCollectResult(uint256)": FunctionFragment;
     "canVote(uint256,address)": FunctionFragment;
     "collectResult(uint256)": FunctionFragment;
-    "createProposal(uint256,address,uint256,uint256,address,uint256,bytes32)": FunctionFragment;
+    "createProposal(uint256,uint256,uint256)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "getVoterChoice(uint256,address)": FunctionFragment;
     "listProposals(uint256,uint256)": FunctionFragment;
@@ -76,7 +64,6 @@ export interface IPolyZDAOInterface extends utils.Interface {
     "setDestroyed(bool)": FunctionFragment;
     "vote(uint256,uint8)": FunctionFragment;
     "zDAOId()": FunctionFragment;
-    "zDAOOwner()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -93,15 +80,7 @@ export interface IPolyZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [
-      BigNumberish,
-      string,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BigNumberish,
-      BytesLike
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
@@ -125,7 +104,6 @@ export interface IPolyZDAOInterface extends utils.Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "zDAOId", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOOwner", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "canCollectResult",
@@ -159,12 +137,11 @@ export interface IPolyZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOId", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOOwner", data: BytesLike): Result;
 
   events: {
     "CastVote(uint256,uint256,address,uint256)": EventFragment;
     "CollectResult(uint256,uint256,uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,address,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "CastVote"): EventFragment;
@@ -192,10 +169,9 @@ export type CollectResultEvent = TypedEvent<
 export type CollectResultEventFilter = TypedEventFilter<CollectResultEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, string, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber],
   {
     _zDAOId: BigNumber;
-    _proposalAuthor: string;
     _proposalId: BigNumber;
     _startTimestamp: BigNumber;
     _endTimestamp: BigNumber;
@@ -250,12 +226,8 @@ export interface IPolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -287,8 +259,6 @@ export interface IPolyZDAO extends BaseContract {
     ): Promise<ContractTransaction>;
 
     zDAOId(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<[string]>;
   };
 
   canCollectResult(
@@ -309,12 +279,8 @@ export interface IPolyZDAO extends BaseContract {
 
   createProposal(
     _proposalId: BigNumberish,
-    _createdBy: string,
     _startTimestamp: BigNumberish,
     _endTimestamp: BigNumberish,
-    _token: string,
-    _amount: BigNumberish,
-    _ipfs: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -347,8 +313,6 @@ export interface IPolyZDAO extends BaseContract {
 
   zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
 
-  zDAOOwner(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
     canCollectResult(
       _proposalId: BigNumberish,
@@ -368,12 +332,8 @@ export interface IPolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -402,8 +362,6 @@ export interface IPolyZDAO extends BaseContract {
     ): Promise<void>;
 
     zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -433,16 +391,14 @@ export interface IPolyZDAO extends BaseContract {
       no?: null
     ): CollectResultEventFilter;
 
-    "ProposalCreated(uint256,address,uint256,uint256,uint256)"(
+    "ProposalCreated(uint256,uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
-      _proposalAuthor?: string | null,
       _proposalId?: BigNumberish | null,
       _startTimestamp?: null,
       _endTimestamp?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
-      _proposalAuthor?: string | null,
       _proposalId?: BigNumberish | null,
       _startTimestamp?: null,
       _endTimestamp?: null
@@ -468,12 +424,8 @@ export interface IPolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -505,8 +457,6 @@ export interface IPolyZDAO extends BaseContract {
     ): Promise<BigNumber>;
 
     zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -528,12 +478,8 @@ export interface IPolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -565,7 +511,5 @@ export interface IPolyZDAO extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     zDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

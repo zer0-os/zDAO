@@ -21,43 +21,31 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export declare namespace IPolyZDAO {
   export type ProposalStruct = {
     proposalId: BigNumberish;
-    createdBy: string;
     startTimestamp: BigNumberish;
     endTimestamp: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
     reserved: BigNumberish;
-    ipfs: BytesLike;
-    token: string;
-    amount: BigNumberish;
     snapshot: BigNumberish;
     state: BigNumberish;
   };
 
   export type ProposalStructOutput = [
     BigNumber,
-    string,
     BigNumber,
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
-    string,
-    string,
     BigNumber,
     BigNumber,
     number
   ] & {
     proposalId: BigNumber;
-    createdBy: string;
     startTimestamp: BigNumber;
     endTimestamp: BigNumber;
     yes: BigNumber;
     no: BigNumber;
     reserved: BigNumber;
-    ipfs: string;
-    token: string;
-    amount: BigNumber;
     snapshot: BigNumber;
     state: number;
   };
@@ -67,12 +55,12 @@ export interface PolyZDAOInterface extends utils.Interface {
   contractName: "PolyZDAO";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,address,uint256,string,address,address,address,bool,uint256)": FunctionFragment;
+    "__ZDAO_init(address,address,uint256,address,bool,uint256)": FunctionFragment;
     "canCollectResult(uint256)": FunctionFragment;
     "canVote(uint256,address)": FunctionFragment;
     "childTunnel()": FunctionFragment;
     "collectResult(uint256)": FunctionFragment;
-    "createProposal(uint256,address,uint256,uint256,address,uint256,bytes32)": FunctionFragment;
+    "createProposal(uint256,uint256,uint256)": FunctionFragment;
     "destroyed()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getVoterChoice(uint256,address)": FunctionFragment;
@@ -97,7 +85,6 @@ export interface PolyZDAOInterface extends utils.Interface {
     "vote(uint256,uint8)": FunctionFragment;
     "zDAOId()": FunctionFragment;
     "zDAOInfo()": FunctionFragment;
-    "zDAOOwner()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -106,17 +93,7 @@ export interface PolyZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "__ZDAO_init",
-    values: [
-      string,
-      string,
-      BigNumberish,
-      string,
-      string,
-      string,
-      string,
-      boolean,
-      BigNumberish
-    ]
+    values: [string, string, BigNumberish, string, boolean, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "canCollectResult",
@@ -136,15 +113,7 @@ export interface PolyZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [
-      BigNumberish,
-      string,
-      BigNumberish,
-      BigNumberish,
-      string,
-      BigNumberish,
-      BytesLike
-    ]
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
@@ -218,7 +187,6 @@ export interface PolyZDAOInterface extends utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "zDAOId", values?: undefined): string;
   encodeFunctionData(functionFragment: "zDAOInfo", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOOwner", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
@@ -302,7 +270,6 @@ export interface PolyZDAOInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOId", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOOwner", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
@@ -311,7 +278,7 @@ export interface PolyZDAOInterface extends utils.Interface {
     "CollectResult(uint256,uint256,uint256,uint256)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
-    "ProposalCreated(uint256,address,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
@@ -376,10 +343,9 @@ export type PausedEvent = TypedEvent<[string], { account: string }>;
 export type PausedEventFilter = TypedEventFilter<PausedEvent>;
 
 export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, string, BigNumber, BigNumber, BigNumber],
+  [BigNumber, BigNumber, BigNumber, BigNumber],
   {
     _zDAOId: BigNumber;
-    _proposalAuthor: string;
     _proposalId: BigNumber;
     _startTimestamp: BigNumber;
     _endTimestamp: BigNumber;
@@ -452,9 +418,6 @@ export interface PolyZDAO extends BaseContract {
       _childTunnel: string,
       _staking: string,
       _zDAOId: BigNumberish,
-      _name: string,
-      _zDAOOwner: string,
-      _token: string,
       _mappedToken: string,
       _isRelativeMajority: boolean,
       _threshold: BigNumberish,
@@ -481,12 +444,8 @@ export interface PolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -535,28 +494,20 @@ export interface PolyZDAO extends BaseContract {
     ): Promise<
       [
         BigNumber,
-        string,
         BigNumber,
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
-        string,
-        string,
         BigNumber,
         BigNumber,
         number
       ] & {
         proposalId: BigNumber;
-        createdBy: string;
         startTimestamp: BigNumber;
         endTimestamp: BigNumber;
         yes: BigNumber;
         no: BigNumber;
         reserved: BigNumber;
-        ipfs: string;
-        token: string;
-        amount: BigNumber;
         snapshot: BigNumber;
         state: number;
       }
@@ -619,21 +570,8 @@ export interface PolyZDAO extends BaseContract {
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        string,
-        boolean,
-        BigNumber,
-        BigNumber,
-        boolean
-      ] & {
+      [BigNumber, string, boolean, BigNumber, BigNumber, boolean] & {
         zDAOId: BigNumber;
-        name: string;
-        owner: string;
-        token: string;
         mappedToken: string;
         isRelativeMajority: boolean;
         threshold: BigNumber;
@@ -641,8 +579,6 @@ export interface PolyZDAO extends BaseContract {
         destroyed: boolean;
       }
     >;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<[string]>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
@@ -651,9 +587,6 @@ export interface PolyZDAO extends BaseContract {
     _childTunnel: string,
     _staking: string,
     _zDAOId: BigNumberish,
-    _name: string,
-    _zDAOOwner: string,
-    _token: string,
     _mappedToken: string,
     _isRelativeMajority: boolean,
     _threshold: BigNumberish,
@@ -680,12 +613,8 @@ export interface PolyZDAO extends BaseContract {
 
   createProposal(
     _proposalId: BigNumberish,
-    _createdBy: string,
     _startTimestamp: BigNumberish,
     _endTimestamp: BigNumberish,
-    _token: string,
-    _amount: BigNumberish,
-    _ipfs: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -734,28 +663,20 @@ export interface PolyZDAO extends BaseContract {
   ): Promise<
     [
       BigNumber,
-      string,
       BigNumber,
       BigNumber,
       BigNumber,
       BigNumber,
-      BigNumber,
-      string,
-      string,
       BigNumber,
       BigNumber,
       number
     ] & {
       proposalId: BigNumber;
-      createdBy: string;
       startTimestamp: BigNumber;
       endTimestamp: BigNumber;
       yes: BigNumber;
       no: BigNumber;
       reserved: BigNumber;
-      ipfs: string;
-      token: string;
-      amount: BigNumber;
       snapshot: BigNumber;
       state: number;
     }
@@ -818,21 +739,8 @@ export interface PolyZDAO extends BaseContract {
   zDAOInfo(
     overrides?: CallOverrides
   ): Promise<
-    [
-      BigNumber,
-      string,
-      string,
-      string,
-      string,
-      boolean,
-      BigNumber,
-      BigNumber,
-      boolean
-    ] & {
+    [BigNumber, string, boolean, BigNumber, BigNumber, boolean] & {
       zDAOId: BigNumber;
-      name: string;
-      owner: string;
-      token: string;
       mappedToken: string;
       isRelativeMajority: boolean;
       threshold: BigNumber;
@@ -841,8 +749,6 @@ export interface PolyZDAO extends BaseContract {
     }
   >;
 
-  zDAOOwner(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -850,9 +756,6 @@ export interface PolyZDAO extends BaseContract {
       _childTunnel: string,
       _staking: string,
       _zDAOId: BigNumberish,
-      _name: string,
-      _zDAOOwner: string,
-      _token: string,
       _mappedToken: string,
       _isRelativeMajority: boolean,
       _threshold: BigNumberish,
@@ -879,12 +782,8 @@ export interface PolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -933,28 +832,20 @@ export interface PolyZDAO extends BaseContract {
     ): Promise<
       [
         BigNumber,
-        string,
         BigNumber,
         BigNumber,
         BigNumber,
         BigNumber,
-        BigNumber,
-        string,
-        string,
         BigNumber,
         BigNumber,
         number
       ] & {
         proposalId: BigNumber;
-        createdBy: string;
         startTimestamp: BigNumber;
         endTimestamp: BigNumber;
         yes: BigNumber;
         no: BigNumber;
         reserved: BigNumber;
-        ipfs: string;
-        token: string;
-        amount: BigNumber;
         snapshot: BigNumber;
         state: number;
       }
@@ -1012,21 +903,8 @@ export interface PolyZDAO extends BaseContract {
     zDAOInfo(
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        string,
-        boolean,
-        BigNumber,
-        BigNumber,
-        boolean
-      ] & {
+      [BigNumber, string, boolean, BigNumber, BigNumber, boolean] & {
         zDAOId: BigNumber;
-        name: string;
-        owner: string;
-        token: string;
         mappedToken: string;
         isRelativeMajority: boolean;
         threshold: BigNumber;
@@ -1034,8 +912,6 @@ export interface PolyZDAO extends BaseContract {
         destroyed: boolean;
       }
     >;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -1091,16 +967,14 @@ export interface PolyZDAO extends BaseContract {
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
 
-    "ProposalCreated(uint256,address,uint256,uint256,uint256)"(
+    "ProposalCreated(uint256,uint256,uint256,uint256)"(
       _zDAOId?: BigNumberish | null,
-      _proposalAuthor?: string | null,
       _proposalId?: BigNumberish | null,
       _startTimestamp?: null,
       _endTimestamp?: null
     ): ProposalCreatedEventFilter;
     ProposalCreated(
       _zDAOId?: BigNumberish | null,
-      _proposalAuthor?: string | null,
       _proposalId?: BigNumberish | null,
       _startTimestamp?: null,
       _endTimestamp?: null
@@ -1153,9 +1027,6 @@ export interface PolyZDAO extends BaseContract {
       _childTunnel: string,
       _staking: string,
       _zDAOId: BigNumberish,
-      _name: string,
-      _zDAOOwner: string,
-      _token: string,
       _mappedToken: string,
       _isRelativeMajority: boolean,
       _threshold: BigNumberish,
@@ -1182,12 +1053,8 @@ export interface PolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1293,8 +1160,6 @@ export interface PolyZDAO extends BaseContract {
     zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1306,9 +1171,6 @@ export interface PolyZDAO extends BaseContract {
       _childTunnel: string,
       _staking: string,
       _zDAOId: BigNumberish,
-      _name: string,
-      _zDAOOwner: string,
-      _token: string,
       _mappedToken: string,
       _isRelativeMajority: boolean,
       _threshold: BigNumberish,
@@ -1335,12 +1197,8 @@ export interface PolyZDAO extends BaseContract {
 
     createProposal(
       _proposalId: BigNumberish,
-      _createdBy: string,
       _startTimestamp: BigNumberish,
       _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1446,7 +1304,5 @@ export interface PolyZDAO extends BaseContract {
     zDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     zDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
