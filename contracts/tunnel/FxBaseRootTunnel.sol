@@ -44,14 +44,14 @@ abstract contract FxBaseRootTunnel {
   // storage to avoid duplicate exits
   mapping(bytes32 => bool) public processedExits;
 
-  // set fxChildTunnel if not set already
-  function setFxChildTunnel(address _fxChildTunnel) public {
-    require(
-      fxChildTunnel == address(0x0),
-      "FxBaseRootTunnel: CHILD_TUNNEL_ALREADY_SET"
-    );
-    fxChildTunnel = _fxChildTunnel;
-  }
+  // // set fxChildTunnel if not set already
+  // function setFxChildTunnel(address _fxChildTunnel) public {
+  //   require(
+  //     fxChildTunnel == address(0x0),
+  //     "FxBaseRootTunnel: CHILD_TUNNEL_ALREADY_SET"
+  //   );
+  //   fxChildTunnel = _fxChildTunnel;
+  // }
 
   /**
    * @notice Send bytes message to Child Tunnel

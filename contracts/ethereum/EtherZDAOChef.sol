@@ -82,6 +82,10 @@ contract EtherZDAOChef is
     zDAOBase = _zDAOBase;
   }
 
+  function setFxChildTunnel(address _fxChildTunnel) external onlyOwner {
+    fxChildTunnel = _fxChildTunnel;
+  }
+
   function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig)
     external
     override

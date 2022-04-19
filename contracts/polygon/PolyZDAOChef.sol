@@ -63,6 +63,10 @@ contract PolyZDAOChef is
     zDAOBase = _zDAOBase;
   }
 
+  function setFxRootTunnel(address _fxRootTunnel) external onlyOwner {
+    fxRootTunnel = _fxRootTunnel;
+  }
+
   function sendMessageToRoot(bytes memory _message) external {
     _sendMessageToRoot(_message);
   }
@@ -98,6 +102,7 @@ contract PolyZDAOChef is
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
+    address mappedToken = registry.rootToChildToken(token); // mapped token from Ethereum
     PolyZDAO zDAO = PolyZDAO(
       createProxy(
         zDAOBase,
@@ -106,7 +111,7 @@ contract PolyZDAOChef is
           IChildTunnel(this),
           staking,
           zDAOId,
-          registry.rootToChildToken(token), // mapped token from Ethereum
+          mappedToken,
           isRelativeMajority,
           threshold
         )
@@ -122,7 +127,7 @@ contract PolyZDAOChef is
     emit DAOCreated(
       address(zDAO),
       zDAOId,
-      token,
+      mappedToken,
       isRelativeMajority,
       threshold
     );

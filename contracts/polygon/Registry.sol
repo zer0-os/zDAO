@@ -5,8 +5,7 @@ pragma solidity ^0.8.11;
 import "../abstracts/ZeroUpgradeable.sol";
 
 contract Registry is ZeroUpgradeable {
-  using AddressUpgradeable for address;
-
+  
   mapping(address => address) public rootToChildToken;
   mapping(address => address) public childToRootToken;
 
@@ -31,10 +30,6 @@ contract Registry is ZeroUpgradeable {
     require(
       _rootToken != address(0) && _childToken != address(0),
       "Invalid token address"
-    );
-    require(
-      _rootToken.isContract() && _childToken.isContract(),
-      "Should be contract address"
     );
 
     rootToChildToken[_rootToken] = _childToken;
