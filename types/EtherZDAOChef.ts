@@ -77,7 +77,6 @@ export interface EtherZDAOChefInterface extends utils.Interface {
     "getzDaoByZNA(uint256)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "initialize()": FunctionFragment;
     "listzDAOs(uint256,uint256)": FunctionFragment;
     "numberOfzDAOs()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -154,10 +153,6 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "hasRole",
     values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initialize",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "listzDAOs",
@@ -271,7 +266,6 @@ export interface EtherZDAOChefInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "listzDAOs", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "numberOfzDAOs",
@@ -527,10 +521,6 @@ export interface EtherZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     listzDAOs(
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
@@ -687,10 +677,6 @@ export interface EtherZDAOChef extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  initialize(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   listzDAOs(
     _startIndex: BigNumberish,
     _endIndex: BigNumberish,
@@ -843,8 +829,6 @@ export interface EtherZDAOChef extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    initialize(overrides?: CallOverrides): Promise<void>;
 
     listzDAOs(
       _startIndex: BigNumberish,
@@ -1099,10 +1083,6 @@ export interface EtherZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     listzDAOs(
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
@@ -1265,10 +1245,6 @@ export interface EtherZDAOChef extends BaseContract {
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     listzDAOs(

@@ -28,7 +28,6 @@ export interface StakingInterface extends utils.Interface {
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "initialize()": FunctionFragment;
     "lock(address)": FunctionFragment;
     "lockable(address)": FunctionFragment;
     "locked(address)": FunctionFragment;
@@ -76,10 +75,6 @@ export interface StakingInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "hasRole",
     values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initialize",
-    values?: undefined
   ): string;
   encodeFunctionData(functionFragment: "lock", values: [string]): string;
   encodeFunctionData(functionFragment: "lockable", values: [string]): string;
@@ -158,7 +153,6 @@ export interface StakingInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lock", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lockable", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "locked", data: BytesLike): Result;
@@ -416,10 +410,6 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     lock(
       _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -550,10 +540,6 @@ export interface Staking extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  initialize(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   lock(
     _token: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -678,8 +664,6 @@ export interface Staking extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    initialize(overrides?: CallOverrides): Promise<void>;
 
     lock(_token: string, overrides?: CallOverrides): Promise<void>;
 
@@ -945,10 +929,6 @@ export interface Staking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     lock(
       _token: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1078,10 +1058,6 @@ export interface Staking extends BaseContract {
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     lock(

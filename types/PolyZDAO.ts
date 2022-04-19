@@ -78,7 +78,6 @@ export interface PolyZDAOInterface extends utils.Interface {
     "getVoterChoice(uint256,address)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "initialize()": FunctionFragment;
     "listProposals(uint256,uint256)": FunctionFragment;
     "numberOfProposals()": FunctionFragment;
     "owner()": FunctionFragment;
@@ -163,10 +162,6 @@ export interface PolyZDAOInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "hasRole",
     values: [BytesLike, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "initialize",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "listProposals",
@@ -261,7 +256,6 @@ export interface PolyZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "listProposals",
     data: BytesLike
@@ -518,10 +512,6 @@ export interface PolyZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     listProposals(
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
@@ -721,10 +711,6 @@ export interface PolyZDAO extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  initialize(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   listProposals(
     _startIndex: BigNumberish,
     _endIndex: BigNumberish,
@@ -923,8 +909,6 @@ export interface PolyZDAO extends BaseContract {
       account: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    initialize(overrides?: CallOverrides): Promise<void>;
 
     listProposals(
       _startIndex: BigNumberish,
@@ -1232,10 +1216,6 @@ export interface PolyZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     listProposals(
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
@@ -1387,10 +1367,6 @@ export interface PolyZDAO extends BaseContract {
       role: BytesLike,
       account: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    initialize(
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     listProposals(
