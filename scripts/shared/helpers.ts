@@ -5,7 +5,7 @@ export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
 
 export const verifyContract = async (
   address: string,
-  constructorArguments = []
+  constructorArguments: any[] = []
 ) => {
   try {
     console.log("Sleeping for 10 seconds before verification...");
