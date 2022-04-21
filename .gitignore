@@ -6,3 +6,6 @@ cache
 artifacts
 .env
 .DS_Store
+
+#remix files
+contracts/.deps
