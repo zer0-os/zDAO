@@ -186,9 +186,12 @@ contract Staking is
   }
 
   function _unlock(address _token) internal virtual {
-    require(lockable[_token].lockedRepeat > 0, "Already unlocked");
+    // require(lockable[_token].lockedRepeat > 0, "Already unlocked");
+    // lockable[_token].lockedRepeat--;
 
-    lockable[_token].lockedRepeat--;
+    if (lockable[_token].lockedRepeat < 1) { // already unlocked
+      return;
+    }
 
     emit Unlocked(
       _token,
