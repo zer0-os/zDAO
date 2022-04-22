@@ -61,7 +61,7 @@ contract EtherZDAOChef is
     address _checkpointManager,
     address _fxRoot
   ) public initializer {
-    ZeroUpgradeable.initialize();
+    ZeroUpgradeable.__ZeroUpgradeable_init();
 
     znsHub = _znsHub;
     zDAOBase = _zDAOBase;

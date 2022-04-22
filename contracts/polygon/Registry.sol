@@ -15,7 +15,7 @@ contract Registry is ZeroUpgradeable {
   /* -------------------------------------------------------------------------- */
 
   function __Registry_init() public initializer {
-    ZeroUpgradeable.initialize();
+    ZeroUpgradeable.__ZeroUpgradeable_init();
   }
 
   /* -------------------------------------------------------------------------- */

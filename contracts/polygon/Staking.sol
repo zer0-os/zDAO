@@ -59,7 +59,7 @@ contract Staking is
   /* -------------------------------------------------------------------------- */
 
   function __Staking_init() public initializer {
-    ZeroUpgradeable.initialize();
+    ZeroUpgradeable.__ZeroUpgradeable_init();
     __ERC721Holder_init();
     _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
   }

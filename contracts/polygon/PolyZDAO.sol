@@ -53,7 +53,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     bool _isRelativeMajority,
     uint256 _threshold
   ) public initializer {
-    ZeroUpgradeable.initialize();
+    ZeroUpgradeable.__ZeroUpgradeable_init();
 
     childTunnel = _childTunnel;
     staking = _staking;

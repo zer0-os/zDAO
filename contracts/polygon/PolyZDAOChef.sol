@@ -38,7 +38,7 @@ contract PolyZDAOChef is
     address _zDAOBase,
     address _fxChild
   ) public initializer {
-    ZeroUpgradeable.initialize();
+    ZeroUpgradeable.__ZeroUpgradeable_init();
 
     staking = _stakingBase;
     registry = _registry;

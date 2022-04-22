@@ -52,7 +52,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     address _zDAOOwner,
     IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
-    ZeroUpgradeable.initialize();
+    ZeroUpgradeable.__ZeroUpgradeable_init();
 
     rootTunnel = IRootTunnel(_rootTunnel);
 
