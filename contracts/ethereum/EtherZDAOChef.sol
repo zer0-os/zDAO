@@ -8,7 +8,7 @@ import {createProxy} from "../helpers/Proxy.sol";
 import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../tunnel/FxBaseRootTunnel.sol";
 import {IRootTunnel, ITunnel} from "./interfaces/IRootTunnel.sol";
 import {IEtherZDAOChef} from "./interfaces/IEtherZDAOChef.sol";
-import {EtherZDAO} from "./EtherZDAO.sol";
+import {IEtherZDAO} from "./interfaces/IEtherZDAO.sol";
 import {console} from "hardhat/console.sol";
 
 contract EtherZDAOChef is
@@ -95,7 +95,7 @@ contract EtherZDAOChef is
     require(daoId == 0, "Do not allow to add new DAO with same zNA");
 
     // Create zDAO contract
-    EtherZDAO zDAO = _createZDAO(_zDAOConfig);
+    IEtherZDAO zDAO = _createZDAO(_zDAOConfig);
 
     zDAORecords[lastZDAOId] = ZDAORecord({
       id: lastZDAOId,
@@ -182,15 +182,15 @@ contract EtherZDAOChef is
   function _createZDAO(ZDAOConfig calldata _zDAOConfig)
     internal
     virtual
-    returns (EtherZDAO zDAO)
+    returns (IEtherZDAO zDAO)
   {
     lastZDAOId++;
 
-    zDAO = EtherZDAO(
+    zDAO = IEtherZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          EtherZDAO.__ZDAO_init.selector,
+          IEtherZDAO.__ZDAO_init.selector,
           IRootTunnel(this),
           lastZDAOId,
           msg.sender, // zDAO owner

@@ -47,14 +47,14 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   }
 
   function __ZDAO_init(
-    IRootTunnel _rootTunnel,
+    address _rootTunnel,
     uint256 _zDAOId,
     address _zDAOOwner,
     IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
     ZeroUpgradeable.initialize();
 
-    rootTunnel = _rootTunnel;
+    rootTunnel = IRootTunnel(_rootTunnel);
 
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,

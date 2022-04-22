@@ -3,6 +3,7 @@
 pragma solidity ^0.8.11;
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IEtherZDAOChef} from "./IEtherZDAOChef.sol";
 
 interface IEtherZDAO {
   struct ZDAOInfo {
@@ -65,6 +66,13 @@ interface IEtherZDAO {
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
+
+  function __ZDAO_init(
+    address _rootTunnel,
+    uint256 _zDAOId,
+    address _zDAOOwner,
+    IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
+  ) external;
 
   function setDestroyed(bool _destroyed) external;
 
