@@ -19,9 +19,39 @@ interface IPolyZDAOChef {
 
   event DAODestroyed(uint256 indexed _daoId);
 
+  event ProposalCreated(
+    uint256 indexed _zDAOId,
+    uint256 indexed _proposalId,
+    uint256 _startTimestamp,
+    uint256 _endTimestamp
+  );
+
+  event CollectResult(
+    uint256 indexed _zDAOId,
+    uint256 indexed _proposalId,
+    bool indexed _isRelativeMajority,
+    uint256 _yes,
+    uint256 _no
+  );
+
+  event CastVote(
+    uint256 indexed _zDAOId,
+    uint256 indexed _proposalId,
+    address indexed _voter,
+    uint256 _choice
+  );
+
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
+
+  function vote(
+    uint256 _daoId,
+    uint256 _proposalId,
+    uint256 _choice
+  ) external;
+
+  function collectResult(uint256 _daoId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

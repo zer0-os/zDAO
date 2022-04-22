@@ -4,29 +4,32 @@ pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../helpers/Proxy.sol";
-import {FxBaseChildTunnel} from "../tunnel/FxBaseChildTunnel.sol";
-import {IChildTunnel} from "./interfaces/IChildTunnel.sol";
+import {IChildStateSender, IChildStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IPolyZDAOChef} from "./interfaces/IPolyZDAOChef.sol";
-import {PolyZDAO, IPolyZDAO} from "./PolyZDAO.sol";
+import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
 import {Registry} from "./Registry.sol";
 import {Staking} from "./Staking.sol";
 
-contract PolyZDAOChef is
-  ZeroUpgradeable,
-  FxBaseChildTunnel,
-  IChildTunnel,
-  IPolyZDAOChef
-{
+contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
   Staking public staking;
   Registry public registry;
+  IChildStateSender public childStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => PolyZDAO) public zDAOs;
+  mapping(uint256 => IPolyZDAO) public zDAOs;
   uint256[] public zDAOIds;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
+
+  modifier onlyValidZDAO(uint256 _daoId) {
+    require(
+      address(zDAOs[_daoId]) != address(0) && !zDAOs[_daoId].destroyed(),
+      "Invalid zDAO"
+    );
+    _;
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
@@ -35,15 +38,15 @@ contract PolyZDAOChef is
   function __ZDAOChef_init(
     Staking _stakingBase,
     Registry _registry,
-    address _zDAOBase,
-    address _fxChild
+    IChildStateSender _childStateSender,
+    address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     staking = _stakingBase;
     registry = _registry;
+    childStateSender = _childStateSender;
     zDAOBase = _zDAOBase;
-    fxChild = _fxChild;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -62,52 +65,80 @@ contract PolyZDAOChef is
     zDAOBase = _zDAOBase;
   }
 
-  function setFxRootTunnel(address _fxRootTunnel) external onlyOwner {
-    fxRootTunnel = _fxRootTunnel;
+  function vote(
+    uint256 _daoId,
+    uint256 _proposalId,
+    uint256 _choice
+  ) external override onlyValidZDAO(_daoId) {
+    zDAOs[_daoId].vote(_proposalId, msg.sender, _choice);
+
+    emit CastVote(_daoId, _proposalId, msg.sender, _choice);
   }
 
-  function sendMessageToRoot(bytes memory _message) external {
-    _sendMessageToRoot(_message);
+  function collectResult(uint256 _daoId, uint256 _proposalId)
+    external
+    override
+    onlyValidZDAO(_daoId)
+  {
+    (bool isRelativeMajority, uint256 yes, uint256 no) = zDAOs[_daoId]
+      .collectResult(_proposalId);
+
+    emit CollectResult(_daoId, _proposalId, isRelativeMajority, yes, no);
+
+    // send collected result to L1
+    childStateSender.sendMessageToRoot(
+      abi.encode(
+        uint256(ITunnel.MessageType.VoteResult),
+        _daoId,
+        _proposalId,
+        yes,
+        no
+      )
+    );
+  }
+
+  function processMessageFromRoot(bytes calldata _message) external {
+    require(msg.sender == address(childStateSender), "Not a state sender");
+    _processMessageFromRoot(_message);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _processMessageFromRoot(
-    uint256,
-    address,
-    bytes memory data
-  ) internal override {
-    uint256 messageType = abi.decode(data, (uint256));
+  function _processMessageFromRoot(bytes memory _message) internal {
+    uint256 messageType = abi.decode(_message, (uint256));
     if (messageType == uint256(MessageType.CreateZDAO)) {
-      // create zDAO
-      _createZDAO(data);
+      _createZDAO(_message);
     } else if (messageType == uint256(MessageType.DeleteZDAO)) {
-      _deleteZDAO(data);
+      _deleteZDAO(_message);
     } else if (messageType == uint256(MessageType.CreateProposal)) {
-      _createProposal(data);
+      _createProposal(_message);
     }
   }
 
-  function _createZDAO(bytes memory data) internal virtual returns (PolyZDAO) {
+  function _createZDAO(bytes memory _message)
+    internal
+    virtual
+    returns (IPolyZDAO)
+  {
     (
       uint256 messageType,
       uint256 zDAOId,
       address token,
       bool isRelativeMajority,
       uint256 threshold
-    ) = abi.decode(data, (uint256, uint256, address, bool, uint256));
+    ) = abi.decode(_message, (uint256, uint256, address, bool, uint256));
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
     address mappedToken = registry.rootToChildToken(token); // mapped token from Ethereum
-    PolyZDAO zDAO = PolyZDAO(
+    IPolyZDAO zDAO = IPolyZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          PolyZDAO.__ZDAO_init.selector,
-          IChildTunnel(this),
+          IPolyZDAO.__ZDAO_init.selector,
+          address(this),
           staking,
           zDAOId,
           mappedToken,
@@ -134,9 +165,9 @@ contract PolyZDAOChef is
     return zDAO;
   }
 
-  function _deleteZDAO(bytes memory data) internal virtual {
+  function _deleteZDAO(bytes memory _message) internal virtual {
     (uint256 messageType, uint256 zDAOId) = abi.decode(
-      data,
+      _message,
       (uint256, uint256)
     );
 
@@ -147,19 +178,21 @@ contract PolyZDAOChef is
     emit DAODestroyed(zDAOId);
   }
 
-  function _createProposal(bytes memory data) internal virtual {
+  function _createProposal(bytes memory _message) internal virtual {
     (
       uint256 messageType,
       uint256 zDAOId,
       uint256 proposalId,
       uint256 startTimestamp,
       uint256 endTimestamp
-    ) = abi.decode(data, (uint256, uint256, uint256, uint256, uint256));
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
 
     zDAOs[zDAOId].createProposal(proposalId, startTimestamp, endTimestamp);
+
+    emit ProposalCreated(zDAOId, proposalId, startTimestamp, endTimestamp);
   }
 
   /* -------------------------------------------------------------------------- */

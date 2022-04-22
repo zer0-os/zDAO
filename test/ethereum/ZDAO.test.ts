@@ -8,12 +8,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import {
-  IERC20Upgradeable,
-  EtherZDAO,
-  EtherZDAO__factory,
-  IRootTunnel,
-} from "../../types";
+import { IERC20Upgradeable, EtherZDAO, EtherZDAO__factory } from "../../types";
 import { encodeVoteResult, VoteResultPack } from "../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../shared/types";
 import { now } from "../shared/utilities";
@@ -22,28 +17,26 @@ chai.use(smock.matchers);
 
 describe("ZDAO", async function () {
   let owner: SignerWithAddress,
+    zDAOChef: SignerWithAddress,
     zNAOwner: SignerWithAddress,
     userA: SignerWithAddress,
     userB: SignerWithAddress;
 
   const zNA = "wilder.wheels";
 
-  let rootTunnel: FakeContract<IRootTunnel>,
-    zDAO: MockContract<EtherZDAO>,
+  let zDAO: MockContract<EtherZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
   let zDAOConfig: ZDAOConfig, proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
-    [owner, zNAOwner, userA, userB] = await ethers.getSigners();
+    [owner, zDAOChef, zNAOwner, userA, userB] = await ethers.getSigners();
 
     const ZDAOFactory = (await smock.mock<EtherZDAO__factory>(
       "EtherZDAO"
     )) as MockContractFactory<EtherZDAO__factory>;
     zDAO = (await ZDAOFactory.deploy()) as MockContract<EtherZDAO>;
-
-    rootTunnel = (await smock.fake("IRootTunnel")) as FakeContract<IRootTunnel>;
 
     vToken = (await smock.fake(
       "IERC20Upgradeable"
@@ -66,7 +59,7 @@ describe("ZDAO", async function () {
     };
 
     await zDAO.__ZDAO_init(
-      rootTunnel.address,
+      zDAOChef.address, // instead of zDAOChef
       zDAOId,
       zNAOwner.address,
       zDAOConfig
@@ -103,8 +96,9 @@ describe("ZDAO", async function () {
     user: SignerWithAddress
   ): Promise<ContractTransaction> => {
     return zDAO
-      .connect(user)
+      .connect(zDAOChef)
       .createProposal(
+        user.address,
         proposalConfig.startTimestamp,
         proposalConfig.endTimestamp,
         proposalConfig.token,
@@ -142,46 +136,29 @@ describe("ZDAO", async function () {
     expect(proposals[0].state).to.be.equal(0); // Active state
   });
 
-  it("Should be callable by zDAO owner", async function () {
+  it("Should be callable by zDAOChef", async function () {
     await expect(
       zDAO.connect(userB).setVotingToken(vToken.address, zDAOConfig.amount)
-    ).to.be.revertedWith("Not a zDAO Owner");
+    ).to.be.revertedWith("Not a ZDAOChef");
     await expect(
-      zDAO.connect(zNAOwner).setVotingToken(vToken.address, zDAOConfig.amount)
+      zDAO.connect(zDAOChef).setVotingToken(vToken.address, zDAOConfig.amount)
     ).to.be.not.reverted;
   });
 
-  it("Should receive voting result from L2", async function () {
-    const voteResultPack: VoteResultPack = {
-      zDAOId: 1,
-      proposalId: 1,
-      yes: 100,
-      no: 50,
-    };
-    const message = encodeVoteResult(voteResultPack);
-
-    // make sure only root tunnel can call setVoteResult function
-    await expect(zDAO.connect(userA).setVoteResult(message)).to.be.revertedWith(
-      "Not a ZDAOChef"
-    );
-
-    await zDAO.setVariable("rootTunnel", userA.address);
-    // check if revert to set vote result without created proposal
-    await expect(zDAO.connect(userA).setVoteResult(message)).to.be.revertedWith(
-      "Invalid proposal"
-    );
-
+  it("Should receive voting result", async function () {
     // create proposal
-    await zDAO.setVariable("rootTunnel", rootTunnel.address);
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
     await createProposal(userA);
 
-    await zDAO.setVariable("rootTunnel", userA.address);
-    await expect(zDAO.connect(userA).setVoteResult(message)).to.be.not.reverted;
+    const proposalId = 1;
+
+    await expect(zDAO.connect(zDAOChef).setVoteResult(proposalId, 70, 30)).to.be
+      .not.reverted;
+
+    const proposal = await zDAO.proposals(proposalId);
 
     // check received result
-    const proposal = await zDAO.proposals(voteResultPack.proposalId);
-    expect(proposal.yes.toNumber()).to.be.equal(voteResultPack.yes);
-    expect(proposal.no.toNumber()).to.be.equal(voteResultPack.no);
+    expect(proposal.yes.toNumber()).to.be.equal(70);
+    expect(proposal.no.toNumber()).to.be.equal(30);
   });
 });

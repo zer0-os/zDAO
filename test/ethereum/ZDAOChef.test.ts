@@ -14,12 +14,13 @@ import {
   EtherZDAO,
   EtherZDAOChef,
   EtherZDAOChef__factory,
-  ICheckpointManager,
   IERC20Upgradeable,
-  IFxStateSender,
   IZNSHub,
 } from "../../types";
-import { ZDAOConfig } from "../shared/types";
+import { IRootStateSender } from "../../types/IRootStateSender";
+import { encodeVoteResult } from "../shared/messagePack";
+import { ProposalConfig, ZDAOConfig } from "../shared/types";
+import { now } from "../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -35,10 +36,11 @@ describe("ZDAOChef", async function () {
   const zNAAsNumber2 = zns.domains.domainNameToId(zNA2);
 
   let ZNSHub: FakeContract<IZNSHub>,
+    rootStateSender: FakeContract<IRootStateSender>,
     ZDAOChef: MockContract<EtherZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
 
-  let zDAOConfig: ZDAOConfig;
+  let zDAOConfig: ZDAOConfig, proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
     [owner, zNAOwner, zNAOwner2, userA] = await ethers.getSigners();
@@ -49,20 +51,17 @@ describe("ZDAOChef", async function () {
     const ZDAOFactory = await ethers.getContractFactory("EtherZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
+    rootStateSender = (await smock.fake(
+      "IRootStateSender"
+    )) as FakeContract<IRootStateSender>;
+
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
-    const checkPointManager = (await smock.fake(
-      "ICheckpointManager"
-    )) as FakeContract<ICheckpointManager>;
-    const fxRoot = (await smock.fake(
-      "IFxStateSender"
-    )) as FakeContract<IFxStateSender>;
 
     ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<EtherZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       znsHubAddress,
-      zDAOBase.address,
-      checkPointManager.address,
-      fxRoot.address
+      rootStateSender.address,
+      zDAOBase.address
     );
 
     ZNSHub = (await smock.fake("IZNSHub", {
@@ -90,10 +89,32 @@ describe("ZDAOChef", async function () {
       isRelativeMajority: true,
       threshold: threshold,
     };
+
+    proposalConfig = {
+      startTimestamp: await now(),
+      endTimestamp: (await now()) + minPeriod,
+      token: vToken.address,
+      amount: minAmount.toNumber(),
+      ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
+    };
   });
 
   const addNewDAO = (user: SignerWithAddress): Promise<ContractTransaction> => {
     return ZDAOChef.connect(user).addNewDAO(zNAAsNumber, zDAOConfig);
+  };
+
+  const createProposal = (
+    user: SignerWithAddress,
+    daoId: number
+  ): Promise<ContractTransaction> => {
+    return ZDAOChef.connect(user).createProposal(
+      daoId,
+      proposalConfig.startTimestamp,
+      proposalConfig.endTimestamp,
+      proposalConfig.token,
+      proposalConfig.amount,
+      proposalConfig.ipfs
+    );
   };
 
   it("Only zNA owner can add new DAO", async function () {
@@ -142,7 +163,7 @@ describe("ZDAOChef", async function () {
     expect(zDAORecords[0].id).to.be.equal(zDAORecord.id);
   });
 
-  it("Only owner can remove DAO", async function () {
+  it("Only DAO owner can remove DAO", async function () {
     await addNewDAO(zNAOwner);
 
     const daoId = 1;
@@ -195,5 +216,76 @@ describe("ZDAOChef", async function () {
     await expect(ZDAOChef.getzDaoByZNA(zNAAsNumber)).to.be.revertedWith(
       "No zDAO associated with zNA"
     );
+  });
+
+  it("Only DAO owner can set Gnosis Safe", async function () {
+    await addNewDAO(zNAOwner);
+
+    const daoId = 1;
+    const newGnosisSafe = await ethers.Wallet.createRandom().getAddress();
+    await expect(
+      ZDAOChef.connect(zNAOwner).setDAOGnosisSafe(daoId, newGnosisSafe)
+    ).to.be.not.reverted;
+  });
+
+  it("Only DAO owner can set voting token", async function () {
+    await addNewDAO(zNAOwner);
+
+    const daoId = 1;
+    const votingToken = await ethers.Wallet.createRandom().getAddress();
+    await expect(
+      ZDAOChef.connect(zNAOwner).setDAOVotingToken(daoId, votingToken, 1000)
+    ).to.be.not.reverted;
+  });
+
+  it("Should create a proposal", async function () {
+    await addNewDAO(zNAOwner);
+
+    const zDAOId = 1;
+    vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+    await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
+  });
+
+  it("Should execute a proposal", async function () {
+    await addNewDAO(zNAOwner);
+
+    const zDAOId = 1;
+    vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+    await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
+
+    const proposalId = 1;
+    await expect(ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)).to
+      .be.not.reverted;
+  });
+
+  it("Should collect voting result", async function () {
+    await addNewDAO(zNAOwner);
+
+    const zDAOId = 1;
+    vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+    await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
+
+    const proposalId = 1;
+    const message = encodeVoteResult({
+      zDAOId,
+      proposalId,
+      yes: 70,
+      no: 30,
+    });
+
+    await ZDAOChef.setVariable("rootStateSender", userA.address);
+    await expect(ZDAOChef.connect(userA).processMessageFromChild(message)).to.be
+      .not.reverted;
+
+    const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
+    const zDAO = (await ethers.getContractAt(
+      "EtherZDAO",
+      zDAORecord.zDAO,
+      userA
+    )) as EtherZDAO;
+
+    const proposal = await zDAO.proposals(proposalId);
+    expect(proposal.yes).to.be.equal(70);
+    expect(proposal.no).to.be.equal(30);
   });
 });

@@ -34,9 +34,37 @@ interface IEtherZDAOChef {
 
   event DAODestroyed(uint256 indexed _daoId);
 
+  event DAOUpdateGnosisSafe(
+    uint256 indexed _daoId,
+    address indexed _gnosisSafe
+  );
+
+  event DAOUpdateVotingtoken(
+    uint256 indexed _daoId,
+    address indexed _token,
+    uint256 indexed _amount
+  );
+
   event LinkAdded(uint256 indexed _daoId, uint256 indexed _zNA);
 
   event LinkRemoved(uint256 indexed _daoId, uint256 indexed _zNA);
+
+  event ProposalCreated(
+    uint256 indexed _zDAOId,
+    address indexed _proposalAuthor,
+    uint256 indexed _proposalId,
+    uint256 _startTimestamp,
+    uint256 _endTimestamp
+  );
+
+  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
+
+  event ProposalCollected(
+    uint256 indexed _zDAOId,
+    uint256 indexed _propoalId,
+    uint256 yes,
+    uint256 no
+  );
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
@@ -46,9 +74,28 @@ interface IEtherZDAOChef {
 
   function removeDAO(uint256 _daoId) external;
 
+  function setDAOGnosisSafe(uint256 _daoId, address _gnosisSafe) external;
+
+  function setDAOVotingToken(
+    uint256 _daoId,
+    address _token,
+    uint256 _amount
+  ) external;
+
   function addZNAAssociation(uint256 _daoId, uint256 _zNA) external;
 
   function removeZNAAssociation(uint256 _daoId, uint256 _zNA) external;
+
+  function createProposal(
+    uint256 _daoId,
+    uint256 _startTimestamp,
+    uint256 _endTimestamp,
+    IERC20Upgradeable _token,
+    uint256 _amount,
+    bytes32 _ipfs
+  ) external;
+
+  function executeProposal(uint256 _daoId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

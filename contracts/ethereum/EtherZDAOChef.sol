@@ -2,29 +2,23 @@
 
 pragma solidity ^0.8.11;
 
-import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {IZNSHub} from "../interfaces/IZNSHub.sol";
+import {ZeroUpgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../helpers/Proxy.sol";
-import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../tunnel/FxBaseRootTunnel.sol";
-import {IRootTunnel, ITunnel} from "./interfaces/IRootTunnel.sol";
+import {IZNSHub} from "../interfaces/IZNSHub.sol";
+import {IRootStateSender, IRootStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IEtherZDAOChef} from "./interfaces/IEtherZDAOChef.sol";
 import {IEtherZDAO} from "./interfaces/IEtherZDAO.sol";
 import {console} from "hardhat/console.sol";
 
-contract EtherZDAOChef is
-  ZeroUpgradeable,
-  FxBaseRootTunnel,
-  IRootTunnel,
-  IEtherZDAOChef
-{
+contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
+  IZNSHub public znsHub;
+  IRootStateSender public rootStateSender;
   address public zDAOBase;
 
   mapping(uint256 => ZDAORecord) public zDAORecords;
   mapping(uint256 => uint256) private zNATozDAOId;
 
   uint256 private lastZDAOId;
-
-  IZNSHub public znsHub;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -57,17 +51,14 @@ contract EtherZDAOChef is
 
   function __ZDAOChef_init(
     IZNSHub _znsHub,
-    address _zDAOBase,
-    address _checkpointManager,
-    address _fxRoot
+    IRootStateSender _rootStateSender,
+    address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     znsHub = _znsHub;
+    rootStateSender = _rootStateSender;
     zDAOBase = _zDAOBase;
-
-    checkpointManager = ICheckpointManager(_checkpointManager);
-    fxRoot = IFxStateSender(_fxRoot);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -80,10 +71,6 @@ contract EtherZDAOChef is
 
   function setZDAOBase(address _zDAOBase) external onlyOwner {
     zDAOBase = _zDAOBase;
-  }
-
-  function setFxChildTunnel(address _fxChildTunnel) external onlyOwner {
-    fxChildTunnel = _fxChildTunnel;
   }
 
   function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig)
@@ -109,7 +96,7 @@ contract EtherZDAOChef is
     _associatezNA(lastZDAOId, _zNA);
 
     // send zDAO info to L2
-    _sendMessageToChild(
+    rootStateSender.sendMessageToChild(
       abi.encode(
         uint256(MessageType.CreateZDAO),
         lastZDAOId,
@@ -131,7 +118,32 @@ contract EtherZDAOChef is
     emit DAODestroyed(_daoId);
 
     // send zDAO info to L2
-    _sendMessageToChild(abi.encode(uint256(MessageType.DeleteZDAO), _daoId));
+    rootStateSender.sendMessageToChild(
+      abi.encode(uint256(MessageType.DeleteZDAO), _daoId)
+    );
+  }
+
+  function setDAOGnosisSafe(uint256 _daoId, address _gnosisSafe)
+    external
+    override
+    onlyDAOOwner(_daoId)
+    onlyValidZDAO(_daoId)
+  {
+    zDAORecords[_daoId].zDAO.setGnosisSafe(_gnosisSafe);
+
+    emit DAOUpdateGnosisSafe(_daoId, _gnosisSafe);
+  }
+
+  function setDAOVotingToken(
+    uint256 _daoId,
+    address _token,
+    uint256 _amount
+  ) external override onlyDAOOwner(_daoId) onlyValidZDAO(_daoId) {
+    zDAORecords[_daoId].zDAO.setVotingToken(_token, _amount);
+
+    emit DAOUpdateVotingtoken(_daoId, _token, _amount);
+
+    // todo, send message to L2
   }
 
   function addZNAAssociation(uint256 _daoId, uint256 _zNA)
@@ -155,23 +167,73 @@ contract EtherZDAOChef is
     _disassociatezNA(_daoId, _zNA);
   }
 
-  function sendMessageToChild(bytes memory _message) external override {
-    _sendMessageToChild(_message);
+  function createProposal(
+    uint256 _daoId,
+    uint256 _startTimestamp,
+    uint256 _endTimestamp,
+    IERC20Upgradeable _token,
+    uint256 _amount,
+    bytes32 _ipfs
+  ) external override onlyValidZDAO(_daoId) {
+    uint256 proposalId = zDAORecords[_daoId].zDAO.createProposal(
+      msg.sender, // created by
+      _startTimestamp,
+      _endTimestamp,
+      _token,
+      _amount,
+      _ipfs
+    );
+
+    emit ProposalCreated(
+      _daoId,
+      msg.sender,
+      proposalId,
+      _startTimestamp,
+      _endTimestamp
+    );
+
+    // send proposal info to L2
+    rootStateSender.sendMessageToChild(
+      abi.encode(
+        uint256(ITunnel.MessageType.CreateProposal),
+        _daoId,
+        proposalId,
+        _startTimestamp,
+        _endTimestamp
+      )
+    );
+  }
+
+  function executeProposal(uint256 _daoId, uint256 _proposalId)
+    external
+    override
+  {
+    zDAORecords[_daoId].zDAO.executeProposal(_proposalId);
+
+    emit ProposalExecuted(_daoId, _proposalId);
+  }
+
+  function processMessageFromChild(bytes calldata _message) external override {
+    require(msg.sender == address(rootStateSender), "Not a state sender");
+    _processMessageFromChild(_message);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _processMessageFromChild(bytes memory _data) internal override {
+  function _processMessageFromChild(bytes memory _data) internal {
     uint256 messageType = abi.decode(_data, (uint256));
     if (messageType == uint256(ITunnel.MessageType.VoteResult)) {
-      (uint256 messageType2, uint256 zDAOId) = abi.decode(
-        _data,
-        (uint256, uint256)
-      );
+      (
+        uint256 messageType2,
+        uint256 zDAOId,
+        uint256 proposalId,
+        uint256 yes,
+        uint256 no
+      ) = abi.decode(_data, (uint256, uint256, uint256, uint256, uint256));
       // let zDAO decode
-      zDAORecords[zDAOId].zDAO.setVoteResult(_data);
+      zDAORecords[zDAOId].zDAO.setVoteResult(proposalId, yes, no);
     }
   }
 
@@ -191,7 +253,7 @@ contract EtherZDAOChef is
         zDAOBase,
         abi.encodeWithSelector(
           IEtherZDAO.__ZDAO_init.selector,
-          IRootTunnel(this),
+          address(this),
           lastZDAOId,
           msg.sender, // zDAO owner
           _zDAOConfig

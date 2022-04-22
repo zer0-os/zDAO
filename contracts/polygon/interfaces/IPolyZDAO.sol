@@ -19,16 +19,16 @@ interface IPolyZDAO {
     bool destroyed;
   }
 
-  enum ProposalState {
-    Active,
-    Executed,
-    Deleted
-  }
-
   enum VoterChoice {
     None,
     Yes,
     No
+  }
+
+  enum ProposalState {
+    Active,
+    Executed,
+    Deleted
   }
 
   struct Proposal {
@@ -48,34 +48,17 @@ interface IPolyZDAO {
   }
 
   /* -------------------------------------------------------------------------- */
-  /*                                   Events                                   */
-  /* --------------------------------------------------------------------------
-   */
-
-  event ProposalCreated(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
-  );
-
-  event CollectResult(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    uint256 yes,
-    uint256 no
-  );
-
-  event CastVote(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    address indexed _voter,
-    uint256 _choice
-  );
-
-  /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
+
+  function __ZDAO_init(
+    address _zDAOChef,
+    address _staking,
+    uint256 _zDAOId,
+    address _mappedToken, // token address on Polygon
+    bool _isRelativeMajority,
+    uint256 _threshold
+  ) external;
 
   function setDestroyed(bool _destroyed) external;
 
@@ -85,9 +68,19 @@ interface IPolyZDAO {
     uint256 _endTimestamp
   ) external;
 
-  function vote(uint256 _proposalId, VoterChoice _choice) external;
+  function vote(
+    uint256 _proposalId,
+    address _voter,
+    uint256 _choice
+  ) external;
 
-  function collectResult(uint256 _proposalId) external;
+  function collectResult(uint256 _proposalId)
+    external
+    returns (
+      bool isRelativeMajority,
+      uint256 yes,
+      uint256 no
+    );
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

@@ -8,12 +8,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import {
-  IERC20Upgradeable,
-  PolyZDAO,
-  PolyZDAO__factory,
-  IChildTunnel,
-} from "../../types";
+import { IERC20Upgradeable, PolyZDAO, PolyZDAO__factory } from "../../types";
 import { Staking__factory } from "../../types/factories/Staking__factory";
 import { Staking } from "../../types/Staking";
 import { PolyProposalConfig, PolyZDAOConfig } from "../shared/types";
@@ -23,12 +18,12 @@ chai.use(smock.matchers);
 
 describe("ZDAO", async function () {
   let owner: SignerWithAddress,
+    zDAOChef: SignerWithAddress,
     userA: SignerWithAddress,
     userB: SignerWithAddress,
     userC: SignerWithAddress;
 
-  let childTunnel: FakeContract<IChildTunnel>,
-    staking: MockContract<Staking>,
+  let staking: MockContract<Staking>,
     zDAO: MockContract<PolyZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
     vPolyToken: FakeContract<IERC20Upgradeable>,
@@ -37,16 +32,12 @@ describe("ZDAO", async function () {
   let zDAOConfig: PolyZDAOConfig, proposalConfig: PolyProposalConfig;
 
   beforeEach("init setup", async function () {
-    [owner, userA, userB, userC] = await ethers.getSigners();
+    [owner, zDAOChef, userA, userB, userC] = await ethers.getSigners();
 
     const ZDAOFactory = (await smock.mock<PolyZDAO__factory>(
       "PolyZDAO"
     )) as MockContractFactory<PolyZDAO__factory>;
     zDAO = (await ZDAOFactory.deploy()) as MockContract<PolyZDAO>;
-
-    childTunnel = (await smock.fake(
-      "IChildTunnel"
-    )) as FakeContract<IChildTunnel>;
 
     const StakingFactory = (await smock.mock<Staking__factory>(
       "Staking"
@@ -75,7 +66,7 @@ describe("ZDAO", async function () {
     };
 
     await zDAO.__ZDAO_init(
-      childTunnel.address,
+      zDAOChef.address,
       staking.address,
       zDAOConfig.zDAOId,
       zDAOConfig.mappedToken,
@@ -110,10 +101,10 @@ describe("ZDAO", async function () {
   });
 
   const createProposal = async (
-    user: SignerWithAddress
+    userA?: SignerWithAddress
   ): Promise<ContractTransaction> => {
     return zDAO
-      .connect(user)
+      .connect(userA ?? zDAOChef)
       .createProposal(
         proposalConfig.proposalId,
         proposalConfig.startTimestamp,
@@ -124,9 +115,7 @@ describe("ZDAO", async function () {
   it("Proposal can be created by child tunnel when it receives message from Ethereum", async function () {
     // check if user can create proposal
     await expect(createProposal(userA)).to.be.revertedWith("Not a ZDAOChef");
-    // make sure only child tunnel can call setVoteResult function
-    await zDAO.setVariable("childTunnel", userA.address);
-    await expect(createProposal(userA)).to.be.not.reverted;
+    await expect(createProposal()).to.be.not.reverted;
 
     expect(await zDAO.numberOfProposals()).to.be.equal(1);
 
@@ -135,8 +124,7 @@ describe("ZDAO", async function () {
   });
 
   it("Any staker should be able to vote on proposal", async function () {
-    await zDAO.setVariable("childTunnel", userA.address);
-    await createProposal(userA);
+    await createProposal();
 
     staking.userStaked
       .whenCalledWith(userB.address, zDAOConfig.mappedToken)
@@ -145,22 +133,20 @@ describe("ZDAO", async function () {
     const proposalId = 1;
     const choice = 1; // yes
 
-    await zDAO.connect(userB).vote(proposalId, choice);
-
-    await expect(zDAO.connect(userB).vote(proposalId, choice)).to.be.not
-      .reverted;
+    await expect(zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice))
+      .to.be.not.reverted;
 
     // check if voter can change his choice
-    await expect(zDAO.connect(userB).vote(proposalId, choice + 1)).to.be.not
-      .reverted;
+    await expect(
+      zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice + 1)
+    ).to.be.not.reverted;
 
     const lastChoice = await zDAO.getVoterChoice(proposalId, userB.address);
     expect(lastChoice).to.be.equal(choice + 1);
   });
 
   it("Only can collect voting result after proposal ends", async function () {
-    await zDAO.setVariable("childTunnel", userA.address);
-    await createProposal(userA);
+    await createProposal();
 
     staking.userStaked
       .whenCalledWith(userA.address, zDAOConfig.mappedToken)
@@ -176,12 +162,12 @@ describe("ZDAO", async function () {
 
     const proposalId = 1;
     const choice = 1; // yes
-    await zDAO.connect(userA).vote(proposalId, choice);
-    await zDAO.connect(userB).vote(proposalId, choice);
-    await zDAO.connect(userC).vote(proposalId, choice + 1);
+    await zDAO.connect(zDAOChef).vote(proposalId, userA.address, choice);
+    await zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice);
+    await zDAO.connect(zDAOChef).vote(proposalId, userC.address, choice + 1);
 
     await expect(
-      zDAO.connect(userC).collectResult(proposalId)
+      zDAO.connect(zDAOChef).collectResult(proposalId)
     ).to.be.revertedWith("Not valid for collecting result");
 
     // mint to the end of proposal
@@ -189,8 +175,7 @@ describe("ZDAO", async function () {
       proposalConfig.endTimestamp - proposalConfig.startTimestamp
     );
 
-    zDAO.setVariable("childTunnel", childTunnel.address);
-    await expect(zDAO.connect(userC).collectResult(proposalId)).to.be.not
+    await expect(zDAO.connect(zDAOChef).collectResult(proposalId)).to.be.not
       .reverted;
   });
 });

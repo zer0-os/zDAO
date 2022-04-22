@@ -46,29 +46,12 @@ interface IEtherZDAO {
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
 
-  event ProposalCreated(
-    uint256 indexed _zDAOId,
-    address indexed _proposalAuthor,
-    uint256 indexed _proposalId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
-  );
-
-  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
-
-  event ProposalCollected(
-    uint256 indexed _zDAOId,
-    uint256 indexed _propoalId,
-    uint256 yes,
-    uint256 no
-  );
-
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
   function __ZDAO_init(
-    address _rootTunnel,
+    address _zDAOChef,
     uint256 _zDAOId,
     address _zDAOOwner,
     IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
@@ -76,17 +59,26 @@ interface IEtherZDAO {
 
   function setDestroyed(bool _destroyed) external;
 
+  function setGnosisSafe(address _gnosisSafe) external;
+
+  function setVotingToken(address _token, uint256 _amount) external;
+
   function createProposal(
+    address _createdBy,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
     IERC20Upgradeable _token,
     uint256 _amount,
     bytes32 _ipfs
-  ) external;
+  ) external returns (uint256);
 
   function executeProposal(uint256 _proposalId) external;
 
-  function setVoteResult(bytes calldata _data) external;
+  function setVoteResult(
+    uint256 _proposalId,
+    uint256 _yes,
+    uint256 _no
+  ) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

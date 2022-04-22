@@ -11,3 +11,19 @@ interface ITunnel {
     VoteResult
   }
 }
+
+interface IRootStateSender is ITunnel {
+  function sendMessageToChild(bytes calldata message) external;
+}
+
+interface IRootStateReceiver is ITunnel {
+  function processMessageFromChild(bytes calldata message) external;
+}
+
+interface IChildStateSender is ITunnel {
+  function sendMessageToRoot(bytes calldata message) external;
+}
+
+interface IChildStateReceiver is ITunnel {
+  function processMessageFromRoot(bytes calldata data) external;
+}

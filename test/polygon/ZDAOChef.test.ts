@@ -14,6 +14,7 @@ import {
   PolyZDAOChef,
   PolyZDAOChef__factory,
   IERC20Upgradeable,
+  IChildStateSender,
 } from "../../types";
 import { Registry__factory } from "../../types/factories/Registry__factory";
 import { Staking__factory } from "../../types/factories/Staking__factory";
@@ -32,20 +33,20 @@ chai.use(smock.matchers);
 
 describe("ZDAOChef", async function () {
   let owner: SignerWithAddress,
-    fxChild: SignerWithAddress,
     zDAOOwner: SignerWithAddress,
     userA: SignerWithAddress;
 
   let staking: MockContract<Staking>,
     registry: MockContract<Registry>,
     ZDAOChef: MockContract<PolyZDAOChef>,
+    childStateSender: FakeContract<IChildStateSender>,
     vToken: FakeContract<IERC20Upgradeable>,
     vPolyToken: FakeContract<IERC20Upgradeable>;
 
   let zDAOPack: CreateZDAOPack, proposalPack: CreateProposalPack;
 
   beforeEach("init setup", async function () {
-    [owner, fxChild, zDAOOwner, userA] = await ethers.getSigners();
+    [owner, zDAOOwner, userA] = await ethers.getSigners();
 
     const ZDAOChefFactory = (await smock.mock<PolyZDAOChef__factory>(
       "PolyZDAOChef"
@@ -65,12 +66,16 @@ describe("ZDAOChef", async function () {
     registry = (await RegistryFactory.deploy()) as MockContract<Registry>;
     await registry.__Registry_init();
 
+    childStateSender = (await smock.fake(
+      "IChildStateSender"
+    )) as FakeContract<IChildStateSender>;
+
     ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<PolyZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       staking.address,
       registry.address,
-      zDAOBase.address,
-      fxChild.address
+      childStateSender.address,
+      zDAOBase.address
     );
 
     // remember: transfer admin role to zDAOChef
@@ -115,40 +120,31 @@ describe("ZDAOChef", async function () {
     };
   });
 
-  const createZDAO = () => {
+  const createZDAO = async (user: SignerWithAddress) => {
+    await ZDAOChef.setVariable("childStateSender", user.address);
     const message = encodeCreateZDAO(zDAOPack);
 
-    return ZDAOChef.connect(fxChild).processMessageFromRoot(
-      1,
-      userA.address,
-      message
-    );
+    return ZDAOChef.connect(user).processMessageFromRoot(message);
   };
 
-  const deleteZDAO = () => {
+  const deleteZDAO = async (user: SignerWithAddress) => {
+    await ZDAOChef.setVariable("childStateSender", user.address);
     const message = encodeDeleteZDAO({
       zDAOId: zDAOPack.lastZDAOId,
     });
 
-    return ZDAOChef.connect(fxChild).processMessageFromRoot(
-      1,
-      userA.address,
-      message
-    );
+    return ZDAOChef.connect(user).processMessageFromRoot(message);
   };
 
-  const createProposal = () => {
+  const createProposal = async (user: SignerWithAddress) => {
+    await ZDAOChef.setVariable("childStateSender", user.address);
     const messageProposal = encodeCreateProposal(proposalPack);
 
-    return ZDAOChef.connect(fxChild).processMessageFromRoot(
-      1, // stateId
-      userA.address, // rootMessageSender
-      messageProposal
-    );
+    return ZDAOChef.connect(user).processMessageFromRoot(messageProposal);
   };
 
   it("Should be able to create zDAO from the message", async function () {
-    await expect(createZDAO()).to.be.not.reverted;
+    await expect(createZDAO(userA)).to.be.not.reverted;
 
     const zDAOAddr = await ZDAOChef.getzDAOById(1);
     const zDAO = (await ethers.getContractAt(
@@ -167,14 +163,16 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should not add same DAO twice", async function () {
-    await createZDAO();
+    await createZDAO(userA);
 
     // check if revert when add same
-    await expect(createZDAO()).to.be.revertedWith("zDAO was already created");
+    await expect(createZDAO(userA)).to.be.revertedWith(
+      "zDAO was already created"
+    );
   });
 
   it("Should list zDAOs", async function () {
-    await createZDAO();
+    await createZDAO(userA);
 
     // already created one DAO
     expect(await ZDAOChef.numberOfzDAOs()).to.be.equal(1);
@@ -189,9 +187,9 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should be able to delete zDAO from the message", async function () {
-    await createZDAO();
+    await createZDAO(userA);
 
-    await expect(deleteZDAO()).to.be.not.reverted;
+    await expect(deleteZDAO(userA)).to.be.not.reverted;
 
     // check if zDAO is destroyed
     const zDAOAddr = await ZDAOChef.getzDAOById(1);
@@ -204,15 +202,17 @@ describe("ZDAOChef", async function () {
     expect(await zDAO.destroyed()).to.be.equal(true);
 
     // check if revert to create proposal on deleted zDAO
-    await expect(createProposal()).to.be.revertedWith("Already destroyed");
+    await expect(createProposal(userA)).to.be.revertedWith("Already destroyed");
   });
 
   it("Should be able to create proposal from the message", async function () {
     // check if failed to create proposal without zDAO
-    await expect(createProposal()).to.be.revertedWith("Not created zDAO yet");
+    await expect(createProposal(userA)).to.be.revertedWith(
+      "Not created zDAO yet"
+    );
 
     // create zDAO first
-    await createZDAO();
+    await createZDAO(userA);
 
     const zDAOAddr = await ZDAOChef.getzDAOById(1);
     const zDAO = (await ethers.getContractAt(
@@ -222,10 +222,10 @@ describe("ZDAOChef", async function () {
     )) as PolyZDAO;
 
     // try to create proposal again
-    await expect(createProposal()).to.be.not.reverted;
+    await expect(createProposal(userA)).to.be.not.reverted;
 
     // check if revert when add same
-    await expect(createProposal()).to.be.revertedWith(
+    await expect(createProposal(userA)).to.be.revertedWith(
       "Proposal was already created"
     );
 

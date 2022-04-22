@@ -3,12 +3,11 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {IChildTunnel, ITunnel} from "./interfaces/IChildTunnel.sol";
 import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
 import {Staking} from "./Staking.sol";
 
 contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
-  IChildTunnel public childTunnel;
+  address public zDAOChef;
   Staking public staking;
 
   ZDAOInfo public zDAOInfo;
@@ -23,8 +22,8 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyChildTunnel() {
-    require(msg.sender == address(childTunnel), "Not a ZDAOChef");
+  modifier onlyZDAOChef() {
+    require(msg.sender == zDAOChef, "Not a ZDAOChef");
     _;
   }
 
@@ -33,10 +32,19 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     _;
   }
 
-  modifier onlyStaker() {
+  modifier onlyStaker(address _voter) {
     require(
-      staking.userStaked(msg.sender, address(zDAOInfo.mappedToken)) > 0,
+      staking.userStaked(_voter, address(zDAOInfo.mappedToken)) > 0,
       "Only for staker"
+    );
+    _;
+  }
+
+  modifier onlyValidProposal(uint256 _proposalId) {
+    require(
+      proposals[_proposalId].proposalId == _proposalId &&
+        proposals[_proposalId].state != IPolyZDAO.ProposalState.Deleted,
+      "Invalid zDAO"
     );
     _;
   }
@@ -46,8 +54,8 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   /* -------------------------------------------------------------------------- */
 
   function __ZDAO_init(
-    IChildTunnel _childTunnel,
-    Staking _staking,
+    address _zDAOChef,
+    address _staking,
     uint256 _zDAOId,
     address _mappedToken, // token address on Polygon
     bool _isRelativeMajority,
@@ -55,8 +63,8 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
-    childTunnel = _childTunnel;
-    staking = _staking;
+    zDAOChef = _zDAOChef;
+    staking = Staking(_staking);
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
       mappedToken: _mappedToken,
@@ -71,7 +79,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setDestroyed(bool _destroyed) external override onlyChildTunnel {
+  function setDestroyed(bool _destroyed) external override onlyZDAOChef {
     zDAOInfo.destroyed = _destroyed;
   }
 
@@ -79,7 +87,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     uint256 _proposalId,
     uint256 _startTimestamp,
     uint256 _endTimestamp
-  ) external isActiveDAO onlyChildTunnel {
+  ) external onlyZDAOChef isActiveDAO {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
@@ -89,29 +97,40 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
     // lock staked amount until proposal ends
     staking.lock(address(zDAOInfo.mappedToken));
-
-    emit ProposalCreated(
-      zDAOInfo.zDAOId,
-      _proposalId,
-      _startTimestamp,
-      _endTimestamp
-    );
   }
 
-  function vote(uint256 _proposalId, VoterChoice _choice)
+  function vote(
+    uint256 _proposalId,
+    address _voter,
+    uint256 _choice
+  )
     external
+    onlyZDAOChef
     isActiveDAO
-    onlyStaker
+    onlyValidProposal(_proposalId)
+    onlyStaker(_voter)
   {
-    require(_choice != VoterChoice.None, "Invalid choice");
-    require(_canVote(_proposalId, msg.sender), "Not valid for voting");
+    require(
+      _choice == uint256(IPolyZDAO.VoterChoice.Yes) ||
+        _choice == uint256(IPolyZDAO.VoterChoice.No),
+      "Invalid choice"
+    );
+    require(_canVote(_proposalId, _voter), "Not valid for voting");
 
-    _vote(_proposalId, msg.sender, _choice);
-
-    emit CastVote(zDAOInfo.zDAOId, _proposalId, msg.sender, uint256(_choice));
+    _vote(_proposalId, _voter, VoterChoice(_choice));
   }
 
-  function collectResult(uint256 _proposalId) external isActiveDAO {
+  function collectResult(uint256 _proposalId)
+    external
+    onlyZDAOChef
+    isActiveDAO
+    onlyValidProposal(_proposalId)
+    returns (
+      bool isRelativeMajority,
+      uint256 yes,
+      uint256 no
+    )
+  {
     require(_canCollectResult(_proposalId), "Not valid for collecting result");
 
     Proposal storage proposal = proposals[_proposalId];
@@ -119,18 +138,9 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     // unlock staked tokens if proposal has been closed
     staking.unlock(address(zDAOInfo.mappedToken));
 
-    emit CollectResult(zDAOInfo.zDAOId, _proposalId, proposal.yes, proposal.no);
-
-    // send collected result to L1
-    childTunnel.sendMessageToRoot(
-      abi.encode(
-        uint256(ITunnel.MessageType.VoteResult),
-        zDAOInfo.zDAOId,
-        _proposalId,
-        proposal.yes,
-        proposal.no
-      )
-    );
+    isRelativeMajority = zDAOInfo.isRelativeMajority;
+    yes = proposal.yes;
+    no = proposal.no;
   }
 
   /* -------------------------------------------------------------------------- */
