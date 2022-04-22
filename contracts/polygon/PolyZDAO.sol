@@ -59,7 +59,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     staking = _staking;
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      mappedToken: IERC20Upgradeable(_mappedToken),
+      mappedToken: _mappedToken,
       isRelativeMajority: _isRelativeMajority,
       threshold: _threshold,
       snapshot: block.number,
@@ -195,17 +195,20 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     Proposal storage proposal = proposals[_proposalId];
     VoterChoice last = voters[_proposalId][_voter];
 
+    uint256 count = zDAOInfo.isRelativeMajority
+      ? staking.userStaked(_voter, zDAOInfo.mappedToken)
+      : 1;
     if (last == VoterChoice.Yes) {
-      proposal.yes--;
+      proposal.yes -= count;
     } else if (last == VoterChoice.No) {
-      proposal.no--;
+      proposal.no -= count;
     }
 
     voters[_proposalId][_voter] = _choice;
     if (_choice == VoterChoice.Yes) {
-      proposal.yes++;
+      proposal.yes += count;
     } else if (_choice == VoterChoice.No) {
-      proposal.no++;
+      proposal.no += count;
     }
   }
 

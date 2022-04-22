@@ -11,7 +11,7 @@ interface IEtherZDAO {
     address owner; // zDAO owner
     string name; // zDAO name
     address gnosisSafe;
-    IERC20Upgradeable token; // voting token
+    address token; // voting token (ERC20 or ERC721)
     uint256 amount; // minimum voting token amount to create a proposal
     uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;

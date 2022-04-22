@@ -35,7 +35,8 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   modifier onlyValidTokenHolder() {
     require(
-      zDAOInfo.token.balanceOf(msg.sender) >= zDAOInfo.amount,
+      IERC20Upgradeable(zDAOInfo.token).balanceOf(msg.sender) >=
+        zDAOInfo.amount,
       "Not a valid token holder"
     );
     _;
@@ -61,7 +62,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       owner: _zDAOOwner,
       name: _zDAOConfig.name,
       gnosisSafe: _zDAOConfig.gnosisSafe,
-      token: IERC20Upgradeable(_zDAOConfig.token),
+      token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
       minPeriod: _zDAOConfig.minPeriod,
       isRelativeMajority: _zDAOConfig.isRelativeMajority,
@@ -83,7 +84,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     zDAOInfo.gnosisSafe = _gnosisSafe;
   }
 
-  function setVotingToken(IERC20Upgradeable _token, uint256 _amount)
+  function setVotingToken(address _token, uint256 _amount)
     external
     onlyZDAOOwner
   {

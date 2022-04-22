@@ -9,8 +9,8 @@ interface IPolyZDAO {
     uint256 zDAOId; // zDAO id
     // string name; // zDAO name
     // address owner; // zDAO owner
-    // IERC20Upgradeable token; // voting token
-    IERC20Upgradeable mappedToken; // mapped voting token
+    // address token; // voting token (ERC20 or ERC721)
+    address mappedToken; // mapped voting token (ERC20 or ERC721)
     // uint256 amount; // minimum voting token amount to create a proposal
     // uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;

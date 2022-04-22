@@ -9,7 +9,7 @@ interface IEtherZDAOChef {
   struct ZDAOConfig {
     string name;
     address gnosisSafe;
-    IERC20Upgradeable token;
+    address token; // voting token (ERC20 or ERC721)
     uint256 amount;
     uint256 minPeriod; // minimum voting period
     bool isRelativeMajority;
