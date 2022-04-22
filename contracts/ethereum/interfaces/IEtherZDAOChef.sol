@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import "./IEtherZDAO.sol";
+import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IEtherZDAO} from "./IEtherZDAO.sol";
 
 interface IEtherZDAOChef {
   struct ZDAOConfig {

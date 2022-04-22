@@ -2,10 +2,9 @@
 
 pragma solidity ^0.8.11;
 
-import "../abstracts/ZeroUpgradeable.sol";
+import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
 
 contract Registry is ZeroUpgradeable {
-  
   mapping(address => address) public rootToChildToken;
   mapping(address => address) public childToRootToken;
 

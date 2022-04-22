@@ -2,12 +2,12 @@
 
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
-import "../abstracts/ZeroUpgradeable.sol";
-import "./interfaces/IStaking.sol";
-import "./interfaces/ILockable.sol";
+import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import {ERC721HolderUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
+import {IStaking} from "./interfaces/IStaking.sol";
+import {ILockable} from "./interfaces/ILockable.sol";
 
 contract Staking is
   ZeroUpgradeable,
@@ -189,7 +189,8 @@ contract Staking is
     // require(lockable[_token].lockedRepeat > 0, "Already unlocked");
     // lockable[_token].lockedRepeat--;
 
-    if (lockable[_token].lockedRepeat < 1) { // already unlocked
+    if (lockable[_token].lockedRepeat < 1) {
+      // already unlocked
       return;
     }
 

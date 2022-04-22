@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 
 contract MockCollectibleUpgradeable is OwnableUpgradeable, ERC721Upgradeable {
   function __MockCollectibleUpgradeable_init(

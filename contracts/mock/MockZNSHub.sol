@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IZNSHub.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IZNSHub} from "../interfaces/IZNSHub.sol";
 
 contract MockZNSHub is Ownable, IZNSHub {
   mapping(uint256 => address) public zNAtoOwner;

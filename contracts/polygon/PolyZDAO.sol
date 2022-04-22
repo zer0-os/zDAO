@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.11;
 
-import "../abstracts/ZeroUpgradeable.sol";
-import "./interfaces/IChildTunnel.sol";
-import "./interfaces/IPolyZDAO.sol";
-import "./Staking.sol";
+import {ZeroUpgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
+import {IChildTunnel, ITunnel} from "./interfaces/IChildTunnel.sol";
+import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
+import {Staking} from "./Staking.sol";
 
 contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   IChildTunnel public childTunnel;

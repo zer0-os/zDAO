@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.11;
 
-import "../abstracts/ZeroUpgradeable.sol";
-import "./interfaces/IRootTunnel.sol";
-import "./interfaces/IEtherZDAO.sol";
-import "./interfaces/IEtherZDAOChef.sol";
-import "hardhat/console.sol";
+import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
+import {IRootTunnel, ITunnel} from "./interfaces/IRootTunnel.sol";
+import {IEtherZDAO} from "./interfaces/IEtherZDAO.sol";
+import {IEtherZDAOChef} from "./interfaces/IEtherZDAOChef.sol";
+import {console} from "hardhat/console.sol";
 
 contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   using SafeERC20Upgradeable for IERC20Upgradeable;

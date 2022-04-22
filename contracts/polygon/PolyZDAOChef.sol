@@ -2,15 +2,14 @@
 
 pragma solidity ^0.8.11;
 
-import "../abstracts/ZeroUpgradeable.sol";
-import "../helpers/Proxy.sol";
-import "../tunnel/FxBaseChildTunnel.sol";
-import "./interfaces/IChildTunnel.sol";
-import "./interfaces/IPolyZDAOChef.sol";
-import "../helpers/Proxy.sol";
-import "./PolyZDAO.sol";
-import "./Registry.sol";
-import "./Staking.sol";
+import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
+import {createProxy} from "../helpers/Proxy.sol";
+import {FxBaseChildTunnel} from "../tunnel/FxBaseChildTunnel.sol";
+import {IChildTunnel} from "./interfaces/IChildTunnel.sol";
+import {IPolyZDAOChef} from "./interfaces/IPolyZDAOChef.sol";
+import {PolyZDAO, IPolyZDAO} from "./PolyZDAO.sol";
+import {Registry} from "./Registry.sol";
+import {Staking} from "./Staking.sol";
 
 contract PolyZDAOChef is
   ZeroUpgradeable,

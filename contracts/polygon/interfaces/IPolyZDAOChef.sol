@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.11;
 
-import "./IPolyZDAO.sol";
+import {IPolyZDAO} from "./IPolyZDAO.sol";
 
 interface IPolyZDAOChef {
   /* -------------------------------------------------------------------------- */
