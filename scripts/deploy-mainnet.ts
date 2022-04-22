@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { EtherZDAOChef } from "../types";
+import { EtherZDAOChef, FxStateRootTunnel } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
@@ -16,6 +16,26 @@ const main = async () => {
   const deployer: SignerWithAddress = signers[0];
 
   if (network.name === "goerli" || network.name === "mainnet") {
+    console.log("Deploying FxStateRootTunnel proxy contract...");
+    const FxStateRootTunnelFactory = await ethers.getContractFactory("FxStateRootTunnel");
+    const fxStateRootTunnel = (await upgrades.deployProxy(
+      FxStateRootTunnelFactory, [
+        config[network.name].checkpointManager,
+        config[network.name].fxRoot
+      ],
+      {
+        kind: "uups",
+        initializer: "__FxStateRootTunnel_init",
+      }
+    )) as FxStateRootTunnel;
+    await fxStateRootTunnel.deployed();
+    console.log(`\ndeployed: ${fxStateRootTunnel.address}`);
+
+    const fxStateRootTunnelImpl = await upgrades.erc1967.getImplementationAddress(
+      fxStateRootTunnel.address
+    );
+    await verifyContract(fxStateRootTunnelImpl);
+
     console.log("Deploying EtherZDAO implementation contract...");
     const ZDAOFactory = await ethers.getContractFactory("EtherZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
@@ -30,9 +50,8 @@ const main = async () => {
       ZDAOChefFactory,
       [
         config[network.name].znsHub,
-        zDAOBase.address,
-        config[network.name].checkpointManager,
-        config[network.name].fxRoot,
+        fxStateRootTunnel.address,
+        zDAOBase.address
       ],
       {
         kind: "uups",
@@ -51,6 +70,10 @@ const main = async () => {
       {
         Label: "Deployer address",
         Info: deployer.address,
+      },
+      {
+        Label: "FxStateRootTunnel proxy address",
+        Info: fxStateRootTunnel.address,
       },
       {
         Label: "EtherZDAOChef proxy address",

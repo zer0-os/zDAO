@@ -17,7 +17,7 @@ contract FxStateChildTunnel is
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOChef_init(address _fxChild) public initializer {
+  function __FxStateChildTunnel_init(address _fxChild) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     fxChild = _fxChild;

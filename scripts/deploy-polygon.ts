@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { PolyZDAOChef, Registry, Staking } from "../types";
+import { FxStateChildTunnel, PolyZDAOChef, Registry, Staking } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
@@ -13,6 +13,25 @@ const main = async () => {
   const deployer: SignerWithAddress = signers[0];
 
   if (network.name === "polygonMumbai" || network.name === "polygon") {
+    console.log("Deploying FxStateChildTunnel proxy contract...");
+    const FxStateChildTunnelFactory = await ethers.getContractFactory("FxStateChildTunnel");
+    const fxStateChildTunnel = (await upgrades.deployProxy(
+      FxStateChildTunnelFactory, [
+        config[network.name].fxChild,
+      ],
+      {
+        kind: "uups",
+        initializer: "__FxStateChildTunnel_init",
+      }
+    )) as FxStateChildTunnel;
+    await fxStateChildTunnel.deployed();
+    console.log(`\ndeployed: ${fxStateChildTunnel.address}`);
+
+    const fxStateChildTunnelImpl = await upgrades.erc1967.getImplementationAddress(
+      fxStateChildTunnel.address
+    );
+    await verifyContract(fxStateChildTunnelImpl);
+
     // Staking
     console.log("Deploying Staking proxy contract...");
     const StakingFactory = await ethers.getContractFactory("Staking");
@@ -58,8 +77,8 @@ const main = async () => {
       [
         staking.address,
         registry.address,
+        fxStateChildTunnel.address,
         zDAOBase.address,
-        config[network.name].fxChild,
       ],
       {
         kind: "uups",
@@ -78,6 +97,10 @@ const main = async () => {
       {
         Label: "Deployer address",
         Info: deployer.address,
+      },
+      {
+        Label: "FxStateChildTunnel proxy address",
+        Info: fxStateChildTunnel.address,
       },
       {
         Label: "Staking proxy address",
