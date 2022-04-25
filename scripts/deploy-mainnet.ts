@@ -17,12 +17,12 @@ const main = async () => {
 
   if (network.name === "goerli" || network.name === "mainnet") {
     console.log("Deploying FxStateRootTunnel proxy contract...");
-    const FxStateRootTunnelFactory = await ethers.getContractFactory("FxStateRootTunnel");
+    const FxStateRootTunnelFactory = await ethers.getContractFactory(
+      "FxStateRootTunnel"
+    );
     const fxStateRootTunnel = (await upgrades.deployProxy(
-      FxStateRootTunnelFactory, [
-        config[network.name].checkpointManager,
-        config[network.name].fxRoot
-      ],
+      FxStateRootTunnelFactory,
+      [config[network.name].checkpointManager, config[network.name].fxRoot],
       {
         kind: "uups",
         initializer: "__FxStateRootTunnel_init",
@@ -31,9 +31,10 @@ const main = async () => {
     await fxStateRootTunnel.deployed();
     console.log(`\ndeployed: ${fxStateRootTunnel.address}`);
 
-    const fxStateRootTunnelImpl = await upgrades.erc1967.getImplementationAddress(
-      fxStateRootTunnel.address
-    );
+    const fxStateRootTunnelImpl =
+      await upgrades.erc1967.getImplementationAddress(
+        fxStateRootTunnel.address
+      );
     await verifyContract(fxStateRootTunnelImpl);
 
     console.log("Deploying EtherZDAO implementation contract...");
@@ -51,7 +52,7 @@ const main = async () => {
       [
         config[network.name].znsHub,
         fxStateRootTunnel.address,
-        zDAOBase.address
+        zDAOBase.address,
       ],
       {
         kind: "uups",

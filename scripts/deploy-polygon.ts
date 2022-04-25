@@ -14,11 +14,12 @@ const main = async () => {
 
   if (network.name === "polygonMumbai" || network.name === "polygon") {
     console.log("Deploying FxStateChildTunnel proxy contract...");
-    const FxStateChildTunnelFactory = await ethers.getContractFactory("FxStateChildTunnel");
+    const FxStateChildTunnelFactory = await ethers.getContractFactory(
+      "FxStateChildTunnel"
+    );
     const fxStateChildTunnel = (await upgrades.deployProxy(
-      FxStateChildTunnelFactory, [
-        config[network.name].fxChild,
-      ],
+      FxStateChildTunnelFactory,
+      [config[network.name].fxChild],
       {
         kind: "uups",
         initializer: "__FxStateChildTunnel_init",
@@ -27,9 +28,10 @@ const main = async () => {
     await fxStateChildTunnel.deployed();
     console.log(`\ndeployed: ${fxStateChildTunnel.address}`);
 
-    const fxStateChildTunnelImpl = await upgrades.erc1967.getImplementationAddress(
-      fxStateChildTunnel.address
-    );
+    const fxStateChildTunnelImpl =
+      await upgrades.erc1967.getImplementationAddress(
+        fxStateChildTunnel.address
+      );
     await verifyContract(fxStateChildTunnelImpl);
 
     // Staking

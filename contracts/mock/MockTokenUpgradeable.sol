@@ -2,8 +2,8 @@
 
 pragma solidity ^0.8.11;
 
-import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {ERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import {OwnableUpgradeable} from "../oz-upgradeable/access/OwnableUpgradeable.sol";
+import {ERC20Upgradeable} from "../oz-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 
 contract MockTokenUpgradeable is OwnableUpgradeable, ERC20Upgradeable {
   function __MockTokenUpgradeable_init(

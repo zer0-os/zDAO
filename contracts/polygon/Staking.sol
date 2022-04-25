@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.11;
 
-import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
-import {ERC721HolderUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import {ERC165CheckerUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import {IERC721Upgradeable} from "../oz-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import {ERC721HolderUpgradeable} from "../oz-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
+import {ERC165CheckerUpgradeable} from "../oz-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
 import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
 import {IStaking} from "./interfaces/IStaking.sol";
 import {ILockable} from "./interfaces/ILockable.sol";

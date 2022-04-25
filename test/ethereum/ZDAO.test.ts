@@ -9,7 +9,6 @@ import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import { IERC20Upgradeable, EtherZDAO, EtherZDAO__factory } from "../../types";
-import { encodeVoteResult, VoteResultPack } from "../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../shared/types";
 import { now } from "../shared/utilities";
 

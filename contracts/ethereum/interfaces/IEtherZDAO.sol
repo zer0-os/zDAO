@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.11;
 
-import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IERC20Upgradeable} from "../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {IEtherZDAOChef} from "./IEtherZDAOChef.sol";
 
 interface IEtherZDAO {

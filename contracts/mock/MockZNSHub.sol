@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.11;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "../oz/access/Ownable.sol";
 import {IZNSHub} from "../interfaces/IZNSHub.sol";
 
 contract MockZNSHub is Ownable, IZNSHub {
