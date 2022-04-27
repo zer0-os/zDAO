@@ -38,7 +38,6 @@ const createZDAO = async (
     gnosisSafe: "0x7a935d07d097146f143A45aA79FD8624353abD5D",
     token: "0xE4DCfb387a4cF3eFa2Af1186B47Ca2a042e37838", // todo, should be voting token on Ethereum/Goerli network
     amount: BigNumber.from(10).pow(18), // 10^18
-    minPeriod: 300, // at least 5 min in seconds
     isRelativeMajority: true,
     threshold: 51,
   };

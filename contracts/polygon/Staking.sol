@@ -2,23 +2,18 @@
 
 pragma solidity ^0.8.11;
 
+import {console} from "hardhat/console.sol";
 import {IERC721Upgradeable} from "../oz-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import {ERC721HolderUpgradeable} from "../oz-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import {ERC165CheckerUpgradeable} from "../oz-upgradeable/utils/introspection/ERC165CheckerUpgradeable.sol";
+import "../oz-upgradeable/utils/Checkpoints.sol";
 import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
 import {IStaking} from "./interfaces/IStaking.sol";
-import {ILockable} from "./interfaces/ILockable.sol";
 
-contract Staking is
-  ZeroUpgradeable,
-  IStaking,
-  ILockable,
-  ERC721HolderUpgradeable
-{
+contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   using SafeERC20Upgradeable for IERC20Upgradeable;
   using ERC165CheckerUpgradeable for address;
-
-  bytes32 public constant LOCKER_ROLE = keccak256("LOCKER_ROLE");
+  using Checkpoints for Checkpoints.History;
 
   struct Account {
     address user;
@@ -27,32 +22,17 @@ contract Staking is
     mapping(address => uint256) staked;
   }
 
-  struct Lockable {
-    uint256 staked;
-    uint256 lockedRepeat;
-  }
-
   // <user addres, <IERC20, Account>>
   // <user addres, <IERC721, Account>>
   mapping(address => Account) public accounts;
 
-  // <IERC20, Lockable>
-  // <IERC721, Lockable>
-  mapping(address => Lockable) public lockable;
+  // <user address, Checkpoints.History>
+  mapping(address => Checkpoints.History) private _checkpoints;
+  Checkpoints.History private _totalCheckpoints;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
-
-  modifier isLocker() {
-    require(hasRole(LOCKER_ROLE, msg.sender), "Should have locker role");
-    _;
-  }
-
-  modifier isUnlocked(address _token) {
-    require(lockable[_token].lockedRepeat < 1, "Should be unlocked");
-    _;
-  }
 
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
@@ -61,7 +41,6 @@ contract Staking is
   function __Staking_init() public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
     __ERC721Holder_init();
-    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -78,26 +57,12 @@ contract Staking is
     _stakeERC721(msg.sender, _token, _tokenId);
   }
 
-  function unstakeERC20(address _token, uint256 _amount)
-    external
-    isUnlocked(_token)
-  {
+  function unstakeERC20(address _token, uint256 _amount) external {
     _unstakeERC20(msg.sender, _token, _amount);
   }
 
-  function unstakeERC721(address _token, uint256 _tokenId)
-    external
-    isUnlocked(_token)
-  {
+  function unstakeERC721(address _token, uint256 _tokenId) external {
     _unstakeERC721(msg.sender, _token, _tokenId);
-  }
-
-  function lock(address _token) external isLocker {
-    _lock(_token);
-  }
-
-  function unlock(address _token) external isLocker {
-    _unlock(_token);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -121,7 +86,8 @@ contract Staking is
 
     accounts[_user].user = _user;
     accounts[_user].staked[_token] += _amount;
-    lockable[_token].staked += _amount;
+
+    _moveStakingPower(_user, address(this), _amount);
 
     emit StakedERC20(_user, _token, _amount, accounts[_user].staked[_token]);
   }
@@ -131,11 +97,13 @@ contract Staking is
     address _token,
     uint256 _tokenId
   ) internal virtual {
+    require(accounts[_user].staked[_token] == 0, "Already staked ERC721");
     IERC721Upgradeable(_token).safeTransferFrom(_user, address(this), _tokenId);
 
     accounts[_user].user = _user;
     accounts[_user].staked[_token] = _tokenId;
-    lockable[_token].staked += 1;
+
+    _moveStakingPower(_user, address(this), 1);
 
     emit StakedERC721(_user, _token, _tokenId, accounts[_user].staked[_token]);
   }
@@ -150,7 +118,8 @@ contract Staking is
       "Should not exceed staked amount"
     );
     accounts[_user].staked[_token] -= _amount;
-    lockable[_token].staked -= _amount;
+
+    _moveStakingPower(address(this), _user, _amount);
 
     IERC20Upgradeable(_token).safeTransfer(_user, _amount);
 
@@ -167,7 +136,8 @@ contract Staking is
       "Should be staked ERC721"
     );
     accounts[_user].staked[_token] -= _tokenId;
-    lockable[_token].staked -= 1;
+
+    _moveStakingPower(address(this), _user, 1);
 
     IERC721Upgradeable(_token).safeTransferFrom(address(this), _user, _tokenId);
 
@@ -179,34 +149,67 @@ contract Staking is
     );
   }
 
-  function _lock(address _token) internal virtual {
-    lockable[_token].lockedRepeat++;
+  function _moveStakingPower(
+    address _from,
+    address _to,
+    uint256 _amount
+  ) internal {
+    if (_from != _to && _amount > 0) {
+      if (_from != address(this)) {
+        _totalCheckpoints.push(_add, _amount);
+        (uint256 oldValue, uint256 newValue) = _checkpoints[_from].push(
+          _add,
+          _amount
+        );
+        emit StakingPowerChanged(_from, oldValue, newValue);
+      }
 
-    emit Locked(_token, lockable[_token].staked, lockable[_token].lockedRepeat);
+      if (_to != address(this)) {
+        _totalCheckpoints.push(_subtract, _amount);
+        (uint256 oldValue, uint256 newValue) = _checkpoints[_to].push(
+          _subtract,
+          _amount
+        );
+        emit StakingPowerChanged(_to, oldValue, newValue);
+      }
+    }
   }
 
-  function _unlock(address _token) internal virtual {
-    // require(lockable[_token].lockedRepeat > 0, "Already unlocked");
-    lockable[_token].lockedRepeat--;
+  function _add(uint256 a, uint256 b) private pure returns (uint256) {
+    return a + b;
+  }
 
-    if (lockable[_token].lockedRepeat < 1) {
-      // already unlocked
-      return;
-    }
-
-    emit Unlocked(
-      _token,
-      lockable[_token].staked,
-      lockable[_token].lockedRepeat
-    );
+  function _subtract(uint256 a, uint256 b) private pure returns (uint256) {
+    return a - b;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function totalStaked(address _token) external view returns (uint256) {
-    return lockable[_token].staked;
+  function totalStaked() external view returns (uint256) {
+    return _totalCheckpoints.latest();
+  }
+
+  function pastTotalStaked(uint256 _blockNumber)
+    external
+    view
+    returns (uint256)
+  {
+    require(_blockNumber < block.number, "Block not yet mined");
+    return _totalCheckpoints.getAtBlock(_blockNumber);
+  }
+
+  function stakingPower(address _user) external view returns (uint256) {
+    return _checkpoints[_user].latest();
+  }
+
+  function pastStakingPower(address _user, uint256 _blockNumber)
+    external
+    view
+    returns (uint256)
+  {
+    return _checkpoints[_user].getAtBlock(_blockNumber);
   }
 
   function userStaked(address _user, address _token)
@@ -215,9 +218,5 @@ contract Staking is
     returns (uint256)
   {
     return accounts[_user].staked[_token];
-  }
-
-  function locked(address _token) external view returns (uint256) {
-    return lockable[_token].lockedRepeat;
   }
 }

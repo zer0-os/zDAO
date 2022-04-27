@@ -20,7 +20,7 @@ import {
 import { IRootStateSender } from "../../types/IRootStateSender";
 import { encodeVoteResult } from "../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../shared/types";
-import { now } from "../shared/utilities";
+import { increaseTime, now } from "../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -78,23 +78,23 @@ describe("ZDAOChef", async function () {
     const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
     const minAmount = BigNumber.from("10000");
     const minPeriod = 30; // unit in seconds
-    const threshold = 5000; // 100% percent in 10000
+    const quorumVotes = 5000;
 
     zDAOConfig = {
-      name: `${zNA}.dao`,
+      title: `${zNA}.dao`,
       gnosisSafe: gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
-      minPeriod: minPeriod,
       isRelativeMajority: true,
-      threshold: threshold,
+      quorumVotes: quorumVotes,
     };
 
     proposalConfig = {
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
-      token: vToken.address,
-      amount: minAmount.toNumber(),
+      target: vToken.address,
+      value: minAmount.toNumber(),
+      data: "0x00",
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -111,8 +111,9 @@ describe("ZDAOChef", async function () {
       daoId,
       proposalConfig.startTimestamp,
       proposalConfig.endTimestamp,
-      proposalConfig.token,
-      proposalConfig.amount,
+      proposalConfig.target,
+      proposalConfig.value,
+      proposalConfig.data,
       proposalConfig.ipfs
     );
   };
@@ -243,19 +244,9 @@ describe("ZDAOChef", async function () {
 
     const zDAOId = 1;
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+
+    await createProposal(userA, zDAOId);
     await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
-  });
-
-  it("Should execute a proposal", async function () {
-    await addNewDAO(zNAOwner);
-
-    const zDAOId = 1;
-    vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
-    await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
-
-    const proposalId = 1;
-    await expect(ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)).to
-      .be.not.reverted;
   });
 
   it("Should collect voting result", async function () {
@@ -287,5 +278,66 @@ describe("ZDAOChef", async function () {
     const proposal = await zDAO.proposals(proposalId);
     expect(proposal.yes).to.be.equal(70);
     expect(proposal.no).to.be.equal(30);
+  });
+
+  it("Should execute a proposal", async function () {
+    await addNewDAO(zNAOwner);
+
+    const zDAOId = 1;
+    vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+    await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
+
+    await increaseTime(30);
+
+    const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
+    const zDAO = (await ethers.getContractAt(
+      "EtherZDAO",
+      zDAORecord.zDAO,
+      userA
+    )) as EtherZDAO;
+
+    const zDAOInfo = await zDAO.zDAOInfo();
+
+    const proposalId = 1;
+    const message = encodeVoteResult({
+      zDAOId,
+      proposalId,
+      yes: zDAOInfo.quorumVotes.toNumber(),
+      no: 30,
+    });
+
+    await ZDAOChef.setVariable("rootStateSender", userA.address);
+
+    // should not execute proposal if proposal state is failed
+    await expect(
+      ZDAOChef.connect(userA).processMessageFromChild(
+        encodeVoteResult({
+          zDAOId,
+          proposalId,
+          yes: zDAOInfo.quorumVotes.toNumber() - 1,
+          no: 30,
+        })
+      )
+    ).to.be.not.reverted;
+    // should reverted because of invalid target, value and data
+    await expect(
+      ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)
+    ).to.be.revertedWith("Not a succeeded proposal");
+
+    // should execute proposal if proposal state is succeeded
+    await expect(
+      ZDAOChef.connect(userA).processMessageFromChild(
+        encodeVoteResult({
+          zDAOId,
+          proposalId,
+          yes: zDAOInfo.quorumVotes.toNumber(),
+          no: 30,
+        })
+      )
+    ).to.be.not.reverted;
+    // should reverted because of invalid target, value and data
+    await expect(
+      ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)
+    ).to.be.revertedWith("Execution transaction reverted");
   });
 });

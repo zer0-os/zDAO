@@ -8,11 +8,11 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import { IERC20Upgradeable, PolyZDAO, PolyZDAO__factory } from "../../types";
+import { IERC20Upgradeable, MockTokenUpgradeable, MockTokenUpgradeable__factory, PolyZDAO, PolyZDAO__factory } from "../../types";
 import { Staking__factory } from "../../types/factories/Staking__factory";
 import { Staking } from "../../types/Staking";
 import { PolyProposalConfig, PolyZDAOConfig } from "../shared/types";
-import { increaseTime, now } from "../shared/utilities";
+import { increaseTime, mineToBlock, now } from "../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -25,7 +25,7 @@ describe("ZDAO", async function () {
 
   let staking: MockContract<Staking>,
     zDAO: MockContract<PolyZDAO>,
-    vToken: FakeContract<IERC20Upgradeable>,
+    vToken: MockContract<MockTokenUpgradeable>,
     vPolyToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
@@ -45,9 +45,12 @@ describe("ZDAO", async function () {
     staking = (await StakingFactory.deploy()) as MockContract<Staking>;
     await staking.__Staking_init();
 
-    vToken = (await smock.fake(
-      "IERC20Upgradeable"
-    )) as FakeContract<IERC20Upgradeable>;
+    const VotingTokenFactory = (await smock.mock<MockTokenUpgradeable__factory>(
+      "MockTokenUpgradeable"
+    )) as MockContractFactory<MockTokenUpgradeable__factory>;
+    vToken =
+      (await VotingTokenFactory.deploy()) as MockContract<MockTokenUpgradeable>;
+    await vToken.__MockTokenUpgradeable_init("vToken", "VT");
 
     // vPolyToken is mapped token on Polygon from vToken
     vPolyToken = (await smock.fake(
@@ -56,13 +59,13 @@ describe("ZDAO", async function () {
 
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
-    const minPeriod = 30; // unit in seconds
+    const minPeriod = 300; // unit in seconds
 
     zDAOConfig = {
       zDAOId,
       mappedToken: vPolyToken.address,
       isRelativeMajority: false,
-      threshold: 5000,
+      quorumVotes: 5000,
     };
 
     await zDAO.__ZDAO_init(
@@ -71,14 +74,8 @@ describe("ZDAO", async function () {
       zDAOConfig.zDAOId,
       zDAOConfig.mappedToken,
       zDAOConfig.isRelativeMajority,
-      zDAOConfig.threshold
+      zDAOConfig.quorumVotes
     );
-
-    await staking.grantRole(await staking.LOCKER_ROLE(), zDAO.address);
-
-    vToken = (await smock.fake(
-      "IERC20Upgradeable"
-    )) as FakeContract<IERC20Upgradeable>;
 
     zDAOInfo = await zDAO.zDAOInfo();
 
@@ -87,6 +84,20 @@ describe("ZDAO", async function () {
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
     };
+
+    await vToken.mintFor(userA.address, 10000000);
+    await vToken.mintFor(userB.address, 10000000);
+    await vToken.mintFor(userC.address, 10000000);
+
+    await vToken
+      .connect(userA)
+      .approve(staking.address, ethers.constants.MaxUint256);
+    await vToken
+      .connect(userB)
+      .approve(staking.address, ethers.constants.MaxUint256);
+    await vToken
+      .connect(userC)
+      .approve(staking.address, ethers.constants.MaxUint256);
   });
 
   it("Check zDAO information", async function () {
@@ -95,7 +106,7 @@ describe("ZDAO", async function () {
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );
-    expect(zDAOInfo.threshold.toNumber()).to.be.equal(zDAOConfig.threshold);
+    expect(zDAOInfo.quorumVotes.toNumber()).to.be.equal(zDAOConfig.quorumVotes);
     expect(zDAOInfo.snapshot).to.be.gt(0);
     expect(zDAOInfo.destroyed).to.be.equal(false);
   });
@@ -124,14 +135,16 @@ describe("ZDAO", async function () {
   });
 
   it("Any staker should be able to vote on proposal", async function () {
-    await createProposal();
+    await staking.connect(userB).stakeERC20(vToken.address, 1000);
+    await mineToBlock(1);
 
-    staking.userStaked
-      .whenCalledWith(userB.address, zDAOConfig.mappedToken)
-      .returns(BigNumber.from(100000));
+    await createProposal();
+    await mineToBlock(1);
 
     const proposalId = 1;
     const choice = 1; // yes
+
+    await zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice);
 
     await expect(zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice))
       .to.be.not.reverted;
@@ -141,24 +154,18 @@ describe("ZDAO", async function () {
       zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice + 1)
     ).to.be.not.reverted;
 
-    const lastChoice = await zDAO.getVoterChoice(proposalId, userB.address);
+    const lastChoice = await zDAO.choiceOfVoter(proposalId, userB.address);
     expect(lastChoice).to.be.equal(choice + 1);
   });
 
   it("Only can collect voting result after proposal ends", async function () {
+    await staking.connect(userA).stakeERC20(vToken.address, 1000);
+    await staking.connect(userB).stakeERC20(vToken.address, 2000);
+    await staking.connect(userC).stakeERC20(vToken.address, 3000);
+    await mineToBlock(1);
+
     await createProposal();
-
-    staking.userStaked
-      .whenCalledWith(userA.address, zDAOConfig.mappedToken)
-      .returns(BigNumber.from(100000));
-
-    staking.userStaked
-      .whenCalledWith(userB.address, zDAOConfig.mappedToken)
-      .returns(BigNumber.from(100000));
-
-    staking.userStaked
-      .whenCalledWith(userC.address, zDAOConfig.mappedToken)
-      .returns(BigNumber.from(100000));
+    await mineToBlock(1);
 
     const proposalId = 1;
     const choice = 1; // yes

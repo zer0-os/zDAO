@@ -7,39 +7,69 @@ import {IEtherZDAOChef} from "./IEtherZDAOChef.sol";
 
 interface IEtherZDAO {
   struct ZDAOInfo {
+    /// @notice Unique id for looking up zDAO
     uint256 zDAOId; // zDAO id
-    address owner; // zDAO owner
-    string name; // zDAO name
+    /// @notice Title of the zDAO
+    string title;
+    /// @notice Address who created zDAO, is the first zDAO owner
+    address createdBy;
+    /// @notice Gnosis safe address where collected treasuries are stored
     address gnosisSafe;
-    address token; // voting token (ERC20 or ERC721)
-    uint256 amount; // minimum voting token amount to create a proposal
-    uint256 minPeriod; // minimum voting period
+    /// @notice Voting token (ERC20 or ERC721) on Ethereum, only token holders
+    /// can create a proposal
+    address token;
+    /// @notice The minimum number of tokens required to become proposal creator
+    uint256 amount;
+    /// @notice True if relative majority to calculate voting result
     bool isRelativeMajority;
-    uint256 threshold; // percent in 10000 as 100%
+    /// @notice The number of votes in support of a proposal required in order
+    /// for a vote to succeed
+    uint256 quorumVotes;
+    /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
+    /// @notice Flag marking whether the zDAO has been destroyed
     bool destroyed;
   }
 
   enum ProposalState {
+    Pending,
     Active,
-    Executed,
-    Deleted
+    Canceled,
+    Failed,
+    Succeeded,
+    Executed
   }
 
   struct Proposal {
+    /// @notice Unique id for looking up proposal
     uint256 proposalId;
+    /// @notice Address who created proposal
     address createdBy;
+    /// @notice Timestamp when the proposal starts
     uint256 startTimestamp;
+    /// @notice Timestamp when the proposal ends
     uint256 endTimestamp;
+    /// @notice The number of all the casted votes in favor of this proposal
     uint256 yes;
+    /// @notice The number of all the casted vote in opposition to this proposal
     uint256 no;
+    /// @notice Reserved place, maybe can be used for absent choice?
     uint256 reserved;
-    // ipfs hash: https://stackoverflow.com/questions/66927626/how-to-store-ipfs-hash-on-ethereum-blockchain-using-smart-contracts
+    /// @notice IPFS hash which contains meta information of this proposal
+    /// @refer: https://stackoverflow.com/questions/66927626/how-to-store-ipfs-hash-on-ethereum-blockchain-using-smart-contracts
     bytes32 ipfs;
-    IERC20Upgradeable token;
-    uint256 amount;
+    /// @notice Target address to be called if succeed for execution
+    address target;
+    /// @notice Ether amount to be passed(e.g. msg.value) if succeed for execution
+    uint256 value;
+    /// @notice Parameters to be passed if succeed for execution
+    bytes data;
+    /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
-    ProposalState state;
+    /// @notice Flag marking whether this proposal has been executed
+    bool executed;
+    /// @notice Flag marking whether this proposal has been canceled
+    bool canceled;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -53,7 +83,7 @@ interface IEtherZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     uint256 _zDAOId,
-    address _zDAOOwner,
+    address _createdBy,
     IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external;
 
@@ -67,12 +97,15 @@ interface IEtherZDAO {
     address _createdBy,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    IERC20Upgradeable _token,
-    uint256 _amount,
+    address _target,
+    uint256 _value,
+    bytes calldata _data,
     bytes32 _ipfs
   ) external returns (uint256);
 
-  function executeProposal(uint256 _proposalId) external;
+  function cancelProposal(address _cancelBy, uint256 _proposalid) external;
+
+  function executeProposal(address _executeBy, uint256 _proposalId) external;
 
   function setVoteResult(
     uint256 _proposalId,
@@ -94,4 +127,6 @@ interface IEtherZDAO {
     external
     view
     returns (Proposal[] memory);
+
+  function state(uint256 _proposalId) external view returns (ProposalState);
 }

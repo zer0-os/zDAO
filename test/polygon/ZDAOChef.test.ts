@@ -15,6 +15,8 @@ import {
   PolyZDAOChef__factory,
   IERC20Upgradeable,
   IChildStateSender,
+  MockTokenUpgradeable__factory,
+  MockTokenUpgradeable,
 } from "../../types";
 import { Registry__factory } from "../../types/factories/Registry__factory";
 import { Staking__factory } from "../../types/factories/Staking__factory";
@@ -40,7 +42,7 @@ describe("ZDAOChef", async function () {
     registry: MockContract<Registry>,
     ZDAOChef: MockContract<PolyZDAOChef>,
     childStateSender: FakeContract<IChildStateSender>,
-    vToken: FakeContract<IERC20Upgradeable>,
+    vToken: MockContract<MockTokenUpgradeable>,
     vPolyToken: FakeContract<IERC20Upgradeable>;
 
   let zDAOPack: CreateZDAOPack, proposalPack: CreateProposalPack;
@@ -78,15 +80,12 @@ describe("ZDAOChef", async function () {
       zDAOBase.address
     );
 
-    // remember: transfer admin role to zDAOChef
-    await staking.grantRole(
-      await staking.DEFAULT_ADMIN_ROLE(),
-      ZDAOChef.address
-    );
-
-    vToken = (await smock.fake(
-      "IERC20Upgradeable"
-    )) as FakeContract<IERC20Upgradeable>;
+    const VotingTokenFactory = (await smock.mock<MockTokenUpgradeable__factory>(
+      "MockTokenUpgradeable"
+    )) as MockContractFactory<MockTokenUpgradeable__factory>;
+    vToken =
+      (await VotingTokenFactory.deploy()) as MockContract<MockTokenUpgradeable>;
+    await vToken.__MockTokenUpgradeable_init("vToken", "VT");
 
     // vPolyToken is mapped token on Polygon from vToken
     vPolyToken = (await smock.fake(
@@ -103,13 +102,13 @@ describe("ZDAOChef", async function () {
 
     const minAmount = BigNumber.from("10000");
     const minPeriod = 300; // unit in seconds
-    const threshold = 5000; // 100% percent in 10000
+    const quorumVotes = 5000; // minimum token amount to be succeeded
 
     zDAOPack = {
       lastZDAOId: 1,
       token: vToken.address, // token address on Ethereum
       isRelativeMajority: true,
-      threshold: threshold,
+      quorumVotes: quorumVotes,
     };
 
     proposalPack = {
@@ -159,7 +158,7 @@ describe("ZDAOChef", async function () {
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOPack.isRelativeMajority
     );
-    expect(zDAOInfo.threshold).to.be.equal(zDAOPack.threshold);
+    expect(zDAOInfo.quorumVotes).to.be.equal(zDAOPack.quorumVotes);
   });
 
   it("Should not add same DAO twice", async function () {
@@ -237,6 +236,11 @@ describe("ZDAOChef", async function () {
       proposalPack.startTimestamp
     );
     expect(proposals[0].endTimestamp).to.be.equal(proposalPack.endTimestamp);
-    expect(proposals[0].state).to.be.equal(0); // Active state
+    expect(proposals[0].yes.toNumber()).to.be.equal(0);
+    expect(proposals[0].no.toNumber()).to.be.equal(0);
+    expect(proposals[0].reserved.toNumber()).to.be.equal(0);
+    expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
+    expect(proposals[0].executed).to.be.equal(false);
+    expect(proposals[0].canceled).to.be.equal(false);
   });
 });

@@ -6,6 +6,10 @@ export const now = async () => {
   return block.timestamp;
 };
 
+export const blockNumber = async () => {
+  return await ethers.provider.getBlockNumber();
+};
+
 export const increaseTime = async (seconds: number) => {
   await ethers.provider.send("evm_increaseTime", [seconds]);
   await ethers.provider.send("evm_mine", []);

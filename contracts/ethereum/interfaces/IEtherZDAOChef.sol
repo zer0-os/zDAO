@@ -7,18 +7,28 @@ import {IEtherZDAO} from "./IEtherZDAO.sol";
 
 interface IEtherZDAOChef {
   struct ZDAOConfig {
-    string name;
+    /// @notice Title of the zDAO
+    string title;
+    /// @notice Gnosis safe address where collected treasuries are stored
     address gnosisSafe;
-    address token; // voting token (ERC20 or ERC721)
+    /// @notice Voting token (ERC20 or ERC721) on Ethereum, only token holders
+    /// can create a proposal
+    address token;
+    /// @notice The minimum number of tokens required to become proposal creator
     uint256 amount;
-    uint256 minPeriod; // minimum voting period
+    // True if relative majority to calculate voting result
     bool isRelativeMajority;
-    uint256 threshold; // percent in 10000 as 100%
+    /// @notice The number of votes in support of a proposal required in order
+    /// for a vote to succeed
+    uint256 quorumVotes;
   }
 
   struct ZDAORecord {
+    /// @notice Unique id for looking up zDAO
     uint256 id;
-    IEtherZDAO zDAO; // address to newly created ZDAO contract
+    /// @notice Address to newly created EtherZDAO contract
+    IEtherZDAO zDAO;
+    /// @notice Array of zNA ids associated with zDAO
     uint256[] associatedzNAs;
   }
 
@@ -51,13 +61,23 @@ interface IEtherZDAOChef {
 
   event ProposalCreated(
     uint256 indexed _zDAOId,
-    address indexed _proposalAuthor,
     uint256 indexed _proposalId,
+    address indexed _createdBy,
     uint256 _startTimestamp,
     uint256 _endTimestamp
   );
 
-  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
+  event ProposalCanceled(
+    uint256 indexed _zDAOId,
+    uint256 indexed _proposalId,
+    address indexed _cancelBy
+  );
+
+  event ProposalExecuted(
+    uint256 indexed _zDAOId,
+    uint256 indexed _proposalId,
+    address indexed _executeBy
+  );
 
   event ProposalCollected(
     uint256 indexed _zDAOId,
@@ -90,10 +110,13 @@ interface IEtherZDAOChef {
     uint256 _daoId,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    IERC20Upgradeable _token,
-    uint256 _amount,
+    address _target,
+    uint256 _value,
+    bytes calldata _data,
     bytes32 _ipfs
   ) external;
+
+  function cancelProposal(uint256 _daoId, uint256 _proposalId) external;
 
   function executeProposal(uint256 _daoId, uint256 _proposalId) external;
 

@@ -18,7 +18,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   mapping(uint256 => ZDAORecord) public zDAORecords;
   mapping(uint256 => uint256) private zNATozDAOId;
 
-  uint256 private lastZDAOId;
+  uint256 public lastZDAOId;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -102,7 +102,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
         lastZDAOId,
         address(_zDAOConfig.token),
         _zDAOConfig.isRelativeMajority,
-        _zDAOConfig.threshold
+        _zDAOConfig.quorumVotes
       )
     );
   }
@@ -171,23 +171,25 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     uint256 _daoId,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    IERC20Upgradeable _token,
-    uint256 _amount,
+    address _target,
+    uint256 _value,
+    bytes calldata _data,
     bytes32 _ipfs
   ) external override onlyValidZDAO(_daoId) {
     uint256 proposalId = zDAORecords[_daoId].zDAO.createProposal(
       msg.sender, // created by
       _startTimestamp,
       _endTimestamp,
-      _token,
-      _amount,
+      _target,
+      _value,
+      _data,
       _ipfs
     );
 
     emit ProposalCreated(
       _daoId,
-      msg.sender,
       proposalId,
+      msg.sender,
       _startTimestamp,
       _endTimestamp
     );
@@ -204,13 +206,38 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
   }
 
+  function cancelProposal(uint256 _daoId, uint256 _proposalId)
+    external
+    override
+  {
+    zDAORecords[_daoId].zDAO.cancelProposal(msg.sender, _proposalId);
+
+    emit ProposalCanceled(_daoId, _proposalId, msg.sender);
+
+    rootStateSender.sendMessageToChild(
+      abi.encode(
+        uint256(ITunnel.MessageType.CancelProposal),
+        _daoId,
+        _proposalId
+      )
+    );
+  }
+
   function executeProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
   {
-    zDAORecords[_daoId].zDAO.executeProposal(_proposalId);
+    zDAORecords[_daoId].zDAO.executeProposal(msg.sender, _proposalId);
 
-    emit ProposalExecuted(_daoId, _proposalId);
+    emit ProposalExecuted(_daoId, _proposalId, msg.sender);
+
+    rootStateSender.sendMessageToChild(
+      abi.encode(
+        uint256(ITunnel.MessageType.ExecuteProposal),
+        _daoId,
+        _proposalId
+      )
+    );
   }
 
   function processMessageFromChild(bytes calldata _message) external override {
@@ -222,19 +249,25 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _processMessageFromChild(bytes memory _data) internal {
-    uint256 messageType = abi.decode(_data, (uint256));
+  function _processMessageFromChild(bytes memory _message) internal {
+    uint256 messageType = abi.decode(_message, (uint256));
     if (messageType == uint256(ITunnel.MessageType.VoteResult)) {
-      (
-        uint256 messageType2,
-        uint256 zDAOId,
-        uint256 proposalId,
-        uint256 yes,
-        uint256 no
-      ) = abi.decode(_data, (uint256, uint256, uint256, uint256, uint256));
-      // let zDAO decode
-      zDAORecords[zDAOId].zDAO.setVoteResult(proposalId, yes, no);
+      _collectProposal(_message);
     }
+  }
+
+  function _collectProposal(bytes memory _message) internal virtual {
+    (
+      uint256 messageType2,
+      uint256 zDAOId,
+      uint256 proposalId,
+      uint256 yes,
+      uint256 no
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
+    // let zDAO decode
+    zDAORecords[zDAOId].zDAO.setVoteResult(proposalId, yes, no);
+
+    emit ProposalCollected(zDAOId, proposalId, yes, no);
   }
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
@@ -255,7 +288,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
           IEtherZDAO.__ZDAO_init.selector,
           address(this),
           lastZDAOId,
-          msg.sender, // zDAO owner
+          msg.sender, // zDAO createdBy
           _zDAOConfig
         )
       )

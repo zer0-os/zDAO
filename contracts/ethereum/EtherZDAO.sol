@@ -13,7 +13,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   ZDAOInfo public zDAOInfo;
 
-  uint256 private lastProposalId;
+  uint256 public lastProposalId;
   mapping(uint256 => Proposal) public proposals;
   uint256[] public proposalIds;
 
@@ -42,12 +42,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   }
 
   modifier onlyValidProposal(uint256 _proposalId) {
-    require(
-      _proposalId > 0 &&
-        _proposalId <= lastProposalId &&
-        proposals[_proposalId].state != IEtherZDAO.ProposalState.Deleted,
-      "Invalid zDAO"
-    );
+    require(_proposalId > 0 && _proposalId <= lastProposalId, "Invalid zDAO");
     _;
   }
 
@@ -58,7 +53,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     uint256 _zDAOId,
-    address _zDAOOwner,
+    address _createdBy,
     IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
@@ -67,14 +62,13 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      owner: _zDAOOwner,
-      name: _zDAOConfig.name,
+      title: _zDAOConfig.title,
+      createdBy: _createdBy,
       gnosisSafe: _zDAOConfig.gnosisSafe,
       token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
-      minPeriod: _zDAOConfig.minPeriod,
       isRelativeMajority: _zDAOConfig.isRelativeMajority,
-      threshold: _zDAOConfig.threshold,
+      quorumVotes: _zDAOConfig.quorumVotes,
       snapshot: block.number,
       destroyed: false
     });
@@ -104,8 +98,9 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     address _createdBy,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    IERC20Upgradeable _token,
-    uint256 _amount,
+    address _target,
+    uint256 _value,
+    bytes calldata _data,
     bytes32 _ipfs
   )
     external
@@ -119,22 +114,48 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       _createdBy,
       _startTimestamp,
       _endTimestamp,
-      _token,
-      _amount,
+      _target,
+      _value,
+      _data,
       _ipfs
     );
 
     return proposalId;
   }
 
-  function executeProposal(uint256 _proposalId)
+  function cancelProposal(address, uint256 _proposalId)
     external
     override
     onlyZDAOChef
     isActiveDAO
     onlyValidProposal(_proposalId)
   {
-    // TODO
+    ProposalState state2 = this.state(_proposalId);
+    require(
+      state2 != ProposalState.Executed,
+      "Can not cancel executed proposal"
+    );
+    require(state2 == ProposalState.Pending, "Not a pending proposal");
+
+    proposals[_proposalId].canceled = true;
+  }
+
+  function executeProposal(address _executeBy, uint256 _proposalId)
+    external
+    override
+    onlyZDAOChef
+    isActiveDAO
+    onlyValidProposal(_proposalId)
+  {
+    ProposalState state2 = this.state(_proposalId);
+    require(state2 == ProposalState.Succeeded, "Not a succeeded proposal");
+
+    Proposal storage proposal = proposals[_proposalId];
+
+    (bool success, ) = proposal.target.call{value: proposal.value}(
+      proposal.data
+    );
+    require(success, "Execution transaction reverted");
   }
 
   function setVoteResult(
@@ -156,8 +177,9 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     address _createdBy,
     uint256 _startTimestamp,
     uint256 _endTimestamp,
-    IERC20Upgradeable _token,
-    uint256 _amount,
+    address _target,
+    uint256 _value,
+    bytes memory _data,
     bytes32 _ipfs
   ) internal virtual returns (uint256 proposalId) {
     lastProposalId++;
@@ -171,10 +193,12 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       no: 0,
       reserved: 0,
       ipfs: _ipfs,
-      token: _token,
-      amount: _amount,
+      target: _target,
+      value: _value,
+      data: _data,
       snapshot: block.number,
-      state: ProposalState.Active
+      executed: false,
+      canceled: false
     });
     proposalIds.push(lastProposalId);
 
@@ -186,7 +210,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   /* -------------------------------------------------------------------------- */
 
   function zDAOOwner() external view returns (address) {
-    return zDAOInfo.owner;
+    return zDAOInfo.createdBy;
   }
 
   function destroyed() external view returns (bool) {
@@ -216,5 +240,29 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     }
 
     return records;
+  }
+
+  function state(uint256 _proposalId)
+    external
+    view
+    override
+    onlyValidProposal(_proposalId)
+    returns (ProposalState)
+  {
+    Proposal storage proposal = proposals[_proposalId];
+    if (proposal.canceled) {
+      return ProposalState.Canceled;
+    } else if (block.timestamp <= proposal.startTimestamp) {
+      return ProposalState.Pending;
+    } else if (block.timestamp <= proposal.endTimestamp) {
+      return ProposalState.Active;
+    } else if (
+      proposal.yes <= proposal.no || proposal.yes < zDAOInfo.quorumVotes
+    ) {
+      return ProposalState.Failed;
+    } else if (proposal.executed) {
+      return ProposalState.Executed;
+    }
+    return ProposalState.Succeeded;
   }
 }

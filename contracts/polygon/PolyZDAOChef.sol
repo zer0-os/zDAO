@@ -114,6 +114,10 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
       _deleteZDAO(_message);
     } else if (messageType == uint256(MessageType.CreateProposal)) {
       _createProposal(_message);
+    } else if (messageType == uint256(MessageType.CancelProposal)) {
+      _cancelProposal(_message);
+    } else if (messageType == uint256(MessageType.ExecuteProposal)) {
+      _executeProposal(_message);
     }
   }
 
@@ -127,7 +131,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
       uint256 zDAOId,
       address token,
       bool isRelativeMajority,
-      uint256 threshold
+      uint256 quorumVotes
     ) = abi.decode(_message, (uint256, uint256, address, bool, uint256));
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
@@ -143,7 +147,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
           zDAOId,
           mappedToken,
           isRelativeMajority,
-          threshold
+          quorumVotes
         )
       )
     );
@@ -151,15 +155,12 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOs[zDAOId] = zDAO;
     zDAOIds.push(zDAOId);
 
-    // grant locker role to new zDAO
-    staking.grantRole(staking.LOCKER_ROLE(), address(zDAO));
-
     emit DAOCreated(
       address(zDAO),
       zDAOId,
       mappedToken,
       isRelativeMajority,
-      threshold
+      quorumVotes
     );
 
     return zDAO;
@@ -193,6 +194,34 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOs[zDAOId].createProposal(proposalId, startTimestamp, endTimestamp);
 
     emit ProposalCreated(zDAOId, proposalId, startTimestamp, endTimestamp);
+  }
+
+  function _cancelProposal(bytes memory _message) internal virtual {
+    (uint256 messageType, uint256 zDAOId, uint256 proposalId) = abi.decode(
+      _message,
+      (uint256, uint256, uint256)
+    );
+
+    require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
+    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+
+    zDAOs[zDAOId].cancelProposal(proposalId);
+
+    emit ProposalCanceled(zDAOId, proposalId);
+  }
+
+  function _executeProposal(bytes memory _message) internal virtual {
+    (uint256 messageType, uint256 zDAOId, uint256 proposalId) = abi.decode(
+      _message,
+      (uint256, uint256, uint256)
+    );
+
+    require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
+    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+
+    zDAOs[zDAOId].executeProposal(proposalId);
+
+    emit ProposalExecuted(zDAOId, proposalId);
   }
 
   /* -------------------------------------------------------------------------- */

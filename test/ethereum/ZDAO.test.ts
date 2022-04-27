@@ -44,17 +44,16 @@ describe("ZDAO", async function () {
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
     const minPeriod = 30; // unit in seconds
-    const threshold = 5000; // 100% percent in 10000
+    const quorumVotes = 5000;
     const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
     zDAOConfig = {
-      name: `${zNA}.dao`,
+      title: `${zNA}.dao`,
       gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
-      minPeriod,
       isRelativeMajority: true,
-      threshold,
+      quorumVotes,
     };
 
     await zDAO.__ZDAO_init(
@@ -69,24 +68,24 @@ describe("ZDAO", async function () {
     proposalConfig = {
       startTimestamp: await now(),
       endTimestamp: (await now()) + minPeriod,
-      token: vToken.address,
-      amount: minAmount.toNumber(),
+      target: vToken.address,
+      value: minAmount.toNumber(),
+      data: "0x00",
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(1);
-    expect(zDAOInfo.owner).to.be.equal(zNAOwner.address);
-    expect(zDAOInfo.name).to.be.equal(zDAOConfig.name);
+    expect(zDAOInfo.title).to.be.equal(zDAOConfig.title);
+    expect(zDAOInfo.createdBy).to.be.equal(zNAOwner.address);
     expect(zDAOInfo.gnosisSafe).to.be.equal(zDAOConfig.gnosisSafe);
     expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
     expect(zDAOInfo.amount.toNumber()).to.be.equal(zDAOConfig.amount);
-    expect(zDAOInfo.minPeriod).to.be.equal(zDAOConfig.minPeriod);
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );
-    expect(zDAOInfo.threshold).to.be.equal(zDAOConfig.threshold);
+    expect(zDAOInfo.quorumVotes).to.be.equal(zDAOConfig.quorumVotes);
     expect(zDAOInfo.snapshot).to.be.gt(0);
     expect(zDAOInfo.destroyed).to.be.equal(false);
   });
@@ -100,8 +99,9 @@ describe("ZDAO", async function () {
         user.address,
         proposalConfig.startTimestamp,
         proposalConfig.endTimestamp,
-        proposalConfig.token,
-        proposalConfig.amount,
+        proposalConfig.target,
+        proposalConfig.value,
+        proposalConfig.data,
         proposalConfig.ipfs
       );
   };
@@ -129,10 +129,16 @@ describe("ZDAO", async function () {
       proposalConfig.startTimestamp
     );
     expect(proposals[0].endTimestamp).to.be.equal(proposalConfig.endTimestamp);
+    expect(proposals[0].yes.toNumber()).to.be.equal(0);
+    expect(proposals[0].no.toNumber()).to.be.equal(0);
+    expect(proposals[0].reserved.toNumber()).to.be.equal(0);
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);
-    expect(proposals[0].token).to.be.equal(proposalConfig.token);
-    expect(proposals[0].amount.toNumber()).to.be.equal(proposalConfig.amount);
-    expect(proposals[0].state).to.be.equal(0); // Active state
+    expect(proposals[0].target).to.be.equal(proposalConfig.target);
+    expect(proposals[0].value.toNumber()).to.be.equal(proposalConfig.value);
+    expect(proposals[0].data).to.be.equal(proposalConfig.data);
+    expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
+    expect(proposals[0].executed).to.be.equal(false);
+    expect(proposals[0].canceled).to.be.equal(false);
   });
 
   it("Should be callable by zDAOChef", async function () {

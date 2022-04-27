@@ -8,6 +8,8 @@ interface ITunnel {
     CreateZDAO,
     DeleteZDAO,
     CreateProposal,
+    CancelProposal,
+    ExecuteProposal,
     VoteResult
   }
 }

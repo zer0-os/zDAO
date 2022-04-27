@@ -35,6 +35,15 @@ interface IStaking {
     uint256 _totalPerUser
   );
 
+  /**
+   * @dev Emitted when a token transfer or delegate change results in changes to a delegate's number of staking.
+   */
+  event StakingPowerChanged(
+    address indexed delegate,
+    uint256 oldValue,
+    uint256 newValue
+  );
+
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
@@ -51,7 +60,19 @@ interface IStaking {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function totalStaked(address _token) external view returns (uint256);
+  function totalStaked() external view returns (uint256);
+
+  function pastTotalStaked(uint256 _blockNumber)
+    external
+    view
+    returns (uint256);
+
+  function stakingPower(address _user) external view returns (uint256);
+
+  function pastStakingPower(address _user, uint256 _blockNumber)
+    external
+    view
+    returns (uint256);
 
   function userStaked(address _user, address _token)
     external

@@ -1,17 +1,20 @@
 import { ethers } from "ethers";
 
 enum MessageType {
+  None = 0,
   CreateZDAO = 1,
   DeleteZDAO = 2,
   CreateProposal = 3,
-  VoteResult = 4,
+  CancelProposal = 4,
+  ExecuteProposal = 5,
+  VoteResult = 6,
 }
 
 export interface CreateZDAOPack {
   lastZDAOId: number;
   token: string;
   isRelativeMajority: boolean;
-  threshold: number;
+  quorumVotes: number;
 }
 
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
@@ -22,7 +25,7 @@ export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
       pack.lastZDAOId,
       pack.token,
       pack.isRelativeMajority,
-      pack.threshold,
+      pack.quorumVotes,
     ]
   );
 };

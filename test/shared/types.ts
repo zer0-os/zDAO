@@ -1,18 +1,18 @@
 export interface ZDAOConfig {
-  name: string;
+  title: string;
   gnosisSafe: string;
   token: string;
   amount: number;
-  minPeriod: number;
   isRelativeMajority: boolean;
-  threshold: number;
+  quorumVotes: number;
 }
 
 export interface ProposalConfig {
   startTimestamp: number;
   endTimestamp: number;
-  token: string;
-  amount: number;
+  target: string;
+  value: number;
+  data: string;
   ipfs: string;
 }
 
@@ -20,7 +20,7 @@ export interface PolyZDAOConfig {
   zDAOId: number;
   mappedToken: string;
   isRelativeMajority: boolean;
-  threshold: number;
+  quorumVotes: number;
 }
 
 export interface PolyProposalConfig {

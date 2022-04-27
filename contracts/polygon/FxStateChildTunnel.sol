@@ -48,9 +48,9 @@ contract FxStateChildTunnel is
 
   function _processMessageFromRoot(
     uint256,
-    address,
+    address sender,
     bytes memory message
-  ) internal override {
+  ) internal override validateSender(sender) {
     if (address(childStateReceiver) != address(0)) {
       childStateReceiver.processMessageFromRoot(message);
     }

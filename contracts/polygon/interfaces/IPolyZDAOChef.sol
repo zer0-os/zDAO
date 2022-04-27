@@ -14,7 +14,7 @@ interface IPolyZDAOChef {
     uint256 indexed _daoId,
     address indexed _token, // token address on Ethereum
     bool _isRelativeMajority,
-    uint256 _threshold
+    uint256 _quorumVotes
   );
 
   event DAODestroyed(uint256 indexed _daoId);
@@ -25,6 +25,10 @@ interface IPolyZDAOChef {
     uint256 _startTimestamp,
     uint256 _endTimestamp
   );
+
+  event ProposalCanceled(uint256 indexed _zDAOId, uint256 indexed _proposalId);
+
+  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
 
   event CollectResult(
     uint256 indexed _zDAOId,
