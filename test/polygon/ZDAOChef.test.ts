@@ -18,9 +18,7 @@ import {
   MockTokenUpgradeable__factory,
   MockTokenUpgradeable,
 } from "../../types";
-import { Registry__factory } from "../../types/factories/Registry__factory";
 import { Staking__factory } from "../../types/factories/Staking__factory";
-import { Registry } from "../../types/Registry";
 import { Staking } from "../../types/Staking";
 import {
   CreateProposalPack,
@@ -39,11 +37,9 @@ describe("ZDAOChef", async function () {
     userA: SignerWithAddress;
 
   let staking: MockContract<Staking>,
-    registry: MockContract<Registry>,
     ZDAOChef: MockContract<PolyZDAOChef>,
     childStateSender: FakeContract<IChildStateSender>,
-    vToken: MockContract<MockTokenUpgradeable>,
-    vPolyToken: FakeContract<IERC20Upgradeable>;
+    vToken: MockContract<MockTokenUpgradeable>;
 
   let zDAOPack: CreateZDAOPack, proposalPack: CreateProposalPack;
 
@@ -62,12 +58,6 @@ describe("ZDAOChef", async function () {
     staking = (await StakingFactory.deploy()) as MockContract<Staking>;
     await staking.__Staking_init();
 
-    const RegistryFactory = (await smock.mock<Registry__factory>(
-      "Registry"
-    )) as MockContractFactory<Registry__factory>;
-    registry = (await RegistryFactory.deploy()) as MockContract<Registry>;
-    await registry.__Registry_init();
-
     childStateSender = (await smock.fake(
       "IChildStateSender"
     )) as FakeContract<IChildStateSender>;
@@ -75,7 +65,6 @@ describe("ZDAOChef", async function () {
     ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<PolyZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       staking.address,
-      registry.address,
       childStateSender.address,
       zDAOBase.address
     );
@@ -86,19 +75,6 @@ describe("ZDAOChef", async function () {
     vToken =
       (await VotingTokenFactory.deploy()) as MockContract<MockTokenUpgradeable>;
     await vToken.__MockTokenUpgradeable_init("vToken", "VT");
-
-    // vPolyToken is mapped token on Polygon from vToken
-    vPolyToken = (await smock.fake(
-      "IERC20Upgradeable"
-    )) as FakeContract<IERC20Upgradeable>;
-
-    // remember: mapping tokens between Ethereum and Polygon
-    registry.rootToChildToken
-      .whenCalledWith(vToken.address)
-      .returns(vPolyToken.address);
-    registry.childToRootToken
-      .whenCalledWith(vPolyToken.address)
-      .returns(vToken.address);
 
     const minAmount = BigNumber.from("10000");
     const minPeriod = 300; // unit in seconds
@@ -154,7 +130,6 @@ describe("ZDAOChef", async function () {
 
     const zDAOInfo = await zDAO.zDAOInfo();
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOPack.lastZDAOId);
-    // mapped token
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOPack.isRelativeMajority
     );

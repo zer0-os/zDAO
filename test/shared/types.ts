@@ -18,7 +18,6 @@ export interface ProposalConfig {
 
 export interface PolyZDAOConfig {
   zDAOId: number;
-  mappedToken: string;
   isRelativeMajority: boolean;
   quorumVotes: number;
 }

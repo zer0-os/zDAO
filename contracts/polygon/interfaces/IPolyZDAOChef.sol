@@ -12,7 +12,6 @@ interface IPolyZDAOChef {
   event DAOCreated(
     address indexed _zDAO,
     uint256 indexed _daoId,
-    address indexed _token, // token address on Ethereum
     bool _isRelativeMajority,
     uint256 _quorumVotes
   );

@@ -7,12 +7,10 @@ import {createProxy} from "../helpers/Proxy.sol";
 import {IChildStateSender, IChildStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IPolyZDAOChef} from "./interfaces/IPolyZDAOChef.sol";
 import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
-import {Registry} from "./Registry.sol";
 import {Staking} from "./Staking.sol";
 
 contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
   Staking public staking;
-  Registry public registry;
   IChildStateSender public childStateSender;
   address public zDAOBase;
 
@@ -37,14 +35,12 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
   function __ZDAOChef_init(
     Staking _stakingBase,
-    Registry _registry,
     IChildStateSender _childStateSender,
     address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     staking = _stakingBase;
-    registry = _registry;
     childStateSender = _childStateSender;
     zDAOBase = _zDAOBase;
   }
@@ -55,10 +51,6 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
   function setStaking(Staking _staking) external onlyOwner {
     staking = _staking;
-  }
-
-  function setRegistry(Registry _registry) external onlyOwner {
-    registry = _registry;
   }
 
   function setZDAOBase(address _zDAOBase) external onlyOwner {
@@ -136,7 +128,6 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
-    address mappedToken = registry.rootToChildToken(token); // mapped token from Ethereum
     IPolyZDAO zDAO = IPolyZDAO(
       createProxy(
         zDAOBase,
@@ -145,7 +136,6 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
           address(this),
           staking,
           zDAOId,
-          mappedToken,
           isRelativeMajority,
           quorumVotes
         )
@@ -155,13 +145,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOs[zDAOId] = zDAO;
     zDAOIds.push(zDAOId);
 
-    emit DAOCreated(
-      address(zDAO),
-      zDAOId,
-      mappedToken,
-      isRelativeMajority,
-      quorumVotes
-    );
+    emit DAOCreated(address(zDAO), zDAOId, isRelativeMajority, quorumVotes);
 
     return zDAO;
   }

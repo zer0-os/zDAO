@@ -8,9 +8,6 @@ interface IPolyZDAO {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 zDAOId;
-    /// @notice Mapped voting token (ERC20 or ERC721) on Polygon,
-    /// only token holders can cast a vote
-    address mappedToken;
     /// @notice True if relative majority to calculate voting result
     bool isRelativeMajority;
     /// @notice The number of votes in support of a proposal required in order
@@ -82,7 +79,6 @@ interface IPolyZDAO {
     address _zDAOChef,
     address _staking,
     uint256 _zDAOId,
-    address _mappedToken, // token address on Polygon
     bool _isRelativeMajority,
     uint256 _threshold
   ) external;

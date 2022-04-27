@@ -53,7 +53,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     address _zDAOChef,
     address _staking,
     uint256 _zDAOId,
-    address _mappedToken, // token address on Polygon
     bool _isRelativeMajority,
     uint256 _quorumVotes
   ) public initializer {
@@ -63,7 +62,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     staking = Staking(_staking);
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      mappedToken: _mappedToken,
       isRelativeMajority: _isRelativeMajority,
       quorumVotes: _quorumVotes,
       snapshot: block.number,

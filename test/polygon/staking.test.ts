@@ -212,15 +212,15 @@ describe("Staking", async function () {
     );
 
     for (const pair of powerA) {
-      expect((await staking.pastStakingPower(userA.address, pair[0])).toNumber()).to.be.equal(
-        pair[1]
-      );
+      expect(
+        (await staking.pastStakingPower(userA.address, pair[0])).toNumber()
+      ).to.be.equal(pair[1]);
     }
 
     for (const pair of powerB) {
-      expect((await staking.pastStakingPower(userB.address, pair[0])).toNumber()).to.be.equal(
-        pair[1]
-      );
+      expect(
+        (await staking.pastStakingPower(userB.address, pair[0])).toNumber()
+      ).to.be.equal(pair[1]);
     }
   });
 });

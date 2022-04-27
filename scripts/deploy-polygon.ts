@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { FxStateChildTunnel, PolyZDAOChef, Registry, Staking } from "../types";
+import { FxStateChildTunnel, PolyZDAOChef, Staking } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
@@ -49,21 +49,6 @@ const main = async () => {
     );
     await verifyContract(stakingImpl);
 
-    // Registry
-    console.log("Deploying Registry proxy contract...");
-    const RegistryFactory = await ethers.getContractFactory("Registry");
-    const registry = (await upgrades.deployProxy(RegistryFactory, [], {
-      kind: "uups",
-      initializer: "__Registry_init",
-    })) as Registry;
-    await registry.deployed();
-    console.log(`\ndeployed: ${registry.address}`);
-
-    const registryImpl = await upgrades.erc1967.getImplementationAddress(
-      registry.address
-    );
-    await verifyContract(registryImpl);
-
     console.log("Deploying PolyZDAO implementation contract...");
     const ZDAOFactory = await ethers.getContractFactory("PolyZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
@@ -76,12 +61,7 @@ const main = async () => {
     const ZDAOChefFactory = await ethers.getContractFactory("PolyZDAOChef");
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
-      [
-        staking.address,
-        registry.address,
-        fxStateChildTunnel.address,
-        zDAOBase.address,
-      ],
+      [staking.address, fxStateChildTunnel.address, zDAOBase.address],
       {
         kind: "uups",
         initializer: "__ZDAOChef_init",
@@ -113,14 +93,6 @@ const main = async () => {
         Info: stakingImpl,
       },
       {
-        Label: "Registry proxy address",
-        Info: registry.address,
-      },
-      {
-        Label: "Registry implementation address",
-        Info: registryImpl,
-      },
-      {
         Label: "PolyZDAOChef proxy address",
         Info: zDAOChef.address,
       },
@@ -135,17 +107,6 @@ const main = async () => {
     ]);
 
     console.log("\nInitializing contracts");
-    console.log("Initializing Registry contract...");
-    for (const tokenPair of config[network.name].mapToken) {
-      console.log(`> mapping ${tokenPair.root} to ${tokenPair.child}`);
-      await registry.mapToken(tokenPair.root, tokenPair.child);
-    }
-
-    console.log("Transfer admin role to zDAOChef...");
-    await staking.grantRole(
-      await staking.DEFAULT_ADMIN_ROLE(),
-      zDAOChef.address
-    );
 
     console.log("\n\nWelcome to Polygon!");
   }

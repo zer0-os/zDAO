@@ -8,7 +8,13 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import { IERC20Upgradeable, MockTokenUpgradeable, MockTokenUpgradeable__factory, PolyZDAO, PolyZDAO__factory } from "../../types";
+import {
+  IERC20Upgradeable,
+  MockTokenUpgradeable,
+  MockTokenUpgradeable__factory,
+  PolyZDAO,
+  PolyZDAO__factory,
+} from "../../types";
 import { Staking__factory } from "../../types/factories/Staking__factory";
 import { Staking } from "../../types/Staking";
 import { PolyProposalConfig, PolyZDAOConfig } from "../shared/types";
@@ -26,7 +32,6 @@ describe("ZDAO", async function () {
   let staking: MockContract<Staking>,
     zDAO: MockContract<PolyZDAO>,
     vToken: MockContract<MockTokenUpgradeable>,
-    vPolyToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
   let zDAOConfig: PolyZDAOConfig, proposalConfig: PolyProposalConfig;
@@ -52,18 +57,12 @@ describe("ZDAO", async function () {
       (await VotingTokenFactory.deploy()) as MockContract<MockTokenUpgradeable>;
     await vToken.__MockTokenUpgradeable_init("vToken", "VT");
 
-    // vPolyToken is mapped token on Polygon from vToken
-    vPolyToken = (await smock.fake(
-      "IERC20Upgradeable"
-    )) as FakeContract<IERC20Upgradeable>;
-
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
     const minPeriod = 300; // unit in seconds
 
     zDAOConfig = {
       zDAOId,
-      mappedToken: vPolyToken.address,
       isRelativeMajority: false,
       quorumVotes: 5000,
     };
@@ -72,7 +71,6 @@ describe("ZDAO", async function () {
       zDAOChef.address,
       staking.address,
       zDAOConfig.zDAOId,
-      zDAOConfig.mappedToken,
       zDAOConfig.isRelativeMajority,
       zDAOConfig.quorumVotes
     );
@@ -102,7 +100,6 @@ describe("ZDAO", async function () {
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOConfig.zDAOId);
-    expect(zDAOInfo.mappedToken).to.be.equal(zDAOConfig.mappedToken);
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );

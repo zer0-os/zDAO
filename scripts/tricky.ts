@@ -1,33 +1,9 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
 import { encodeCreateZDAO } from "../test/shared/messagePack";
-import { IPolyZDAO, PolyZDAO, Registry } from "../types";
+import { IPolyZDAO, PolyZDAO } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
-
-const registry = async () => {
-  // Registry
-  console.log("Deploying Registry proxy contract...");
-  const RegistryFactory = await ethers.getContractFactory("Registry");
-  const registry = (await upgrades.deployProxy(RegistryFactory, [], {
-    kind: "uups",
-    initializer: "__Registry_init",
-  })) as Registry;
-  await registry.deployed();
-  console.log(`\ndeployed: ${registry.address}`);
-
-  const registryImpl = await upgrades.erc1967.getImplementationAddress(
-    registry.address
-  );
-  await verifyContract(registryImpl);
-
-  console.log("\nInitializing contracts");
-  console.log("Initializing Registry contract...");
-  for (const tokenPair of config["polygonMumbai"].mapToken) {
-    console.log(`> mapping ${tokenPair.root} to ${tokenPair.child}`);
-    await registry.mapToken(tokenPair.root, tokenPair.child);
-  }
-};
 
 const checkPolyZDAO = async (deployer: SignerWithAddress, contract: string) => {
   const polyZDAO = (await ethers.getContractAt(
