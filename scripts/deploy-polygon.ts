@@ -75,6 +75,10 @@ const main = async () => {
     );
     await verifyContract(zDAOChefImpl);
 
+    // configuring root tunnel contract
+    console.log("Setting ChildStateReceiver in FxStateChildTunnel");
+    await fxStateChildTunnel.setChildStateReceiver(zDAOChef.address);
+
     console.table([
       {
         Label: "Deployer address",
@@ -83,6 +87,10 @@ const main = async () => {
       {
         Label: "FxStateChildTunnel proxy address",
         Info: fxStateChildTunnel.address,
+      },
+      {
+        Label: "FxStateChildTunnel implementation address",
+        Info: fxStateChildTunnelImpl,
       },
       {
         Label: "Staking proxy address",

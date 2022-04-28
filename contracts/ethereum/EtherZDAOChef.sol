@@ -264,6 +264,8 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
       uint256 yes,
       uint256 no
     ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
+    require(zDAOId > 0 && zDAOId <= lastZDAOId, "Invalid zDAO");
+
     // let zDAO decode
     zDAORecords[zDAOId].zDAO.setVoteResult(proposalId, yes, no);
 

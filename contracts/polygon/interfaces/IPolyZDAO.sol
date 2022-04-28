@@ -143,7 +143,10 @@ interface IPolyZDAO {
     view
     returns (VoterChoice);
 
-  function votingPowerOfVoter(address _voter) external view returns (uint256);
+  function votingPowerOfVoter(uint256 _proposalId, address _voter)
+    external
+    view
+    returns (uint256);
 
   function listVoters(
     uint256 _proposalId,

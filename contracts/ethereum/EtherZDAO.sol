@@ -165,6 +165,14 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   ) external override onlyZDAOChef onlyValidProposal(_proposalId) {
     Proposal storage proposal = proposals[_proposalId];
     require(proposal.proposalId == _proposalId, "Invalid proposal");
+
+    ProposalState state2 = this.state(_proposalId);
+    require(
+      state2 == ProposalState.Failed || state2 == ProposalState.Succeeded,
+      "Not time to set vote result"
+    );
+    require(proposal.yes + proposal.no == 0, "Already set vote result");
+
     proposal.yes = _yes;
     proposal.no = _no;
   }

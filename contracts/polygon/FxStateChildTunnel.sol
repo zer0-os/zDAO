@@ -13,6 +13,14 @@ contract FxStateChildTunnel is
 {
   IChildStateReceiver public childStateReceiver;
 
+  modifier onlyStateReceiver() {
+    require(
+      msg.sender == address(childStateReceiver),
+      "Only for state receiver"
+    );
+    _;
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
@@ -38,7 +46,10 @@ contract FxStateChildTunnel is
     fxRootTunnel = _fxRootTunnel;
   }
 
-  function sendMessageToRoot(bytes calldata message) external {
+  function sendMessageToRoot(bytes calldata message)
+    external
+    onlyStateReceiver
+  {
     _sendMessageToRoot(message);
   }
 
