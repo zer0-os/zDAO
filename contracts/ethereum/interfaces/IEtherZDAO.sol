@@ -45,10 +45,8 @@ interface IEtherZDAO {
     uint256 proposalId;
     /// @notice Address who created proposal
     address createdBy;
-    /// @notice Timestamp when the proposal starts
-    uint256 startTimestamp;
-    /// @notice Timestamp when the proposal ends
-    uint256 endTimestamp;
+    /// @notice Time duration of this proposal in seconds
+    uint256 duration;
     /// @notice The number of all the casted votes in favor of this proposal
     uint256 yes;
     /// @notice The number of all the casted vote in opposition to this proposal
@@ -95,8 +93,7 @@ interface IEtherZDAO {
 
   function createProposal(
     address _createdBy,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp,
+    uint256 _duration,
     address _target,
     uint256 _value,
     bytes calldata _data,

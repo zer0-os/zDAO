@@ -182,6 +182,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       yes: 0,
       no: 0,
       reserved: 0,
+      voters: 0,
       snapshot: block.number,
       executed: false,
       canceled: false
@@ -237,6 +238,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     } else if (_choice == VoterChoice.No) {
       proposal.no += vp;
     }
+    proposal.voters = votes.voters.length;
   }
 
   function _canCollectResult(uint256 _proposalId)
@@ -327,10 +329,15 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     view
     override
     onlyValidProposal(_proposalId)
-    returns (uint256 yes, uint256 no)
+    returns (
+      uint256 voters,
+      uint256 yes,
+      uint256 no
+    )
   {
     Proposal storage proposal = proposals[_proposalId];
 
+    voters = proposal.voters;
     yes = proposal.yes;
     no = proposal.no;
   }

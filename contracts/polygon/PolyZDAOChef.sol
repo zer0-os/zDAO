@@ -168,16 +168,16 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
       uint256 messageType,
       uint256 zDAOId,
       uint256 proposalId,
-      uint256 startTimestamp,
-      uint256 endTimestamp
-    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
+      uint256 duration
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
 
-    zDAOs[zDAOId].createProposal(proposalId, startTimestamp, endTimestamp);
+    uint256 endTimestamp = block.timestamp + duration;
+    zDAOs[zDAOId].createProposal(proposalId, block.timestamp, endTimestamp);
 
-    emit ProposalCreated(zDAOId, proposalId, startTimestamp, endTimestamp);
+    emit ProposalCreated(zDAOId, proposalId, block.timestamp, endTimestamp);
   }
 
   function _cancelProposal(bytes memory _message) internal virtual {

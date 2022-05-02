@@ -47,6 +47,8 @@ interface IPolyZDAO {
     uint256 no;
     /// @notice Reserved place, maybe can be used for absent choice?
     uint256 reserved;
+    /// @notice The number of voters who votes
+    uint256 voters;
     /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
     /// @notice Flag marking whether this proposal has been executed
@@ -129,7 +131,11 @@ interface IPolyZDAO {
   function votesResultOfProposal(uint256 _proposalId)
     external
     view
-    returns (uint256 yes, uint256 no);
+    returns (
+      uint256 voters,
+      uint256 yes,
+      uint256 no
+    );
 
   function canVote(uint256 _proposalId, address _voter)
     external

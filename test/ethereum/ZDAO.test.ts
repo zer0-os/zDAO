@@ -43,7 +43,7 @@ describe("ZDAO", async function () {
 
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
-    const minPeriod = 30; // unit in seconds
+    const minDuration = 30; // unit in seconds
     const quorumVotes = 5000;
     const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
@@ -66,8 +66,7 @@ describe("ZDAO", async function () {
     zDAOInfo = await zDAO.zDAOInfo();
 
     proposalConfig = {
-      startTimestamp: await now(),
-      endTimestamp: (await now()) + minPeriod,
+      duration: minDuration,
       target: vToken.address,
       value: minAmount.toNumber(),
       data: "0x00",
@@ -97,8 +96,7 @@ describe("ZDAO", async function () {
       .connect(zDAOChef)
       .createProposal(
         user.address,
-        proposalConfig.startTimestamp,
-        proposalConfig.endTimestamp,
+        proposalConfig.duration,
         proposalConfig.target,
         proposalConfig.value,
         proposalConfig.data,
@@ -125,10 +123,7 @@ describe("ZDAO", async function () {
     // check proposal informations
     expect(proposals[0].proposalId).to.be.equal(1);
     expect(proposals[0].createdBy).to.be.equal(userA.address);
-    expect(proposals[0].startTimestamp).to.be.equal(
-      proposalConfig.startTimestamp
-    );
-    expect(proposals[0].endTimestamp).to.be.equal(proposalConfig.endTimestamp);
+    expect(proposals[0].duration).to.be.equal(proposalConfig.duration);
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
     expect(proposals[0].reserved.toNumber()).to.be.equal(0);

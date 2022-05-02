@@ -96,8 +96,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   function createProposal(
     address _createdBy,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp,
+    uint256 _duration,
     address _target,
     uint256 _value,
     bytes calldata _data,
@@ -112,8 +111,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   {
     uint256 proposalId = _createProposal(
       _createdBy,
-      _startTimestamp,
-      _endTimestamp,
+      _duration,
       _target,
       _value,
       _data,
@@ -183,8 +181,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   function _createProposal(
     address _createdBy,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp,
+    uint256 _duration,
     address _target,
     uint256 _value,
     bytes memory _data,
@@ -195,8 +192,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     proposals[lastProposalId] = Proposal({
       proposalId: lastProposalId,
       createdBy: _createdBy,
-      startTimestamp: _startTimestamp,
-      endTimestamp: _endTimestamp,
+      duration: _duration,
       yes: 0,
       no: 0,
       reserved: 0,
@@ -260,17 +256,18 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     Proposal storage proposal = proposals[_proposalId];
     if (proposal.canceled) {
       return ProposalState.Canceled;
-    } else if (block.timestamp <= proposal.startTimestamp) {
-      return ProposalState.Pending;
-    } else if (block.timestamp <= proposal.endTimestamp) {
-      return ProposalState.Active;
     } else if (
       proposal.yes <= proposal.no || proposal.yes < zDAOInfo.quorumVotes
     ) {
       return ProposalState.Failed;
+    } else if (
+      proposal.yes >= proposal.no && proposal.yes >= zDAOInfo.quorumVotes
+    ) {
+      return ProposalState.Succeeded;
     } else if (proposal.executed) {
       return ProposalState.Executed;
     }
-    return ProposalState.Succeeded;
+
+    return ProposalState.Pending;
   }
 }

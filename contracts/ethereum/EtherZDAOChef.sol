@@ -169,8 +169,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   function createProposal(
     uint256 _daoId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp,
+    uint256 _duration,
     address _target,
     uint256 _value,
     bytes calldata _data,
@@ -178,8 +177,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   ) external override onlyValidZDAO(_daoId) {
     uint256 proposalId = zDAORecords[_daoId].zDAO.createProposal(
       msg.sender, // created by
-      _startTimestamp,
-      _endTimestamp,
+      _duration,
       _target,
       _value,
       _data,
@@ -190,8 +188,8 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
       _daoId,
       proposalId,
       msg.sender,
-      _startTimestamp,
-      _endTimestamp
+      _duration,
+      uint256(block.number)
     );
 
     // send proposal info to L2
@@ -200,8 +198,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
         uint256(ITunnel.MessageType.CreateProposal),
         _daoId,
         proposalId,
-        _startTimestamp,
-        _endTimestamp
+        _duration
       )
     );
   }

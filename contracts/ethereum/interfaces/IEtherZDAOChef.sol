@@ -16,7 +16,7 @@ interface IEtherZDAOChef {
     address token;
     /// @notice The minimum number of tokens required to become proposal creator
     uint256 amount;
-    // True if relative majority to calculate voting result
+    /// @notice True if relative majority to calculate voting result
     bool isRelativeMajority;
     /// @notice The number of votes in support of a proposal required in order
     /// for a vote to succeed
@@ -63,8 +63,8 @@ interface IEtherZDAOChef {
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
     address indexed _createdBy,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
+    uint256 _duration,
+    uint256 _snapshot
   );
 
   event ProposalCanceled(
@@ -108,8 +108,7 @@ interface IEtherZDAOChef {
 
   function createProposal(
     uint256 _daoId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp,
+    uint256 _duration,
     address _target,
     uint256 _value,
     bytes calldata _data,

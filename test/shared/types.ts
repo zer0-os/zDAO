@@ -8,8 +8,7 @@ export interface ZDAOConfig {
 }
 
 export interface ProposalConfig {
-  startTimestamp: number;
-  endTimestamp: number;
+  duration: number;
   target: string;
   value: number;
   data: string;

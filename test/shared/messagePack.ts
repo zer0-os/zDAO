@@ -14,7 +14,7 @@ export interface CreateZDAOPack {
   lastZDAOId: number;
   token: string;
   isRelativeMajority: boolean;
-  quorumVotes: number;
+  quorumVotes: string;
 }
 
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
@@ -44,20 +44,13 @@ export const encodeDeleteZDAO = (pack: DeleteZDAOPack): string => {
 export interface CreateProposalPack {
   zDAOId: number;
   proposalId: number;
-  startTimestamp: number;
-  endTimestamp: number;
+  duration: number;
 }
 
 export const encodeCreateProposal = (pack: CreateProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "uint256", "uint256", "uint256"],
-    [
-      MessageType.CreateProposal,
-      pack.zDAOId,
-      pack.proposalId,
-      pack.startTimestamp,
-      pack.endTimestamp,
-    ]
+    ["uint256", "uint256", "uint256", "uint256"],
+    [MessageType.CreateProposal, pack.zDAOId, pack.proposalId, pack.duration]
   );
 };
 

@@ -77,21 +77,20 @@ describe("ZDAOChef", async function () {
     await vToken.__MockTokenUpgradeable_init("vToken", "VT");
 
     const minAmount = BigNumber.from("10000");
-    const minPeriod = 300; // unit in seconds
+    const minDuration = 300; // unit in seconds
     const quorumVotes = 5000; // minimum token amount to be succeeded
 
     zDAOPack = {
       lastZDAOId: 1,
       token: vToken.address, // token address on Ethereum
       isRelativeMajority: true,
-      quorumVotes: quorumVotes,
+      quorumVotes: quorumVotes.toString(),
     };
 
     proposalPack = {
       zDAOId: 1,
       proposalId: 1,
-      startTimestamp: await now(),
-      endTimestamp: (await now()) + minPeriod,
+      duration: minDuration,
     };
   });
 
@@ -207,10 +206,10 @@ describe("ZDAOChef", async function () {
     const proposals = await zDAO.listProposals(1, 1);
 
     expect(proposals[0].proposalId).to.be.equal(proposalPack.proposalId);
-    expect(proposals[0].startTimestamp).to.be.equal(
-      proposalPack.startTimestamp
-    );
-    expect(proposals[0].endTimestamp).to.be.equal(proposalPack.endTimestamp);
+    expect(
+      proposals[0].endTimestamp.toNumber() -
+        proposals[0].startTimestamp.toNumber()
+    ).to.be.equal(proposalPack.duration);
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
     expect(proposals[0].reserved.toNumber()).to.be.equal(0);

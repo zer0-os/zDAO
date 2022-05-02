@@ -77,7 +77,7 @@ describe("ZDAOChef", async function () {
 
     const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
     const minAmount = BigNumber.from("10000");
-    const minPeriod = 30; // unit in seconds
+    const minDuration = 30; // unit in seconds
     const quorumVotes = 5000;
 
     zDAOConfig = {
@@ -90,8 +90,7 @@ describe("ZDAOChef", async function () {
     };
 
     proposalConfig = {
-      startTimestamp: await now(),
-      endTimestamp: (await now()) + minPeriod,
+      duration: minDuration,
       target: vToken.address,
       value: minAmount.toNumber(),
       data: "0x00",
@@ -109,8 +108,7 @@ describe("ZDAOChef", async function () {
   ): Promise<ContractTransaction> => {
     return ZDAOChef.connect(user).createProposal(
       daoId,
-      proposalConfig.startTimestamp,
-      proposalConfig.endTimestamp,
+      proposalConfig.duration,
       proposalConfig.target,
       proposalConfig.value,
       proposalConfig.data,
@@ -265,7 +263,7 @@ describe("ZDAOChef", async function () {
       yes: 70,
       no: 30,
     });
-    
+
     await ZDAOChef.setVariable("rootStateSender", userA.address);
     await expect(ZDAOChef.connect(userA).processMessageFromChild(message)).to.be
       .not.reverted;
