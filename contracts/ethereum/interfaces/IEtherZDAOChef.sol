@@ -112,7 +112,7 @@ interface IEtherZDAOChef {
     address _target,
     uint256 _value,
     bytes calldata _data,
-    bytes32 _ipfs
+    string calldata _ipfs
   ) external;
 
   function cancelProposal(uint256 _daoId, uint256 _proposalId) external;

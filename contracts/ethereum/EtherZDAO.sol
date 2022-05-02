@@ -100,7 +100,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     address _target,
     uint256 _value,
     bytes calldata _data,
-    bytes32 _ipfs
+    string calldata _ipfs
   )
     external
     override
@@ -185,7 +185,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     address _target,
     uint256 _value,
     bytes memory _data,
-    bytes32 _ipfs
+    string memory _ipfs
   ) internal virtual returns (uint256 proposalId) {
     lastProposalId++;
 

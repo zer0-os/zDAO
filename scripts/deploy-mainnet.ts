@@ -68,7 +68,7 @@ const main = async () => {
     await verifyContract(zDAOChefImpl);
 
     // configuring root tunnel contract
-    console.log("Setting ChildStateReceiver in FxStateRootTunnel");
+    console.log("Setting RootStateReceiver in FxStateRootTunnel");
     await fxStateRootTunnel.setRootStateReceiver(zDAOChef.address);
 
     console.table([

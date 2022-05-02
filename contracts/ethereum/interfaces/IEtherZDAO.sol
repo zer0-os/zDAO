@@ -54,8 +54,7 @@ interface IEtherZDAO {
     /// @notice Reserved place, maybe can be used for absent choice?
     uint256 reserved;
     /// @notice IPFS hash which contains meta information of this proposal
-    /// @refer: https://stackoverflow.com/questions/66927626/how-to-store-ipfs-hash-on-ethereum-blockchain-using-smart-contracts
-    bytes32 ipfs;
+    string ipfs;
     /// @notice Target address to be called if succeed for execution
     address target;
     /// @notice Ether amount to be passed(e.g. msg.value) if succeed for execution
@@ -97,7 +96,7 @@ interface IEtherZDAO {
     address _target,
     uint256 _value,
     bytes calldata _data,
-    bytes32 _ipfs
+    string calldata _ipfs
   ) external returns (uint256);
 
   function cancelProposal(address _cancelBy, uint256 _proposalid) external;
