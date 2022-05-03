@@ -7,25 +7,19 @@ enum MessageType {
   CreateProposal = 3,
   CancelProposal = 4,
   ExecuteProposal = 5,
-  VoteResult = 6,
+  CollectProposal = 6,
 }
 
 export interface CreateZDAOPack {
   lastZDAOId: number;
-  token: string;
-  isRelativeMajority: boolean;
-  quorumVotes: string;
 }
 
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "address", "bool", "uint256"],
+    ["uint256", "uint256"],
     [
       MessageType.CreateZDAO,
-      pack.lastZDAOId,
-      pack.token,
-      pack.isRelativeMajority,
-      pack.quorumVotes,
+      pack.lastZDAOId
     ]
   );
 };
@@ -54,16 +48,17 @@ export const encodeCreateProposal = (pack: CreateProposalPack): string => {
   );
 };
 
-export interface VoteResultPack {
+export interface CollectProposalPack {
   zDAOId: number;
   proposalId: number;
+  voters: number;
   yes: number;
   no: number;
 }
 
-export const encodeVoteResult = (pack: VoteResultPack): string => {
+export const encodeCollectProposal = (pack: CollectProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "uint256", "uint256", "uint256"],
-    [MessageType.VoteResult, pack.zDAOId, pack.proposalId, pack.yes, pack.no]
+    ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
+    [MessageType.CollectProposal, pack.zDAOId, pack.proposalId, pack.voters,  pack.yes, pack.no]
   );
 };

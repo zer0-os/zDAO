@@ -13,7 +13,6 @@ import {
   PolyZDAO,
   PolyZDAOChef,
   PolyZDAOChef__factory,
-  IERC20Upgradeable,
   IChildStateSender,
   MockTokenUpgradeable__factory,
   MockTokenUpgradeable,
@@ -27,7 +26,6 @@ import {
   encodeCreateZDAO,
   encodeDeleteZDAO,
 } from "../shared/messagePack";
-import { now } from "../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -81,10 +79,7 @@ describe("ZDAOChef", async function () {
     const quorumVotes = 5000; // minimum token amount to be succeeded
 
     zDAOPack = {
-      lastZDAOId: 1,
-      token: vToken.address, // token address on Ethereum
-      isRelativeMajority: true,
-      quorumVotes: quorumVotes.toString(),
+      lastZDAOId: 1
     };
 
     proposalPack = {
@@ -129,10 +124,6 @@ describe("ZDAOChef", async function () {
 
     const zDAOInfo = await zDAO.zDAOInfo();
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOPack.lastZDAOId);
-    expect(zDAOInfo.isRelativeMajority).to.be.equal(
-      zDAOPack.isRelativeMajority
-    );
-    expect(zDAOInfo.quorumVotes).to.be.equal(zDAOPack.quorumVotes);
   });
 
   it("Should not add same DAO twice", async function () {
@@ -212,7 +203,6 @@ describe("ZDAOChef", async function () {
     ).to.be.equal(proposalPack.duration);
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
-    expect(proposals[0].reserved.toNumber()).to.be.equal(0);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
     expect(proposals[0].executed).to.be.equal(false);
     expect(proposals[0].canceled).to.be.equal(false);

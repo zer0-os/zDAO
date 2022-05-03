@@ -16,7 +16,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   mapping(uint256 => Proposal) public proposals;
 
   // <proposal id, voter address, VoterChoice>
-  mapping(uint256 => ProposalVotes) proposalVotes;
+  mapping(uint256 => ProposalVotes) private proposalVotes;
 
   // list of proposal ids
   uint256[] public proposalIds;
@@ -52,9 +52,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     address _staking,
-    uint256 _zDAOId,
-    bool _isRelativeMajority,
-    uint256 _quorumVotes
+    uint256 _zDAOId
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
@@ -62,8 +60,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     staking = Staking(_staking);
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      isRelativeMajority: _isRelativeMajority,
-      quorumVotes: _quorumVotes,
       snapshot: block.number,
       destroyed: false
     });
@@ -123,24 +119,29 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     _vote(_proposalId, _voter, VoterChoice(_choice));
   }
 
-  function collectResult(uint256 _proposalId)
+  function collectProposal(uint256 _proposalId)
     external
     onlyZDAOChef
     isActiveDAO
     onlyValidProposal(_proposalId)
     returns (
-      bool isRelativeMajority,
+      uint256 voters,
       uint256 yes,
       uint256 no
     )
   {
-    require(_canCollectResult(_proposalId), "Not valid for collecting result");
+    require(
+      _canCollectProposal(_proposalId),
+      "Not valid for collecting proposal"
+    );
 
     Proposal storage proposal = proposals[_proposalId];
 
-    isRelativeMajority = zDAOInfo.isRelativeMajority;
+    voters = proposal.voters;
     yes = proposal.yes;
     no = proposal.no;
+
+    proposal.collected = true;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -181,9 +182,9 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       endTimestamp: _endTimestamp,
       yes: 0,
       no: 0,
-      reserved: 0,
       voters: 0,
       snapshot: block.number,
+      collected: false,
       executed: false,
       canceled: false
     });
@@ -230,6 +231,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       votes.voters.push(_voter);
     }
 
+    votes.votes[_voter].voter = _voter;
     votes.votes[_voter].choice = _choice;
     votes.votes[_voter].votes = vp;
 
@@ -241,7 +243,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     proposal.voters = votes.voters.length;
   }
 
-  function _canCollectResult(uint256 _proposalId)
+  function _canCollectProposal(uint256 _proposalId)
     internal
     view
     virtual
@@ -257,11 +259,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     virtual
     returns (uint256)
   {
-    Proposal storage proposal = proposals[_proposalId];
-    return
-      !zDAOInfo.isRelativeMajority
-        ? 1
-        : staking.pastStakingPower(_voter, proposal.snapshot);
+    return staking.pastStakingPower(_voter, proposals[_proposalId].snapshot);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -314,14 +312,12 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       return ProposalState.Pending;
     } else if (block.timestamp <= proposal.endTimestamp) {
       return ProposalState.Active;
-    } else if (
-      proposal.yes <= proposal.no || proposal.yes < zDAOInfo.quorumVotes
-    ) {
-      return ProposalState.Failed;
     } else if (proposal.executed) {
       return ProposalState.Executed;
+    } else if (proposal.collected) {
+      return ProposalState.Collected;
     }
-    return ProposalState.Succeeded;
+    return ProposalState.Collecting;
   }
 
   function votesResultOfProposal(uint256 _proposalId)
@@ -351,13 +347,13 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     return _canVote(_proposalId, _voter);
   }
 
-  function canCollectResult(uint256 _proposalId)
+  function canCollectProposal(uint256 _proposalId)
     external
     view
     override
     returns (bool)
   {
-    return _canCollectResult(_proposalId);
+    return _canCollectProposal(_proposalId);
   }
 
   function choiceOfVoter(uint256 _proposalId, address _voter)
@@ -415,7 +411,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     address voter;
     for (uint256 i = 0; i < numRecords; ++i) {
       voter = singleProposalVotes.voters[_startIndex + i - 1];
-      voters[i] = singleProposalVotes.votes[voter].voter;
+      voters[i] = voter;
       choices[i] = uint256(singleProposalVotes.votes[voter].choice);
       votes[i] = singleProposalVotes.votes[voter].votes;
     }

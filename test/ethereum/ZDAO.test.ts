@@ -52,8 +52,10 @@ describe("ZDAO", async function () {
       gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
+      threshold: 5001, // 50.01%
+      quorumParticipants: 1,
+      quorumVotes: 5000,
       isRelativeMajority: true,
-      quorumVotes,
     };
 
     await zDAO.__ZDAO_init(
@@ -126,7 +128,6 @@ describe("ZDAO", async function () {
     expect(proposals[0].duration).to.be.equal(proposalConfig.duration);
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
-    expect(proposals[0].reserved.toNumber()).to.be.equal(0);
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);
     expect(proposals[0].target).to.be.equal(proposalConfig.target);
     expect(proposals[0].value.toNumber()).to.be.equal(proposalConfig.value);
@@ -154,8 +155,7 @@ describe("ZDAO", async function () {
 
     const proposalId = 1;
 
-    await expect(zDAO.connect(zDAOChef).setVoteResult(proposalId, 70, 30)).to.be
-      .not.reverted;
+    await expect(zDAO.connect(zDAOChef).collectProposal(proposalId, 1, 70, 30)).to.be.not.reverted;
 
     const proposal = await zDAO.proposals(proposalId);
 

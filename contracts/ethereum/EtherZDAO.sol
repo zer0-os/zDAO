@@ -67,9 +67,11 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       gnosisSafe: _zDAOConfig.gnosisSafe,
       token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
-      isRelativeMajority: _zDAOConfig.isRelativeMajority,
+      threshold: _zDAOConfig.threshold,
+      quorumParticipants: _zDAOConfig.quorumParticipants,
       quorumVotes: _zDAOConfig.quorumVotes,
       snapshot: block.number,
+      isRelativeMajority: _zDAOConfig.isRelativeMajority,
       destroyed: false
     });
   }
@@ -129,10 +131,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     onlyValidProposal(_proposalId)
   {
     ProposalState state2 = this.state(_proposalId);
-    require(
-      state2 != ProposalState.Executed,
-      "Can not cancel executed proposal"
-    );
     require(state2 == ProposalState.Pending, "Not a pending proposal");
 
     proposals[_proposalId].canceled = true;
@@ -154,25 +152,27 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       proposal.data
     );
     require(success, "Execution transaction reverted");
+
+    proposals[_proposalId].executed = true;
   }
 
-  function setVoteResult(
+  function collectProposal(
     uint256 _proposalId,
+    uint256 _voters,
     uint256 _yes,
     uint256 _no
   ) external override onlyZDAOChef onlyValidProposal(_proposalId) {
     Proposal storage proposal = proposals[_proposalId];
-    require(proposal.proposalId == _proposalId, "Invalid proposal");
+    require(!proposal.collected, "Already collected proposal");
 
     ProposalState state2 = this.state(_proposalId);
-    require(
-      state2 == ProposalState.Failed || state2 == ProposalState.Succeeded,
-      "Not time to set vote result"
-    );
-    require(proposal.yes + proposal.no == 0, "Already set vote result");
+    require(state2 == ProposalState.Pending, "Not a pending proposal");
 
+    proposal.voters = _voters;
     proposal.yes = _yes;
     proposal.no = _no;
+
+    proposals[_proposalId].collected = true;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -195,12 +195,13 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       duration: _duration,
       yes: 0,
       no: 0,
-      reserved: 0,
+      voters: 0,
       ipfs: _ipfs,
       target: _target,
       value: _value,
       data: _data,
       snapshot: block.number,
+      collected: false,
       executed: false,
       canceled: false
     });
@@ -256,18 +257,36 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     Proposal storage proposal = proposals[_proposalId];
     if (proposal.canceled) {
       return ProposalState.Canceled;
-    } else if (
-      proposal.yes <= proposal.no || proposal.yes < zDAOInfo.quorumVotes
-    ) {
-      return ProposalState.Failed;
-    } else if (
-      proposal.yes >= proposal.no && proposal.yes >= zDAOInfo.quorumVotes
-    ) {
-      return ProposalState.Succeeded;
     } else if (proposal.executed) {
       return ProposalState.Executed;
+    } else if (!proposal.collected) {
+      return ProposalState.Pending;
+    }
+    // Check quorum
+    if (
+      proposal.voters < zDAOInfo.quorumParticipants ||
+      proposal.yes + proposal.no < zDAOInfo.quorumVotes
+    ) {
+      return ProposalState.Failed;
+    }
+    // If relative majority, the denominator should be sum of yes and no votes
+    if (
+      zDAOInfo.isRelativeMajority &&
+      ((proposal.yes * 10000) / (proposal.yes + proposal.no) >=
+        zDAOInfo.threshold)
+    ) {
+      return ProposalState.Succeeded;
+    }
+    // If absolute majority, the denominator should be total supply
+    if (
+      !zDAOInfo.isRelativeMajority &&
+      (proposal.yes * 10000) /
+        IERC20Upgradeable(zDAOInfo.token).totalSupply() >=
+      zDAOInfo.threshold
+    ) {
+      return ProposalState.Succeeded;
     }
 
-    return ProposalState.Pending;
+    return ProposalState.Failed;
   }
 }

@@ -63,16 +63,12 @@ describe("ZDAO", async function () {
 
     zDAOConfig = {
       zDAOId,
-      isRelativeMajority: false,
-      quorumVotes: 5000,
     };
 
     await zDAO.__ZDAO_init(
       zDAOChef.address,
       staking.address,
-      zDAOConfig.zDAOId,
-      zDAOConfig.isRelativeMajority,
-      zDAOConfig.quorumVotes
+      zDAOConfig.zDAOId
     );
 
     zDAOInfo = await zDAO.zDAOInfo();
@@ -100,10 +96,6 @@ describe("ZDAO", async function () {
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOConfig.zDAOId);
-    expect(zDAOInfo.isRelativeMajority).to.be.equal(
-      zDAOConfig.isRelativeMajority
-    );
-    expect(zDAOInfo.quorumVotes.toNumber()).to.be.equal(zDAOConfig.quorumVotes);
     expect(zDAOInfo.snapshot).to.be.gt(0);
     expect(zDAOInfo.destroyed).to.be.equal(false);
   });
@@ -171,15 +163,37 @@ describe("ZDAO", async function () {
     await zDAO.connect(zDAOChef).vote(proposalId, userC.address, choice + 1);
 
     await expect(
-      zDAO.connect(zDAOChef).collectResult(proposalId)
-    ).to.be.revertedWith("Not valid for collecting result");
+      zDAO.connect(zDAOChef).collectProposal(proposalId)
+    ).to.be.revertedWith("Not valid for collecting proposal");
 
     // mint to the end of proposal
     await increaseTime(
       proposalConfig.endTimestamp - proposalConfig.startTimestamp
     );
 
-    await expect(zDAO.connect(zDAOChef).collectResult(proposalId)).to.be.not
+    await expect(zDAO.connect(zDAOChef).collectProposal(proposalId)).to.be.not
       .reverted;
+
+    const {
+      voters: numberOfVoters,
+      yes,
+      no,
+    } = await zDAO.votesResultOfProposal(proposalId);
+    const { voters, choices, votes } = await zDAO.listVoters(
+      proposalId,
+      1,
+      numberOfVoters
+    );
+    expect(voters[0]).to.be.equal(userA.address);
+    expect(voters[1]).to.be.equal(userB.address);
+    expect(voters[2]).to.be.equal(userC.address);
+
+    expect(choices[0].toNumber()).to.be.equal(choice);
+    expect(choices[1].toNumber()).to.be.equal(choice);
+    expect(choices[2].toNumber()).to.be.equal(choice + 1);
+
+    expect(votes[0].toNumber()).to.be.equal(1000);
+    expect(votes[1].toNumber()).to.be.equal(2000);
+    expect(votes[2].toNumber()).to.be.equal(3000);
   });
 });

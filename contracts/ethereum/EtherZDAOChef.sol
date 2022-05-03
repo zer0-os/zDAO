@@ -97,13 +97,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
     // send zDAO info to L2
     rootStateSender.sendMessageToChild(
-      abi.encode(
-        uint256(MessageType.CreateZDAO),
-        lastZDAOId,
-        address(_zDAOConfig.token),
-        _zDAOConfig.isRelativeMajority,
-        _zDAOConfig.quorumVotes
-      )
+      abi.encode(uint256(MessageType.CreateZDAO), lastZDAOId)
     );
   }
 
@@ -206,6 +200,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   function cancelProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
+    onlyValidZDAO(_daoId)
   {
     zDAORecords[_daoId].zDAO.cancelProposal(msg.sender, _proposalId);
 
@@ -223,6 +218,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   function executeProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
+    onlyValidZDAO(_daoId)
   {
     zDAORecords[_daoId].zDAO.executeProposal(msg.sender, _proposalId);
 
@@ -248,7 +244,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   function _processMessageFromChild(bytes memory _message) internal {
     uint256 messageType = abi.decode(_message, (uint256));
-    if (messageType == uint256(ITunnel.MessageType.VoteResult)) {
+    if (messageType == uint256(ITunnel.MessageType.CollectProposal)) {
       _collectProposal(_message);
     }
   }
@@ -258,15 +254,22 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
       uint256 messageType2,
       uint256 zDAOId,
       uint256 proposalId,
+      uint256 voters,
       uint256 yes,
       uint256 no
-    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
-    require(zDAOId > 0 && zDAOId <= lastZDAOId, "Invalid zDAO");
+    ) = abi.decode(
+        _message,
+        (uint256, uint256, uint256, uint256, uint256, uint256)
+      );
+    require(
+      zDAOId > 0 && zDAOId <= lastZDAOId && !_isZDAODestroyed(lastZDAOId),
+      "Invalid zDAO"
+    );
 
     // let zDAO decode
-    zDAORecords[zDAOId].zDAO.setVoteResult(proposalId, yes, no);
+    zDAORecords[zDAOId].zDAO.collectProposal(proposalId, voters, yes, no);
 
-    emit ProposalCollected(zDAOId, proposalId, yes, no);
+    emit ProposalCollected(zDAOId, proposalId, voters, yes, no);
   }
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
@@ -330,11 +333,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   function numberOfzDAOs() external view override returns (uint256) {
-    uint256 count = 0;
-    for (uint256 i = 1; i <= lastZDAOId; i++) {
-      count += !_isZDAODestroyed(i) ? 1 : 0;
-    }
-    return count;
+    return lastZDAOId;
   }
 
   function getzDAOById(uint256 _daoId)

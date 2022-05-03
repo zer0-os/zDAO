@@ -3,8 +3,10 @@ export interface ZDAOConfig {
   gnosisSafe: string;
   token: string;
   amount: number;
-  isRelativeMajority: boolean;
+  threshold: number;
+  quorumParticipants: number;
   quorumVotes: number;
+  isRelativeMajority: boolean;
 }
 
 export interface ProposalConfig {
@@ -17,8 +19,6 @@ export interface ProposalConfig {
 
 export interface PolyZDAOConfig {
   zDAOId: number;
-  isRelativeMajority: boolean;
-  quorumVotes: number;
 }
 
 export interface PolyProposalConfig {

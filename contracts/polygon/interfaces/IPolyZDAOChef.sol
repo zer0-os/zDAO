@@ -9,12 +9,7 @@ interface IPolyZDAOChef {
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
 
-  event DAOCreated(
-    address indexed _zDAO,
-    uint256 indexed _daoId,
-    bool _isRelativeMajority,
-    uint256 _quorumVotes
-  );
+  event DAOCreated(address indexed _zDAO, uint256 indexed _daoId);
 
   event DAODestroyed(uint256 indexed _daoId);
 
@@ -29,10 +24,10 @@ interface IPolyZDAOChef {
 
   event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
 
-  event CollectResult(
+  event ProposalCollected(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
-    bool indexed _isRelativeMajority,
+    uint256 _voters,
     uint256 _yes,
     uint256 _no
   );
@@ -54,7 +49,7 @@ interface IPolyZDAOChef {
     uint256 _choice
   ) external;
 
-  function collectResult(uint256 _daoId, uint256 _proposalId) external;
+  function collectProposal(uint256 _daoId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

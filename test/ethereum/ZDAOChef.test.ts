@@ -18,7 +18,7 @@ import {
   IZNSHub,
 } from "../../types";
 import { IRootStateSender } from "../../types/IRootStateSender";
-import { encodeVoteResult } from "../shared/messagePack";
+import { encodeCollectProposal } from "../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../shared/types";
 import { increaseTime, mineToBlock, now } from "../shared/utilities";
 
@@ -85,8 +85,10 @@ describe("ZDAOChef", async function () {
       gnosisSafe: gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
-      isRelativeMajority: true,
+      threshold: 5001, // 50.01%
+      quorumParticipants: 1,
       quorumVotes: quorumVotes,
+      isRelativeMajority: true,
     };
 
     proposalConfig = {
@@ -173,7 +175,7 @@ describe("ZDAOChef", async function () {
     await expect(ZDAOChef.connect(zNAOwner).removeDAO(daoId)).to.be.not
       .reverted;
 
-    expect(await ZDAOChef.numberOfzDAOs()).to.be.equal(0);
+    expect(await ZDAOChef.numberOfzDAOs()).to.be.equal(1);
   });
 
   it("Only zNA owner can add/remove association", async function () {
@@ -252,14 +254,17 @@ describe("ZDAOChef", async function () {
 
     const zDAOId = 1;
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+    await createProposal(userA, zDAOId);
+
     await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
 
     await mineToBlock(10);
 
     const proposalId = 1;
-    const message = encodeVoteResult({
+    const message = encodeCollectProposal({
       zDAOId,
       proposalId,
+      voters: 1,
       yes: 70,
       no: 30,
     });
@@ -303,11 +308,12 @@ describe("ZDAOChef", async function () {
     // should not execute proposal if proposal state is failed
     await expect(
       ZDAOChef.connect(userA).processMessageFromChild(
-        encodeVoteResult({
+        encodeCollectProposal({
           zDAOId,
           proposalId,
-          yes: zDAOInfo.quorumVotes.toNumber() - 1,
-          no: 30,
+          voters: 1,
+          yes: zDAOInfo.quorumVotes.toNumber(),
+          no: zDAOInfo.quorumVotes.toNumber() + 1,
         })
       )
     ).to.be.not.reverted;
@@ -341,9 +347,10 @@ describe("ZDAOChef", async function () {
     // should execute proposal if proposal state is succeeded
     await expect(
       ZDAOChef.connect(userA).processMessageFromChild(
-        encodeVoteResult({
+        encodeCollectProposal({
           zDAOId,
           proposalId,
+          voters: 1,
           yes: zDAOInfo.quorumVotes.toNumber(),
           no: 30,
         })

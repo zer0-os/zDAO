@@ -8,11 +8,6 @@ interface IPolyZDAO {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 zDAOId;
-    /// @notice True if relative majority to calculate voting result
-    bool isRelativeMajority;
-    /// @notice The number of votes in support of a proposal required in order
-    /// for a vote to succeed
-    uint256 quorumVotes;
     /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
     /// @notice Flag marking whether the zDAO has been destroyed
@@ -29,9 +24,9 @@ interface IPolyZDAO {
     Pending,
     Active,
     Canceled,
-    Failed,
-    Succeeded,
-    Executed
+    Executed,
+    Collecting,
+    Collected
   }
 
   struct Proposal {
@@ -45,12 +40,12 @@ interface IPolyZDAO {
     uint256 yes;
     /// @notice The number of collected voting power in opposition to this proposal
     uint256 no;
-    /// @notice Reserved place, maybe can be used for absent choice?
-    uint256 reserved;
     /// @notice The number of voters who votes
     uint256 voters;
     /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
+    /// @notice Flag marking whether this proposal has been collected
+    bool collected;
     /// @notice Flag marking whether this proposal has been executed
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
@@ -80,9 +75,7 @@ interface IPolyZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     address _staking,
-    uint256 _zDAOId,
-    bool _isRelativeMajority,
-    uint256 _threshold
+    uint256 _zDAOId
   ) external;
 
   function setDestroyed(bool _destroyed) external;
@@ -103,10 +96,10 @@ interface IPolyZDAO {
     uint256 _choice
   ) external;
 
-  function collectResult(uint256 _proposalId)
+  function collectProposal(uint256 _proposalId)
     external
     returns (
-      bool isRelativeMajority,
+      uint256 voters,
       uint256 yes,
       uint256 no
     );
@@ -142,7 +135,7 @@ interface IPolyZDAO {
     view
     returns (bool);
 
-  function canCollectResult(uint256 _proposalId) external view returns (bool);
+  function canCollectProposal(uint256 _proposalId) external view returns (bool);
 
   function choiceOfVoter(uint256 _proposalId, address _voter)
     external

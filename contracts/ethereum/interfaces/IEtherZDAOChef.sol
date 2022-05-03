@@ -16,11 +16,16 @@ interface IEtherZDAOChef {
     address token;
     /// @notice The minimum number of tokens required to become proposal creator
     uint256 amount;
-    /// @notice True if relative majority to calculate voting result
-    bool isRelativeMajority;
+    /// @notice Threshold in 100% as 10000 required to check if proposal is succeeded
+    uint256 threshold;
+    /// @notice The number of voters in support of a proposal required in order
+    /// for a vote to succeed
+    uint256 quorumParticipants;
     /// @notice The number of votes in support of a proposal required in order
     /// for a vote to succeed
     uint256 quorumVotes;
+    /// @notice True if relative majority to calculate voting result
+    bool isRelativeMajority;
   }
 
   struct ZDAORecord {
@@ -82,8 +87,9 @@ interface IEtherZDAOChef {
   event ProposalCollected(
     uint256 indexed _zDAOId,
     uint256 indexed _propoalId,
-    uint256 yes,
-    uint256 no
+    uint256 _voters,
+    uint256 _yes,
+    uint256 _no
   );
 
   /* -------------------------------------------------------------------------- */

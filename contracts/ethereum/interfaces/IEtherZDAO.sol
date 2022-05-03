@@ -20,13 +20,18 @@ interface IEtherZDAO {
     address token;
     /// @notice The minimum number of tokens required to become proposal creator
     uint256 amount;
-    /// @notice True if relative majority to calculate voting result
-    bool isRelativeMajority;
+    /// @notice Threshold in 100% as 10000 required to check if proposal is succeeded
+    uint256 threshold;
+    /// @notice The number of voters in support of a proposal required in order
+    /// for a vote to succeed
+    uint256 quorumParticipants;
     /// @notice The number of votes in support of a proposal required in order
     /// for a vote to succeed
     uint256 quorumVotes;
     /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
+    /// @notice True if relative majority to calculate voting result
+    bool isRelativeMajority;
     /// @notice Flag marking whether the zDAO has been destroyed
     bool destroyed;
   }
@@ -35,9 +40,9 @@ interface IEtherZDAO {
     Pending,
     Active,
     Canceled,
+    Executed,
     Failed,
-    Succeeded,
-    Executed
+    Succeeded
   }
 
   struct Proposal {
@@ -51,8 +56,8 @@ interface IEtherZDAO {
     uint256 yes;
     /// @notice The number of all the casted vote in opposition to this proposal
     uint256 no;
-    /// @notice Reserved place, maybe can be used for absent choice?
-    uint256 reserved;
+    /// @notice The number of voters who votes
+    uint256 voters;
     /// @notice IPFS hash which contains meta information of this proposal
     string ipfs;
     /// @notice Target address to be called if succeed for execution
@@ -63,6 +68,8 @@ interface IEtherZDAO {
     bytes data;
     /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
+    /// @notice Flag marking whether this proposal has been collected
+    bool collected;
     /// @notice Flag marking whether this proposal has been executed
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
@@ -103,8 +110,9 @@ interface IEtherZDAO {
 
   function executeProposal(address _executeBy, uint256 _proposalId) external;
 
-  function setVoteResult(
+  function collectProposal(
     uint256 _proposalId,
+    uint256 _voters,
     uint256 _yes,
     uint256 _no
   ) external;

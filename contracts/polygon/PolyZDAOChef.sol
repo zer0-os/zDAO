@@ -67,22 +67,24 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     emit CastVote(_daoId, _proposalId, msg.sender, _choice);
   }
 
-  function collectResult(uint256 _daoId, uint256 _proposalId)
+  function collectProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
     onlyValidZDAO(_daoId)
   {
-    (bool isRelativeMajority, uint256 yes, uint256 no) = zDAOs[_daoId]
-      .collectResult(_proposalId);
+    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_daoId].collectProposal(
+      _proposalId
+    );
 
-    emit CollectResult(_daoId, _proposalId, isRelativeMajority, yes, no);
+    emit ProposalCollected(_daoId, _proposalId, voters, yes, no);
 
     // send collected result to L1
     childStateSender.sendMessageToRoot(
       abi.encode(
-        uint256(ITunnel.MessageType.VoteResult),
+        uint256(ITunnel.MessageType.CollectProposal),
         _daoId,
         _proposalId,
+        voters,
         yes,
         no
       )
@@ -118,13 +120,10 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     virtual
     returns (IPolyZDAO)
   {
-    (
-      uint256 messageType,
-      uint256 zDAOId,
-      address token,
-      bool isRelativeMajority,
-      uint256 quorumVotes
-    ) = abi.decode(_message, (uint256, uint256, address, bool, uint256));
+    (uint256 messageType, uint256 zDAOId) = abi.decode(
+      _message,
+      (uint256, uint256)
+    );
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
@@ -135,9 +134,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
           IPolyZDAO.__ZDAO_init.selector,
           address(this),
           staking,
-          zDAOId,
-          isRelativeMajority,
-          quorumVotes
+          zDAOId
         )
       )
     );
@@ -145,7 +142,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOs[zDAOId] = zDAO;
     zDAOIds.push(zDAOId);
 
-    emit DAOCreated(address(zDAO), zDAOId, isRelativeMajority, quorumVotes);
+    emit DAOCreated(address(zDAO), zDAOId);
 
     return zDAO;
   }
