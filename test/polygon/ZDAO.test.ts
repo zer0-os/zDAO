@@ -119,7 +119,7 @@ describe("ZDAO", async function () {
 
     expect(await zDAO.numberOfProposals()).to.be.equal(1);
 
-    const proposals = await zDAO.listProposals(1, 1);
+    const proposals = await zDAO.listProposals(0, 1);
     expect(proposals.length).to.be.equal(1);
   });
 
@@ -157,6 +157,7 @@ describe("ZDAO", async function () {
     await mineToBlock(1);
 
     const proposalId = 1;
+
     const choice = 1; // yes
     await zDAO.connect(zDAOChef).vote(proposalId, userA.address, choice);
     await zDAO.connect(zDAOChef).vote(proposalId, userB.address, choice);
@@ -181,7 +182,7 @@ describe("ZDAO", async function () {
     } = await zDAO.votesResultOfProposal(proposalId);
     const { voters, choices, votes } = await zDAO.listVoters(
       proposalId,
-      1,
+      0,
       numberOfVoters
     );
     expect(voters[0]).to.be.equal(userA.address);

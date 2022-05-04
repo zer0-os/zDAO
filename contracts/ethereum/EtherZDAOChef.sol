@@ -345,22 +345,21 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     return zDAORecords[_daoId];
   }
 
-  function listzDAOs(uint256 _startIndex, uint256 _endIndex)
+  function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
     override
-    returns (ZDAORecord[] memory)
+    returns (ZDAORecord[] memory records)
   {
-    require(_startIndex > 0, "should start index > 0");
-    require(_startIndex <= _endIndex, "should start index <= end");
-    require(_startIndex <= lastZDAOId, "should start index <= length");
-    require(_endIndex <= lastZDAOId, "should end index <= length");
+    uint256 numRecords = _count;
+    if (numRecords > (lastZDAOId - _startIndex)) {
+      numRecords = lastZDAOId - _startIndex;
+    }
 
-    uint256 numRecords = _endIndex - _startIndex + 1;
-    ZDAORecord[] memory records = new ZDAORecord[](numRecords);
+    records = new ZDAORecord[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAORecords[_startIndex + i];
+      records[i] = zDAORecords[_startIndex + i + 1];
     }
 
     return records;

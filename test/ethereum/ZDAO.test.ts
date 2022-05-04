@@ -119,7 +119,7 @@ describe("ZDAO", async function () {
     // check number of proposals and check if available to list proposals
     expect(await zDAO.numberOfProposals()).to.be.equal(1);
 
-    const proposals = await zDAO.listProposals(1, 1);
+    const proposals = await zDAO.listProposals(0, 1);
     expect(proposals.length).to.be.equal(1);
 
     // check proposal informations
@@ -155,7 +155,8 @@ describe("ZDAO", async function () {
 
     const proposalId = 1;
 
-    await expect(zDAO.connect(zDAOChef).collectProposal(proposalId, 1, 70, 30)).to.be.not.reverted;
+    await expect(zDAO.connect(zDAOChef).collectProposal(proposalId, 1, 70, 30))
+      .to.be.not.reverted;
 
     const proposal = await zDAO.proposals(proposalId);
 

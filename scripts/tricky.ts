@@ -6,36 +6,30 @@ import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
 const checkPolyZDAO = async (deployer: SignerWithAddress, contract: string) => {
-  const polyZDAO = (await ethers.getContractAt(
-    "PolyZDAO",
-    contract,
-    deployer
-  )) as PolyZDAO;
-
-  const childTunnel = await polyZDAO.childTunnel();
-  console.log("childTunnel", childTunnel);
-
-  const staking = await polyZDAO.staking();
-  console.log("staking", staking);
-
-  const zDAOInfo = await polyZDAO.zDAOInfo();
-  console.log("zDAOInfo", zDAOInfo);
-
-  const numberOfProposals = await polyZDAO.numberOfProposals();
-  console.log("numberOfProposals", numberOfProposals);
-
-  const proposals = await polyZDAO.listProposals(1, numberOfProposals);
-  console.log("proposals", proposals);
-
-  console.log(">> now", new Date().getTime());
-  proposals.forEach((proposal: IPolyZDAO.ProposalStruct, index: number) => {
-    const now = new Date();
-    if (Number(proposal.endTimestamp) < now.getTime()) {
-      console.log(`> ${index + 1}th proposal closed`);
-    } else {
-      console.log(`> ${index + 1}th proposal active`);
-    }
-  });
+  // const polyZDAO = (await ethers.getContractAt(
+  //   "PolyZDAO",
+  //   contract,
+  //   deployer
+  // )) as PolyZDAO;
+  // const childTunnel = await polyZDAO.childTunnel();
+  // console.log("childTunnel", childTunnel);
+  // const staking = await polyZDAO.staking();
+  // console.log("staking", staking);
+  // const zDAOInfo = await polyZDAO.zDAOInfo();
+  // console.log("zDAOInfo", zDAOInfo);
+  // const numberOfProposals = await polyZDAO.numberOfProposals();
+  // console.log("numberOfProposals", numberOfProposals);
+  // const proposals = await polyZDAO.listProposals(1, numberOfProposals);
+  // console.log("proposals", proposals);
+  // console.log(">> now", new Date().getTime());
+  // proposals.forEach((proposal: IPolyZDAO.ProposalStruct, index: number) => {
+  //   const now = new Date();
+  //   if (Number(proposal.endTimestamp) < now.getTime()) {
+  //     console.log(`> ${index + 1}th proposal closed`);
+  //   } else {
+  //     console.log(`> ${index + 1}th proposal active`);
+  //   }
+  // });
 };
 
 const main = async () => {
@@ -47,14 +41,14 @@ const main = async () => {
   const deployer: SignerWithAddress = signers[0];
 
   if (network.name === "goerli" || network.name === "mainnet") {
-    // const payload = encodeCreateZDAO({
-    //   lastZDAOId: 1,
-    //   token: "0xE4DCfb387a4cF3eFa2Af1186B47Ca2a042e37838",
-    //   isRelativeMajority: true,
-    //   threshold: 51
-    // });
+    const payload = encodeCreateZDAO({
+      lastZDAOId: 1,
+      token: "0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe",
+      isRelativeMajority: true,
+      quorumVotes: "1000000000000000000",
+    });
 
-    // console.log('payload', payload);
+    console.log("payload", payload);
 
     console.log("\nWelcome");
   } else if (network.name === "polygonMumbai" || network.name === "polygon") {

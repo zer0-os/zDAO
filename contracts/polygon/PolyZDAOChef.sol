@@ -217,21 +217,20 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     return zDAOs[_daoId];
   }
 
-  function listzDAOs(uint256 _startIndex, uint256 _endIndex)
+  function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (IPolyZDAO[] memory)
+    returns (IPolyZDAO[] memory records)
   {
-    require(_startIndex > 0, "should start index > 0");
-    require(_startIndex <= _endIndex, "should start index <= end");
-    require(_startIndex <= zDAOIds.length, "should start index <= length");
-    require(_endIndex <= zDAOIds.length, "should end index <= length");
+    uint256 numRecords = _count;
+    if (numRecords > (zDAOIds.length - _startIndex)) {
+      numRecords = zDAOIds.length - _startIndex;
+    }
 
-    uint256 numRecords = _endIndex - _startIndex + 1;
-    IPolyZDAO[] memory records = new IPolyZDAO[](numRecords);
+    records = new IPolyZDAO[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAOs[zDAOIds[_startIndex + i - 1]];
+      records[i] = zDAOs[zDAOIds[_startIndex + i]];
     }
 
     return records;

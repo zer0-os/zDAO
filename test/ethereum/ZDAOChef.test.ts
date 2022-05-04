@@ -159,7 +159,7 @@ describe("ZDAOChef", async function () {
     expect(zDAORecord.associatedzNAs[0]).to.be.equal(zNAAsNumber);
 
     // list zDAOs
-    const zDAORecords = await ZDAOChef.listzDAOs(1, 1);
+    const zDAORecords = await ZDAOChef.listzDAOs(0, 1);
     expect(zDAORecords.length).to.be.equal(1);
     expect(zDAORecords[0].id).to.be.equal(zDAORecord.id);
   });

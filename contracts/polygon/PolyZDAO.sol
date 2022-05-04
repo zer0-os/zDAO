@@ -37,10 +37,8 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
   modifier onlyValidProposal(uint256 _proposalId) {
     require(
-      proposals[_proposalId].proposalId == _proposalId &&
-        !proposals[_proposalId].executed &&
-        !proposals[_proposalId].canceled,
-      "Invalid zDAO"
+      proposals[_proposalId].proposalId == _proposalId,
+      "Invalid proposal"
     );
     _;
   }
@@ -92,6 +90,10 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     isActiveDAO
     onlyValidProposal(_proposalId)
   {
+    require(
+      !proposals[_proposalId].canceled && !proposals[_proposalId].collected,
+      "Already canceled or collected proposal"
+    );
     _cancelProposal(_proposalId);
   }
 
@@ -101,7 +103,38 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     isActiveDAO
     onlyValidProposal(_proposalId)
   {
+    require(
+      !proposals[_proposalId].canceled && !proposals[_proposalId].collected,
+      "Already canceled or executed proposal"
+    );
     _executeProposal(_proposalId);
+  }
+
+  function collectProposal(uint256 _proposalId)
+    external
+    onlyZDAOChef
+    isActiveDAO
+    onlyValidProposal(_proposalId)
+    returns (
+      uint256 voters,
+      uint256 yes,
+      uint256 no
+    )
+  {
+    Proposal storage proposal = proposals[_proposalId];
+
+    require(
+      !proposal.canceled &&
+        !proposal.collected &&
+        block.timestamp > proposal.endTimestamp, // proposal has already ended
+      "Not valid for collecting proposal"
+    );
+
+    voters = proposal.voters;
+    yes = proposal.yes;
+    no = proposal.no;
+
+    proposal.collected = true;
   }
 
   function vote(
@@ -119,31 +152,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     _vote(_proposalId, _voter, VoterChoice(_choice));
   }
 
-  function collectProposal(uint256 _proposalId)
-    external
-    onlyZDAOChef
-    isActiveDAO
-    onlyValidProposal(_proposalId)
-    returns (
-      uint256 voters,
-      uint256 yes,
-      uint256 no
-    )
-  {
-    require(
-      _canCollectProposal(_proposalId),
-      "Not valid for collecting proposal"
-    );
-
-    Proposal storage proposal = proposals[_proposalId];
-
-    voters = proposal.voters;
-    yes = proposal.yes;
-    no = proposal.no;
-
-    proposal.collected = true;
-  }
-
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
@@ -157,8 +165,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     return
       block.timestamp >= _proposal.startTimestamp &&
       block.timestamp < _proposal.endTimestamp &&
-      !_proposal.canceled &&
-      !_proposal.executed;
+      !_proposal.canceled;
   }
 
   function _isProposalClosed(Proposal storage _proposal)
@@ -278,22 +285,21 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     return proposalIds.length;
   }
 
-  function listProposals(uint256 _startIndex, uint256 _endIndex)
+  function listProposals(uint256 _startIndex, uint256 _count)
     external
     view
     override
-    returns (Proposal[] memory)
+    returns (Proposal[] memory records)
   {
-    require(_startIndex > 0, "should start index > 0");
-    require(_startIndex <= _endIndex, "should start index <= end");
-    require(_startIndex <= proposalIds.length, "should start index <= length");
-    require(_endIndex <= proposalIds.length, "should end index <= length");
+    uint256 numRecords = _count;
+    if (numRecords > (proposalIds.length - _startIndex)) {
+      numRecords = proposalIds.length - _startIndex;
+    }
 
-    uint256 numRecords = _endIndex - _startIndex + 1;
-    Proposal[] memory records = new Proposal[](numRecords);
+    records = new Proposal[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = proposals[proposalIds[_startIndex + i - 1]];
+      records[i] = proposals[proposalIds[_startIndex + i]];
     }
 
     return records;
@@ -324,7 +330,6 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     external
     view
     override
-    onlyValidProposal(_proposalId)
     returns (
       uint256 voters,
       uint256 yes,
@@ -377,12 +382,11 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   function listVoters(
     uint256 _proposalId,
     uint256 _startIndex,
-    uint256 _endIndex
+    uint256 _count
   )
     external
     view
     override
-    onlyValidProposal(_proposalId)
     returns (
       address[] memory voters,
       uint256[] memory choices,
@@ -391,18 +395,10 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   {
     ProposalVotes storage singleProposalVotes = proposalVotes[_proposalId];
 
-    require(_startIndex > 0, "should start index > 0");
-    require(_startIndex <= _endIndex, "should start index <= end");
-    require(
-      _startIndex <= singleProposalVotes.voters.length,
-      "should start index <= length"
-    );
-    require(
-      _endIndex <= singleProposalVotes.voters.length,
-      "should end index <= length"
-    );
-
-    uint256 numRecords = _endIndex - _startIndex + 1;
+    uint256 numRecords = _count;
+    if (numRecords > (singleProposalVotes.voters.length - _startIndex)) {
+      numRecords = singleProposalVotes.voters.length - _startIndex;
+    }
 
     voters = new address[](numRecords);
     choices = new uint256[](numRecords);
@@ -410,7 +406,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
     address voter;
     for (uint256 i = 0; i < numRecords; ++i) {
-      voter = singleProposalVotes.voters[_startIndex + i - 1];
+      voter = singleProposalVotes.voters[_startIndex + i];
       voters[i] = voter;
       choices[i] = uint256(singleProposalVotes.votes[voter].choice);
       votes[i] = singleProposalVotes.votes[voter].votes;

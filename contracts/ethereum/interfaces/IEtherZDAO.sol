@@ -127,7 +127,7 @@ interface IEtherZDAO {
 
   function numberOfProposals() external view returns (uint256);
 
-  function listProposals(uint256 _startIndex, uint256 _endIndex)
+  function listProposals(uint256 _startIndex, uint256 _count)
     external
     view
     returns (Proposal[] memory);

@@ -90,12 +90,6 @@ interface IPolyZDAO {
 
   function executeProposal(uint256 _proposalId) external;
 
-  function vote(
-    uint256 _proposalId,
-    address _voter,
-    uint256 _choice
-  ) external;
-
   function collectProposal(uint256 _proposalId)
     external
     returns (
@@ -103,6 +97,12 @@ interface IPolyZDAO {
       uint256 yes,
       uint256 no
     );
+
+  function vote(
+    uint256 _proposalId,
+    address _voter,
+    uint256 _choice
+  ) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
@@ -114,10 +114,10 @@ interface IPolyZDAO {
 
   function numberOfProposals() external view returns (uint256);
 
-  function listProposals(uint256 _startIndex, uint256 _endIndex)
+  function listProposals(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (Proposal[] memory);
+    returns (Proposal[] memory records);
 
   function state(uint256 _proposalId) external view returns (ProposalState);
 

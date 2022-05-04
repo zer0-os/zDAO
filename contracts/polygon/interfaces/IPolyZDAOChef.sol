@@ -59,8 +59,8 @@ interface IPolyZDAOChef {
 
   function getzDAOById(uint256 _daoId) external view returns (IPolyZDAO);
 
-  function listzDAOs(uint256 _startIndex, uint256 _endIndex)
+  function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (IPolyZDAO[] memory);
+    returns (IPolyZDAO[] memory records);
 }

@@ -134,12 +134,12 @@ interface IEtherZDAOChef {
   function getzDAOById(uint256 _daoId)
     external
     view
-    returns (ZDAORecord memory);
+    returns (ZDAORecord memory records);
 
-  function listzDAOs(uint256 _startIndex, uint256 _endIndex)
+  function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (ZDAORecord[] memory);
+    returns (ZDAORecord[] memory records);
 
   function getzDaoByZNA(uint256 _zNA) external view returns (ZDAORecord memory);
 

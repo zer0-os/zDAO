@@ -79,7 +79,7 @@ describe("ZDAOChef", async function () {
     const quorumVotes = 5000; // minimum token amount to be succeeded
 
     zDAOPack = {
-      lastZDAOId: 1
+      lastZDAOId: 1,
     };
 
     proposalPack = {
@@ -145,7 +145,7 @@ describe("ZDAOChef", async function () {
     const zDAOAddr = await ZDAOChef.getzDAOById(daoId);
 
     // list zDAOs
-    const zDAOAddrs = await ZDAOChef.listzDAOs(1, 1);
+    const zDAOAddrs = await ZDAOChef.listzDAOs(0, 1);
     expect(zDAOAddrs.length).to.be.equal(1);
     expect(zDAOAddrs[0]).to.be.equal(zDAOAddr);
   });
@@ -194,7 +194,7 @@ describe("ZDAOChef", async function () {
     );
 
     expect(await zDAO.numberOfProposals()).to.be.equal(1);
-    const proposals = await zDAO.listProposals(1, 1);
+    const proposals = await zDAO.listProposals(0, 1);
 
     expect(proposals[0].proposalId).to.be.equal(proposalPack.proposalId);
     expect(

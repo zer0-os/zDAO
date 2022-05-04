@@ -17,10 +17,7 @@ export interface CreateZDAOPack {
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
     ["uint256", "uint256"],
-    [
-      MessageType.CreateZDAO,
-      pack.lastZDAOId
-    ]
+    [MessageType.CreateZDAO, pack.lastZDAOId]
   );
 };
 
@@ -59,6 +56,13 @@ export interface CollectProposalPack {
 export const encodeCollectProposal = (pack: CollectProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
     ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
-    [MessageType.CollectProposal, pack.zDAOId, pack.proposalId, pack.voters,  pack.yes, pack.no]
+    [
+      MessageType.CollectProposal,
+      pack.zDAOId,
+      pack.proposalId,
+      pack.voters,
+      pack.yes,
+      pack.no,
+    ]
   );
 };

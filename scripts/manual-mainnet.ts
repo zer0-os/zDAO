@@ -9,9 +9,9 @@ import { sleep, verifyContract } from "./shared/helpers";
 
 const contracts = {
   goerli: {
-    EtherZDAOBase: "0x89FC44C7A2aFf5e607B2680E86329f5724EF5217",
-    EtherZDAOChef: "0x06def0F435879d49420eb9f7E39189696369d510",
-    VotingToken: "0xe4dcfb387a4cf3efa2af1186b47ca2a042e37838",
+    EtherZDAOBase: "0x6fea1D18e7974ec1BBe841538f5614Ee4A611751",
+    EtherZDAOChef: "0x47571199a86fC9e15577770A7979a2e5E7C2b81D",
+    VotingToken: "0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe",
   },
   mainnet: {
     EtherZDAOChef: "", // todo
@@ -20,83 +20,109 @@ const contracts = {
   },
 };
 
-const createZDAO = async (
-  network: "goerli" | "mainnet",
-  deployer: SignerWithAddress
-) => {
-  const zDAOChef = (await ethers.getContractAt(
-    "EtherZDAOChef",
-    contracts[network].EtherZDAOChef,
-    deployer
-  )) as EtherZDAOChef;
-
-  // const zNA = "wilder.kicks";
-  // const zNA = "wilder.wheels";
-  const zNA = "wilder.death";
-  const zDAOConfig = {
-    name: `${zNA}.dao`,
-    gnosisSafe: "0x7a935d07d097146f143A45aA79FD8624353abD5D",
-    token: "0xE4DCfb387a4cF3eFa2Af1186B47Ca2a042e37838", // todo, should be voting token on Ethereum/Goerli network
-    amount: BigNumber.from(10).pow(18), // 10^18
-    isRelativeMajority: true,
-    threshold: 51,
-  };
-
-  const zNAId = zns.domains.domainNameToId(zNA);
-  console.log("zNAId", zNAId);
-  await zDAOChef.addNewDAO(zNAId, zDAOConfig);
-
-  console.log("Sleeping for 60 seconds to wait until deploy");
-  await sleep(60000);
-
-  const zDAOBase = await zDAOChef.zDAOBase();
-  // get last created zDAO
-  const zDAORecord = await zDAOChef.getzDaoByZNA(BigNumber.from(zNAId));
-  console.log("zDAORecord", zDAORecord);
-
-  const zDAOId = zDAORecord[0];
-  const zDAO = zDAORecord[1];
+// verify EtherZDAO Proxy and Implementation
+const verifyEtherZDAO = async () => {
+  const proxyAddress = "0x8EFb9E61e437A05D20d605dBBEE47d5d478a1f73";
 
   const zDAOInterface = new ethers.utils.Interface(EtherZDAOAbi.abi);
   const proxyData = zDAOInterface.encodeFunctionData("__ZDAO_init", [
-    zDAOChef.address,
-    zDAOId,
-    deployer.address,
-    zDAOConfig,
+    "0x47571199a86fC9e15577770A7979a2e5E7C2b81D", // EtherZDAOChef
+    1, // lastZDAOId
+    "0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C", // msg.sender
+    [
+      "wilder.wheels", // title
+      "0x7a935d07d097146f143A45aA79FD8624353abD5D", // gnosis safe
+      "0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe", // token
+      "1000000000000000000", // amount
+      true, // relative majority
+      "1000000000000000000", // quorum votes
+    ],
   ]);
-  console.log("proxyData", proxyData);
+  await verifyContract(proxyAddress, [
+    contracts.goerli.EtherZDAOBase, // zDAOBase
+    proxyData,
+  ]);
 
-  await verifyContract(zDAO, [zDAOBase, proxyData]);
-
-  return zDAO;
+  await verifyContract("0x6fea1D18e7974ec1BBe841538f5614Ee4A611751");
 };
 
-const createProposal = async (
-  network: "goerli" | "mainnet",
-  deployer: SignerWithAddress,
-  contract: string
-) => {
-  const zDAO = (await ethers.getContractAt(
-    "EtherZDAO",
-    contract,
-    deployer
-  )) as EtherZDAO;
+// const createZDAO = async (
+//   network: "goerli" | "mainnet",
+//   deployer: SignerWithAddress
+// ) => {
+//   const zDAOChef = (await ethers.getContractAt(
+//     "EtherZDAOChef",
+//     contracts[network].EtherZDAOChef,
+//     deployer
+//   )) as EtherZDAOChef;
 
-  const proposal = {
-    startTimestamp: Math.floor(new Date().getTime() / 1000),
-    endTimestamp: Math.floor(new Date().getTime() / 1000) + 300,
-    token: contracts[network].VotingToken,
-    amount: BigNumber.from(10).pow(18),
-    ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
-  };
-  await zDAO.createProposal(
-    proposal.startTimestamp,
-    proposal.endTimestamp,
-    proposal.token,
-    proposal.amount,
-    proposal.ipfs
-  );
-};
+//   // const zNA = "wilder.kicks";
+//   // const zNA = "wilder.wheels";
+//   const zNA = "wilder.death";
+//   const zDAOConfig = {
+//     name: `${zNA}.dao`,
+//     gnosisSafe: "0x7a935d07d097146f143A45aA79FD8624353abD5D",
+//     token: "0xE4DCfb387a4cF3eFa2Af1186B47Ca2a042e37838", // todo, should be voting token on Ethereum/Goerli network
+//     amount: BigNumber.from(10).pow(18), // 10^18
+//     isRelativeMajority: true,
+//     threshold: 51,
+//   };
+
+//   const zNAId = zns.domains.domainNameToId(zNA);
+//   console.log("zNAId", zNAId);
+//   await zDAOChef.addNewDAO(zNAId, zDAOConfig);
+
+//   console.log("Sleeping for 60 seconds to wait until deploy");
+//   await sleep(60000);
+
+//   const zDAOBase = await zDAOChef.zDAOBase();
+//   // get last created zDAO
+//   const zDAORecord = await zDAOChef.getzDaoByZNA(BigNumber.from(zNAId));
+//   console.log("zDAORecord", zDAORecord);
+
+//   const zDAOId = zDAORecord[0];
+//   const zDAO = zDAORecord[1];
+
+//   const zDAOInterface = new ethers.utils.Interface(EtherZDAOAbi.abi);
+//   const proxyData = zDAOInterface.encodeFunctionData("__ZDAO_init", [
+//     zDAOChef.address,
+//     zDAOId,
+//     deployer.address,
+//     zDAOConfig,
+//   ]);
+//   console.log("proxyData", proxyData);
+
+//   await verifyContract(zDAO, [zDAOBase, proxyData]);
+
+//   return zDAO;
+// };
+
+// const createProposal = async (
+//   network: "goerli" | "mainnet",
+//   deployer: SignerWithAddress,
+//   contract: string
+// ) => {
+//   const zDAO = (await ethers.getContractAt(
+//     "EtherZDAO",
+//     contract,
+//     deployer
+//   )) as EtherZDAO;
+
+//   const proposal = {
+//     startTimestamp: Math.floor(new Date().getTime() / 1000),
+//     endTimestamp: Math.floor(new Date().getTime() / 1000) + 300,
+//     token: contracts[network].VotingToken,
+//     amount: BigNumber.from(10).pow(18),
+//     ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
+//   };
+//   await zDAO.createProposal(
+//     proposal.startTimestamp,
+//     proposal.endTimestamp,
+//     proposal.token,
+//     proposal.amount,
+//     proposal.ipfs
+//   );
+// };
 
 const main = async () => {
   const signers = await ethers.getSigners();
@@ -110,11 +136,13 @@ const main = async () => {
     // const zDAO = await createZDAO(network.name, deployer);
     // console.log(`\nCreated zDAO: ${zDAO}`);
 
-    await createProposal(
-      network.name,
-      deployer,
-      "0xB21e1e84eC9453c13dA7B9027E3ea77D85e992e5"
-    );
+    // await createProposal(
+    //   network.name,
+    //   deployer,
+    //   "0xB21e1e84eC9453c13dA7B9027E3ea77D85e992e5"
+    // );
+
+    await verifyEtherZDAO();
 
     console.log("\nWelcome");
   } else if (network.name === "polygonMumbai" || network.name === "polygon") {

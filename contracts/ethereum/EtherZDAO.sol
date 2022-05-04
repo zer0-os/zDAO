@@ -226,22 +226,21 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     return lastProposalId;
   }
 
-  function listProposals(uint256 _startIndex, uint256 _endIndex)
+  function listProposals(uint256 _startIndex, uint256 _count)
     external
     view
     override
-    returns (Proposal[] memory)
+    returns (Proposal[] memory records)
   {
-    require(_startIndex > 0, "should start index > 0");
-    require(_startIndex <= _endIndex, "should start index <= end");
-    require(_startIndex <= lastProposalId, "should start index <= length");
-    require(_endIndex <= lastProposalId, "should end index <= length");
+    uint256 numRecords = _count;
+    if (numRecords > (lastProposalId - _startIndex)) {
+      numRecords = lastProposalId - _startIndex;
+    }
 
-    uint256 numRecords = _endIndex - _startIndex + 1;
-    Proposal[] memory records = new Proposal[](numRecords);
+    records = new Proposal[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = proposals[_startIndex + i];
+      records[i] = proposals[_startIndex + i + 1];
     }
 
     return records;
@@ -251,7 +250,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     external
     view
     override
-    onlyValidProposal(_proposalId)
     returns (ProposalState)
   {
     Proposal storage proposal = proposals[_proposalId];
@@ -272,17 +270,18 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     // If relative majority, the denominator should be sum of yes and no votes
     if (
       zDAOInfo.isRelativeMajority &&
+      (proposal.yes + proposal.no > 0) &&
       ((proposal.yes * 10000) / (proposal.yes + proposal.no) >=
         zDAOInfo.threshold)
     ) {
       return ProposalState.Succeeded;
     }
     // If absolute majority, the denominator should be total supply
+    uint256 totalSupply = IERC20Upgradeable(zDAOInfo.token).totalSupply();
     if (
       !zDAOInfo.isRelativeMajority &&
-      (proposal.yes * 10000) /
-        IERC20Upgradeable(zDAOInfo.token).totalSupply() >=
-      zDAOInfo.threshold
+      totalSupply > 0 &&
+      (proposal.yes * 10000) / totalSupply >= zDAOInfo.threshold
     ) {
       return ProposalState.Succeeded;
     }
