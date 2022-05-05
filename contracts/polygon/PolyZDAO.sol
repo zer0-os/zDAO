@@ -104,8 +104,8 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     onlyValidProposal(_proposalId)
   {
     require(
-      !proposals[_proposalId].canceled && !proposals[_proposalId].collected,
-      "Already canceled or executed proposal"
+      !proposals[_proposalId].canceled && proposals[_proposalId].collected,
+      "Not a valid proposal"
     );
     _executeProposal(_proposalId);
   }
@@ -122,12 +122,11 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     )
   {
     Proposal storage proposal = proposals[_proposalId];
-
     require(
       !proposal.canceled &&
         !proposal.collected &&
         block.timestamp > proposal.endTimestamp, // proposal has already ended
-      "Not valid for collecting proposal"
+      "Not a valid proposal"
     );
 
     voters = proposal.voters;
