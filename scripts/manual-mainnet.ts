@@ -65,7 +65,7 @@ const verifyEtherZDAO = async () => {
 //     token: "0xE4DCfb387a4cF3eFa2Af1186B47Ca2a042e37838", // todo, should be voting token on Ethereum/Goerli network
 //     amount: BigNumber.from(10).pow(18), // 10^18
 //     isRelativeMajority: true,
-//     threshold: 51,
+//     votingThreshold: 51,
 //   };
 
 //   const zNAId = zns.domains.domainNameToId(zNA);

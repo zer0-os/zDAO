@@ -165,7 +165,7 @@ describe("ZDAO", async function () {
 
     await expect(
       zDAO.connect(zDAOChef).collectProposal(proposalId)
-    ).to.be.revertedWith("Not valid for collecting proposal");
+    ).to.be.revertedWith("Not a valid proposal");
 
     // mint to the end of proposal
     await increaseTime(

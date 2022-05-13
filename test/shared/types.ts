@@ -3,9 +3,9 @@ export interface ZDAOConfig {
   gnosisSafe: string;
   token: string;
   amount: number;
-  threshold: number;
-  quorumParticipants: number;
-  quorumVotes: number;
+  votingThreshold: number;
+  minimumVotingParticipants: number;
+  minimumTotalVotingTokens: number;
   isRelativeMajority: boolean;
 }
 

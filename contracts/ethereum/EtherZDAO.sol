@@ -67,9 +67,9 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       gnosisSafe: _zDAOConfig.gnosisSafe,
       token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
-      threshold: _zDAOConfig.threshold,
-      quorumParticipants: _zDAOConfig.quorumParticipants,
-      quorumVotes: _zDAOConfig.quorumVotes,
+      votingThreshold: _zDAOConfig.votingThreshold,
+      minimumVotingParticipants: _zDAOConfig.minimumVotingParticipants,
+      minimumTotalVotingTokens: _zDAOConfig.minimumTotalVotingTokens,
       snapshot: block.number,
       isRelativeMajority: _zDAOConfig.isRelativeMajority,
       destroyed: false
@@ -262,8 +262,8 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     }
     // Check quorum
     if (
-      proposal.voters < zDAOInfo.quorumParticipants ||
-      proposal.yes + proposal.no < zDAOInfo.quorumVotes
+      proposal.voters < zDAOInfo.minimumVotingParticipants ||
+      proposal.yes + proposal.no < zDAOInfo.minimumTotalVotingTokens
     ) {
       return ProposalState.Failed;
     }
@@ -272,7 +272,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       zDAOInfo.isRelativeMajority &&
       (proposal.yes + proposal.no > 0) &&
       ((proposal.yes * 10000) / (proposal.yes + proposal.no) >=
-        zDAOInfo.threshold)
+        zDAOInfo.votingThreshold)
     ) {
       return ProposalState.Succeeded;
     }
@@ -281,7 +281,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     if (
       !zDAOInfo.isRelativeMajority &&
       totalSupply > 0 &&
-      (proposal.yes * 10000) / totalSupply >= zDAOInfo.threshold
+      (proposal.yes * 10000) / totalSupply >= zDAOInfo.votingThreshold
     ) {
       return ProposalState.Succeeded;
     }

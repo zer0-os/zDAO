@@ -17,4 +17,8 @@ contract MockTokenUpgradeable is OwnableUpgradeable, ERC20Upgradeable {
   function mintFor(address _to, uint256 _amount) external onlyOwner {
     _mint(_to, _amount);
   }
+
+  function mintFor2(address _to, uint256 _amount) external {
+    _mint(_to, _amount);
+  }
 }

@@ -74,9 +74,7 @@ describe("ZDAOChef", async function () {
       (await VotingTokenFactory.deploy()) as MockContract<MockTokenUpgradeable>;
     await vToken.__MockTokenUpgradeable_init("vToken", "VT");
 
-    const minAmount = BigNumber.from("10000");
     const minDuration = 300; // unit in seconds
-    const quorumVotes = 5000; // minimum token amount to be succeeded
 
     zDAOPack = {
       lastZDAOId: 1,

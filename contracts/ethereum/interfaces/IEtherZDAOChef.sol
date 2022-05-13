@@ -16,14 +16,14 @@ interface IEtherZDAOChef {
     address token;
     /// @notice The minimum number of tokens required to become proposal creator
     uint256 amount;
-    /// @notice Threshold in 100% as 10000 required to check if proposal is succeeded
-    uint256 threshold;
+    /// @notice Voting threshold in 100% as 10000 required to check if proposal is succeeded
+    uint256 votingThreshold;
     /// @notice The number of voters in support of a proposal required in order
     /// for a vote to succeed
-    uint256 quorumParticipants;
+    uint256 minimumVotingParticipants;
     /// @notice The number of votes in support of a proposal required in order
     /// for a vote to succeed
-    uint256 quorumVotes;
+    uint256 minimumTotalVotingTokens;
     /// @notice True if relative majority to calculate voting result
     bool isRelativeMajority;
   }

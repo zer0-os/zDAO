@@ -44,7 +44,7 @@ describe("ZDAO", async function () {
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
     const minDuration = 30; // unit in seconds
-    const quorumVotes = 5000;
+    const minimumTotalVotingTokens = 5000;
     const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
     zDAOConfig = {
@@ -52,9 +52,9 @@ describe("ZDAO", async function () {
       gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
-      threshold: 5001, // 50.01%
-      quorumParticipants: 1,
-      quorumVotes: 5000,
+      votingThreshold: 5001, // 50.01%
+      minimumVotingParticipants: 1,
+      minimumTotalVotingTokens: 5000,
       isRelativeMajority: true,
     };
 
@@ -86,7 +86,7 @@ describe("ZDAO", async function () {
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );
-    expect(zDAOInfo.quorumVotes).to.be.equal(zDAOConfig.quorumVotes);
+    expect(zDAOInfo.minimumTotalVotingTokens).to.be.equal(zDAOConfig.minimumTotalVotingTokens);
     expect(zDAOInfo.snapshot).to.be.gt(0);
     expect(zDAOInfo.destroyed).to.be.equal(false);
   });
