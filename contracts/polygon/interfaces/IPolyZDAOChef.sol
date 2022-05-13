@@ -9,15 +9,14 @@ interface IPolyZDAOChef {
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
 
-  event DAOCreated(address indexed _zDAO, uint256 indexed _daoId);
+  event DAOCreated(address indexed _zDAO, uint256 indexed _daoId, uint256 _duration);
 
   event DAODestroyed(uint256 indexed _daoId);
 
   event ProposalCreated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
+    uint256 _startTimestamp
   );
 
   event ProposalCanceled(uint256 indexed _zDAOId, uint256 indexed _proposalId);

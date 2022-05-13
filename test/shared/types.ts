@@ -3,6 +3,7 @@ export interface ZDAOConfig {
   gnosisSafe: string;
   token: string;
   amount: number;
+  duration: number;
   votingThreshold: number;
   minimumVotingParticipants: number;
   minimumTotalVotingTokens: number;
@@ -10,7 +11,6 @@ export interface ZDAOConfig {
 }
 
 export interface ProposalConfig {
-  duration: number;
   target: string;
   value: number;
   data: string;
@@ -19,10 +19,10 @@ export interface ProposalConfig {
 
 export interface PolyZDAOConfig {
   zDAOId: number;
+  duration: number;
 }
 
 export interface PolyProposalConfig {
   proposalId: number;
   startTimestamp: number;
-  endTimestamp: number;
 }

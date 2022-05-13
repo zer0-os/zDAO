@@ -16,6 +16,8 @@ interface IEtherZDAOChef {
     address token;
     /// @notice The minimum number of tokens required to become proposal creator
     uint256 amount;
+    /// @notice Time duration of this proposal in seconds
+    uint256 duration;
     /// @notice Voting threshold in 100% as 10000 required to check if proposal is succeeded
     uint256 votingThreshold;
     /// @notice The number of voters in support of a proposal required in order
@@ -68,7 +70,6 @@ interface IEtherZDAOChef {
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
     address indexed _createdBy,
-    uint256 _duration,
     uint256 _snapshot
   );
 
@@ -114,7 +115,6 @@ interface IEtherZDAOChef {
 
   function createProposal(
     uint256 _daoId,
-    uint256 _duration,
     address _target,
     uint256 _value,
     bytes calldata _data,

@@ -120,9 +120,9 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     virtual
     returns (IPolyZDAO)
   {
-    (uint256 messageType, uint256 zDAOId) = abi.decode(
+    (uint256 messageType, uint256 zDAOId, uint256 duration) = abi.decode(
       _message,
-      (uint256, uint256)
+      (uint256, uint256, uint256)
     );
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
@@ -134,7 +134,8 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
           IPolyZDAO.__ZDAO_init.selector,
           address(this),
           staking,
-          zDAOId
+          zDAOId,
+          duration
         )
       )
     );
@@ -142,7 +143,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOs[zDAOId] = zDAO;
     zDAOIds.push(zDAOId);
 
-    emit DAOCreated(address(zDAO), zDAOId);
+    emit DAOCreated(address(zDAO), zDAOId, duration);
 
     return zDAO;
   }
@@ -164,17 +165,15 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     (
       uint256 messageType,
       uint256 zDAOId,
-      uint256 proposalId,
-      uint256 duration
-    ) = abi.decode(_message, (uint256, uint256, uint256, uint256));
+      uint256 proposalId
+    ) = abi.decode(_message, (uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
 
-    uint256 endTimestamp = block.timestamp + duration;
-    zDAOs[zDAOId].createProposal(proposalId, block.timestamp, endTimestamp);
+    zDAOs[zDAOId].createProposal(proposalId, block.timestamp);
 
-    emit ProposalCreated(zDAOId, proposalId, block.timestamp, endTimestamp);
+    emit ProposalCreated(zDAOId, proposalId, block.timestamp);
   }
 
   function _cancelProposal(bytes memory _message) internal virtual {

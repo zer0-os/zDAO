@@ -59,16 +59,18 @@ describe("ZDAO", async function () {
 
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
-    const minPeriod = 300; // unit in seconds
+    const minDuration = 300; // unit in seconds
 
     zDAOConfig = {
       zDAOId,
+      duration: minDuration
     };
 
     await zDAO.__ZDAO_init(
       zDAOChef.address,
       staking.address,
-      zDAOConfig.zDAOId
+      zDAOConfig.zDAOId,
+      zDAOConfig.duration
     );
 
     zDAOInfo = await zDAO.zDAOInfo();
@@ -76,7 +78,6 @@ describe("ZDAO", async function () {
     proposalConfig = {
       proposalId: 1,
       startTimestamp: await now(),
-      endTimestamp: (await now()) + minPeriod,
     };
 
     await vToken.mintFor(userA.address, 10000000);
@@ -96,6 +97,7 @@ describe("ZDAO", async function () {
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOConfig.zDAOId);
+    expect(zDAOInfo.duration).to.be.equal(zDAOConfig.duration);
     expect(zDAOInfo.snapshot).to.be.gt(0);
     expect(zDAOInfo.destroyed).to.be.equal(false);
   });
@@ -107,8 +109,7 @@ describe("ZDAO", async function () {
       .connect(userA ?? zDAOChef)
       .createProposal(
         proposalConfig.proposalId,
-        proposalConfig.startTimestamp,
-        proposalConfig.endTimestamp
+        proposalConfig.startTimestamp
       );
   };
 
@@ -169,7 +170,7 @@ describe("ZDAO", async function () {
 
     // mint to the end of proposal
     await increaseTime(
-      proposalConfig.endTimestamp - proposalConfig.startTimestamp
+      zDAOConfig.duration
     );
 
     await expect(zDAO.connect(zDAOChef).collectProposal(proposalId)).to.be.not

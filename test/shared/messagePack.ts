@@ -12,12 +12,13 @@ enum MessageType {
 
 export interface CreateZDAOPack {
   lastZDAOId: number;
+  duration: number;
 }
 
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256"],
-    [MessageType.CreateZDAO, pack.lastZDAOId]
+    ["uint256", "uint256", "uint256"],
+    [MessageType.CreateZDAO, pack.lastZDAOId, pack.duration]
   );
 };
 
@@ -35,13 +36,12 @@ export const encodeDeleteZDAO = (pack: DeleteZDAOPack): string => {
 export interface CreateProposalPack {
   zDAOId: number;
   proposalId: number;
-  duration: number;
 }
 
 export const encodeCreateProposal = (pack: CreateProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "uint256", "uint256"],
-    [MessageType.CreateProposal, pack.zDAOId, pack.proposalId, pack.duration]
+    ["uint256", "uint256", "uint256"],
+    [MessageType.CreateProposal, pack.zDAOId, pack.proposalId]
   );
 };
 

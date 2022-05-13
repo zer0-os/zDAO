@@ -52,6 +52,7 @@ describe("ZDAO", async function () {
       gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
+      duration: minDuration,
       votingThreshold: 5001, // 50.01%
       minimumVotingParticipants: 1,
       minimumTotalVotingTokens: 5000,
@@ -68,7 +69,6 @@ describe("ZDAO", async function () {
     zDAOInfo = await zDAO.zDAOInfo();
 
     proposalConfig = {
-      duration: minDuration,
       target: vToken.address,
       value: minAmount.toNumber(),
       data: "0x00",
@@ -83,6 +83,7 @@ describe("ZDAO", async function () {
     expect(zDAOInfo.gnosisSafe).to.be.equal(zDAOConfig.gnosisSafe);
     expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
     expect(zDAOInfo.amount.toNumber()).to.be.equal(zDAOConfig.amount);
+    expect(zDAOInfo.duration.toNumber()).to.be.equal(zDAOConfig.duration);
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );
@@ -98,7 +99,6 @@ describe("ZDAO", async function () {
       .connect(zDAOChef)
       .createProposal(
         user.address,
-        proposalConfig.duration,
         proposalConfig.target,
         proposalConfig.value,
         proposalConfig.data,
@@ -125,7 +125,6 @@ describe("ZDAO", async function () {
     // check proposal informations
     expect(proposals[0].proposalId).to.be.equal(1);
     expect(proposals[0].createdBy).to.be.equal(userA.address);
-    expect(proposals[0].duration).to.be.equal(proposalConfig.duration);
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);

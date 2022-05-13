@@ -8,6 +8,8 @@ interface IPolyZDAO {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 zDAOId;
+    /// @notice Time duration of this proposal in seconds
+    uint256 duration;
     /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
     /// @notice Flag marking whether the zDAO has been destroyed
@@ -75,15 +77,15 @@ interface IPolyZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     address _staking,
-    uint256 _zDAOId
+    uint256 _zDAOId,
+    uint256 _duration
   ) external;
 
   function setDestroyed(bool _destroyed) external;
 
   function createProposal(
     uint256 _proposalId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
+    uint256 _startTimestamp
   ) external;
 
   function cancelProposal(uint256 _proposalId) external;

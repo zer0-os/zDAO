@@ -50,7 +50,8 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     address _staking,
-    uint256 _zDAOId
+    uint256 _zDAOId,
+    uint256 _duration
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
@@ -58,6 +59,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     staking = Staking(_staking);
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
+      duration: _duration,
       snapshot: block.number,
       destroyed: false
     });
@@ -73,15 +75,14 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
 
   function createProposal(
     uint256 _proposalId,
-    uint256 _startTimestamp,
-    uint256 _endTimestamp
+    uint256 _startTimestamp
   ) external onlyZDAOChef isActiveDAO {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
     );
 
-    _createProposal(_proposalId, _startTimestamp, _endTimestamp);
+    _createProposal(_proposalId, _startTimestamp, _startTimestamp + zDAOInfo.duration);
   }
 
   function cancelProposal(uint256 _proposalId)

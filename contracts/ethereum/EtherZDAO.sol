@@ -67,6 +67,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       gnosisSafe: _zDAOConfig.gnosisSafe,
       token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
+      duration: _zDAOConfig.duration,
       votingThreshold: _zDAOConfig.votingThreshold,
       minimumVotingParticipants: _zDAOConfig.minimumVotingParticipants,
       minimumTotalVotingTokens: _zDAOConfig.minimumTotalVotingTokens,
@@ -98,7 +99,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   function createProposal(
     address _createdBy,
-    uint256 _duration,
     address _target,
     uint256 _value,
     bytes calldata _data,
@@ -113,7 +113,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   {
     uint256 proposalId = _createProposal(
       _createdBy,
-      _duration,
       _target,
       _value,
       _data,
@@ -181,7 +180,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   function _createProposal(
     address _createdBy,
-    uint256 _duration,
     address _target,
     uint256 _value,
     bytes memory _data,
@@ -192,7 +190,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     proposals[lastProposalId] = Proposal({
       proposalId: lastProposalId,
       createdBy: _createdBy,
-      duration: _duration,
       yes: 0,
       no: 0,
       voters: 0,

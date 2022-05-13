@@ -78,12 +78,12 @@ describe("ZDAOChef", async function () {
 
     zDAOPack = {
       lastZDAOId: 1,
+      duration: minDuration
     };
 
     proposalPack = {
       zDAOId: 1,
       proposalId: 1,
-      duration: minDuration,
     };
   });
 
@@ -198,7 +198,7 @@ describe("ZDAOChef", async function () {
     expect(
       proposals[0].endTimestamp.toNumber() -
         proposals[0].startTimestamp.toNumber()
-    ).to.be.equal(proposalPack.duration);
+    ).to.be.equal(zDAOPack.duration);
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);

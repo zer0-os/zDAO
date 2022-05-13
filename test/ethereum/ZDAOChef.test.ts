@@ -90,6 +90,7 @@ describe("ZDAOChef", async function () {
       gnosisSafe: gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
+      duration: minDuration,
       votingThreshold: 5001, // 50.01%
       minimumVotingParticipants: 1,
       minimumTotalVotingTokens: minimumTotalVotingTokens,
@@ -97,7 +98,6 @@ describe("ZDAOChef", async function () {
     };
 
     proposalConfig = {
-      duration: minDuration,
       target: vToken.address,
       value: minAmount.toNumber(),
       data: "0x00",
@@ -115,7 +115,6 @@ describe("ZDAOChef", async function () {
   ): Promise<ContractTransaction> => {
     return ZDAOChef.connect(user).createProposal(
       daoId,
-      proposalConfig.duration,
       proposalConfig.target,
       proposalConfig.value,
       proposalConfig.data,
@@ -392,7 +391,7 @@ describe("ZDAOChef", async function () {
     console.log('proposalConfig', proposalConfig);
 
     await createProposal(userA, zDAOId);
-    await increaseTime(proposalConfig.duration);
+    await increaseTime(zDAOConfig.duration);
 
     const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
     const zDAO = (await ethers.getContractAt(
