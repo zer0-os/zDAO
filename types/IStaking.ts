@@ -20,14 +20,25 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export interface IStakingInterface extends utils.Interface {
   contractName: "IStaking";
   functions: {
+    "pastStakingPower(address,uint256)": FunctionFragment;
+    "pastTotalStaked(uint256)": FunctionFragment;
     "stakeERC20(address,uint256)": FunctionFragment;
     "stakeERC721(address,uint256)": FunctionFragment;
-    "totalStaked(address)": FunctionFragment;
+    "stakingPower(address)": FunctionFragment;
+    "totalStaked()": FunctionFragment;
     "unstakeERC20(address,uint256)": FunctionFragment;
     "unstakeERC721(address,uint256)": FunctionFragment;
     "userStaked(address,address)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "pastStakingPower",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pastTotalStaked",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "stakeERC20",
     values: [string, BigNumberish]
@@ -36,7 +47,14 @@ export interface IStakingInterface extends utils.Interface {
     functionFragment: "stakeERC721",
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "totalStaked", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "stakingPower",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalStaked",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "unstakeERC20",
     values: [string, BigNumberish]
@@ -50,9 +68,21 @@ export interface IStakingInterface extends utils.Interface {
     values: [string, string]
   ): string;
 
+  decodeFunctionResult(
+    functionFragment: "pastStakingPower",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pastTotalStaked",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "stakeERC20", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "stakeERC721",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "stakingPower",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -72,12 +102,14 @@ export interface IStakingInterface extends utils.Interface {
   events: {
     "StakedERC20(address,address,uint256,uint256)": EventFragment;
     "StakedERC721(address,address,uint256,uint256)": EventFragment;
+    "StakingPowerChanged(address,uint256,uint256)": EventFragment;
     "UnstakedERC20(address,address,uint256,uint256)": EventFragment;
     "UnstakedERC721(address,address,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "StakedERC20"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "StakedERC721"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "StakingPowerChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UnstakedERC20"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "UnstakedERC721"): EventFragment;
 }
@@ -105,6 +137,14 @@ export type StakedERC721Event = TypedEvent<
 >;
 
 export type StakedERC721EventFilter = TypedEventFilter<StakedERC721Event>;
+
+export type StakingPowerChangedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  { delegate: string; oldValue: BigNumber; newValue: BigNumber }
+>;
+
+export type StakingPowerChangedEventFilter =
+  TypedEventFilter<StakingPowerChangedEvent>;
 
 export type UnstakedERC20Event = TypedEvent<
   [string, string, BigNumber, BigNumber],
@@ -158,6 +198,17 @@ export interface IStaking extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    pastStakingPower(
+      _user: string,
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    pastTotalStaked(
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     stakeERC20(
       _token: string,
       _amount: BigNumberish,
@@ -170,10 +221,12 @@ export interface IStaking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    totalStaked(
-      _token: string,
+    stakingPower(
+      _user: string,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    totalStaked(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     unstakeERC20(
       _token: string,
@@ -194,6 +247,17 @@ export interface IStaking extends BaseContract {
     ): Promise<[BigNumber]>;
   };
 
+  pastStakingPower(
+    _user: string,
+    _blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  pastTotalStaked(
+    _blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   stakeERC20(
     _token: string,
     _amount: BigNumberish,
@@ -206,7 +270,9 @@ export interface IStaking extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  totalStaked(_token: string, overrides?: CallOverrides): Promise<BigNumber>;
+  stakingPower(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
   unstakeERC20(
     _token: string,
@@ -227,6 +293,17 @@ export interface IStaking extends BaseContract {
   ): Promise<BigNumber>;
 
   callStatic: {
+    pastStakingPower(
+      _user: string,
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    pastTotalStaked(
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     stakeERC20(
       _token: string,
       _amount: BigNumberish,
@@ -239,7 +316,9 @@ export interface IStaking extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    totalStaked(_token: string, overrides?: CallOverrides): Promise<BigNumber>;
+    stakingPower(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
     unstakeERC20(
       _token: string,
@@ -287,6 +366,17 @@ export interface IStaking extends BaseContract {
       _totalPerUser?: null
     ): StakedERC721EventFilter;
 
+    "StakingPowerChanged(address,uint256,uint256)"(
+      delegate?: string | null,
+      oldValue?: null,
+      newValue?: null
+    ): StakingPowerChangedEventFilter;
+    StakingPowerChanged(
+      delegate?: string | null,
+      oldValue?: null,
+      newValue?: null
+    ): StakingPowerChangedEventFilter;
+
     "UnstakedERC20(address,address,uint256,uint256)"(
       _user?: string | null,
       _token?: string | null,
@@ -315,6 +405,17 @@ export interface IStaking extends BaseContract {
   };
 
   estimateGas: {
+    pastStakingPower(
+      _user: string,
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    pastTotalStaked(
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     stakeERC20(
       _token: string,
       _amount: BigNumberish,
@@ -327,7 +428,9 @@ export interface IStaking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    totalStaked(_token: string, overrides?: CallOverrides): Promise<BigNumber>;
+    stakingPower(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalStaked(overrides?: CallOverrides): Promise<BigNumber>;
 
     unstakeERC20(
       _token: string,
@@ -349,6 +452,17 @@ export interface IStaking extends BaseContract {
   };
 
   populateTransaction: {
+    pastStakingPower(
+      _user: string,
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    pastTotalStaked(
+      _blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     stakeERC20(
       _token: string,
       _amount: BigNumberish,
@@ -361,10 +475,12 @@ export interface IStaking extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    totalStaked(
-      _token: string,
+    stakingPower(
+      _user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    totalStaked(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     unstakeERC20(
       _token: string,

@@ -8,97 +8,32 @@ import type { IPolyZDAO, IPolyZDAOInterface } from "../IPolyZDAO";
 
 const _abi = [
   {
-    anonymous: false,
     inputs: [
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "_zDAOId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "_proposalId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
         internalType: "address",
-        name: "_voter",
+        name: "_zDAOChef",
         type: "address",
       },
       {
-        indexed: false,
-        internalType: "uint256",
-        name: "_choice",
-        type: "uint256",
+        internalType: "address",
+        name: "_staking",
+        type: "address",
       },
-    ],
-    name: "CastVote",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
       {
-        indexed: true,
         internalType: "uint256",
         name: "_zDAOId",
         type: "uint256",
       },
       {
-        indexed: true,
         internalType: "uint256",
-        name: "_proposalId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "yes",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "no",
+        name: "_duration",
         type: "uint256",
       },
     ],
-    name: "CollectResult",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "_zDAOId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "_proposalId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_startTimestamp",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_endTimestamp",
-        type: "uint256",
-      },
-    ],
-    name: "ProposalCreated",
-    type: "event",
+    name: "__ZDAO_init",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
@@ -108,7 +43,7 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "canCollectResult",
+    name: "canCollectProposal",
     outputs: [
       {
         internalType: "bool",
@@ -151,8 +86,61 @@ const _abi = [
         type: "uint256",
       },
     ],
-    name: "collectResult",
+    name: "cancelProposal",
     outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_voter",
+        type: "address",
+      },
+    ],
+    name: "choiceOfVoter",
+    outputs: [
+      {
+        internalType: "enum IPolyZDAO.VoterChoice",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+    ],
+    name: "collectProposal",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "voters",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "yes",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "no",
+        type: "uint256",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -166,11 +154,6 @@ const _abi = [
       {
         internalType: "uint256",
         name: "_startTimestamp",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_endTimestamp",
         type: "uint256",
       },
     ],
@@ -199,21 +182,10 @@ const _abi = [
         name: "_proposalId",
         type: "uint256",
       },
-      {
-        internalType: "address",
-        name: "_voter",
-        type: "address",
-      },
     ],
-    name: "getVoterChoice",
-    outputs: [
-      {
-        internalType: "enum IPolyZDAO.VoterChoice",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    stateMutability: "view",
+    name: "executeProposal",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -225,7 +197,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "_endIndex",
+        name: "_count",
         type: "uint256",
       },
     ],
@@ -260,7 +232,7 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "reserved",
+            name: "voters",
             type: "uint256",
           },
           {
@@ -269,14 +241,63 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "enum IPolyZDAO.ProposalState",
-            name: "state",
-            type: "uint8",
+            internalType: "bool",
+            name: "collected",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "executed",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "canceled",
+            type: "bool",
           },
         ],
         internalType: "struct IPolyZDAO.Proposal[]",
-        name: "",
+        name: "records",
         type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_startIndex",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_endIndex",
+        type: "uint256",
+      },
+    ],
+    name: "listVoters",
+    outputs: [
+      {
+        internalType: "address[]",
+        name: "voters",
+        type: "address[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "choices",
+        type: "uint256[]",
+      },
+      {
+        internalType: "uint256[]",
+        name: "votes",
+        type: "uint256[]",
       },
     ],
     stateMutability: "view",
@@ -315,15 +336,92 @@ const _abi = [
         name: "_proposalId",
         type: "uint256",
       },
+    ],
+    name: "state",
+    outputs: [
       {
-        internalType: "enum IPolyZDAO.VoterChoice",
-        name: "_choice",
+        internalType: "enum IPolyZDAO.ProposalState",
+        name: "",
         type: "uint8",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_voter",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_choice",
+        type: "uint256",
       },
     ],
     name: "vote",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+    ],
+    name: "votesResultOfProposal",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "voters",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "yes",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "no",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_voter",
+        type: "address",
+      },
+    ],
+    name: "votingPowerOfVoter",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

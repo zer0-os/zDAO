@@ -4,7 +4,10 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IChildTunnel, IChildTunnelInterface } from "../IChildTunnel";
+import type {
+  IRootStateSender,
+  IRootStateSenderInterface,
+} from "../IRootStateSender";
 
 const _abi = [
   {
@@ -15,22 +18,22 @@ const _abi = [
         type: "bytes",
       },
     ],
-    name: "sendMessageToRoot",
+    name: "sendMessageToChild",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
 ];
 
-export class IChildTunnel__factory {
+export class IRootStateSender__factory {
   static readonly abi = _abi;
-  static createInterface(): IChildTunnelInterface {
-    return new utils.Interface(_abi) as IChildTunnelInterface;
+  static createInterface(): IRootStateSenderInterface {
+    return new utils.Interface(_abi) as IRootStateSenderInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IChildTunnel {
-    return new Contract(address, _abi, signerOrProvider) as IChildTunnel;
+  ): IRootStateSender {
+    return new Contract(address, _abi, signerOrProvider) as IRootStateSender;
   }
 }

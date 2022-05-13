@@ -16,32 +16,32 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface IChildTunnelInterface extends utils.Interface {
-  contractName: "IChildTunnel";
+export interface IChildStateReceiverInterface extends utils.Interface {
+  contractName: "IChildStateReceiver";
   functions: {
-    "sendMessageToRoot(bytes)": FunctionFragment;
+    "processMessageFromRoot(bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "sendMessageToRoot",
+    functionFragment: "processMessageFromRoot",
     values: [BytesLike]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "sendMessageToRoot",
+    functionFragment: "processMessageFromRoot",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export interface IChildTunnel extends BaseContract {
-  contractName: "IChildTunnel";
+export interface IChildStateReceiver extends BaseContract {
+  contractName: "IChildStateReceiver";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IChildTunnelInterface;
+  interface: IChildStateReceiverInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -63,20 +63,20 @@ export interface IChildTunnel extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    sendMessageToRoot(
-      message: BytesLike,
+    processMessageFromRoot(
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
-  sendMessageToRoot(
-    message: BytesLike,
+  processMessageFromRoot(
+    data: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    sendMessageToRoot(
-      message: BytesLike,
+    processMessageFromRoot(
+      data: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -84,15 +84,15 @@ export interface IChildTunnel extends BaseContract {
   filters: {};
 
   estimateGas: {
-    sendMessageToRoot(
-      message: BytesLike,
+    processMessageFromRoot(
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    sendMessageToRoot(
-      message: BytesLike,
+    processMessageFromRoot(
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

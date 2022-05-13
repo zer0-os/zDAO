@@ -16,32 +16,32 @@ import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface IRootTunnelInterface extends utils.Interface {
-  contractName: "IRootTunnel";
+export interface IChildStateSenderInterface extends utils.Interface {
+  contractName: "IChildStateSender";
   functions: {
-    "sendMessageToChild(bytes)": FunctionFragment;
+    "sendMessageToRoot(bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "sendMessageToChild",
+    functionFragment: "sendMessageToRoot",
     values: [BytesLike]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "sendMessageToChild",
+    functionFragment: "sendMessageToRoot",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export interface IRootTunnel extends BaseContract {
-  contractName: "IRootTunnel";
+export interface IChildStateSender extends BaseContract {
+  contractName: "IChildStateSender";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: IRootTunnelInterface;
+  interface: IChildStateSenderInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -63,19 +63,19 @@ export interface IRootTunnel extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    sendMessageToChild(
+    sendMessageToRoot(
       message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
-  sendMessageToChild(
+  sendMessageToRoot(
     message: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    sendMessageToChild(
+    sendMessageToRoot(
       message: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -84,14 +84,14 @@ export interface IRootTunnel extends BaseContract {
   filters: {};
 
   estimateGas: {
-    sendMessageToChild(
+    sendMessageToRoot(
       message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    sendMessageToChild(
+    sendMessageToRoot(
       message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

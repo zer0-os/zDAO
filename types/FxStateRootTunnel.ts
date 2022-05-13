@@ -17,22 +17,29 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export interface RegistryInterface extends utils.Interface {
-  contractName: "Registry";
+export interface FxStateRootTunnelInterface extends utils.Interface {
+  contractName: "FxStateRootTunnel";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__Registry_init()": FunctionFragment;
-    "childToRootToken(address)": FunctionFragment;
+    "SEND_MESSAGE_EVENT_SIG()": FunctionFragment;
+    "__FxStateRootTunnel_init(address,address)": FunctionFragment;
+    "checkpointManager()": FunctionFragment;
+    "fxChildTunnel()": FunctionFragment;
+    "fxRoot()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "mapToken(address,address)": FunctionFragment;
     "owner()": FunctionFragment;
     "paused()": FunctionFragment;
+    "processedExits(bytes32)": FunctionFragment;
+    "receiveMessage(bytes)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "rootToChildToken(address)": FunctionFragment;
+    "rootStateReceiver()": FunctionFragment;
+    "sendMessageToChild(bytes)": FunctionFragment;
+    "setFxChildTunnel(address)": FunctionFragment;
+    "setRootStateReceiver(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
@@ -45,13 +52,22 @@ export interface RegistryInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "__Registry_init",
+    functionFragment: "SEND_MESSAGE_EVENT_SIG",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "childToRootToken",
-    values: [string]
+    functionFragment: "__FxStateRootTunnel_init",
+    values: [string, string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "checkpointManager",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "fxChildTunnel",
+    values?: undefined
+  ): string;
+  encodeFunctionData(functionFragment: "fxRoot", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
     values: [BytesLike]
@@ -64,12 +80,16 @@ export interface RegistryInterface extends utils.Interface {
     functionFragment: "hasRole",
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "mapToken",
-    values: [string, string]
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "processedExits",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "receiveMessage",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -83,7 +103,19 @@ export interface RegistryInterface extends utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "rootToChildToken",
+    functionFragment: "rootStateReceiver",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "sendMessageToChild",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setFxChildTunnel",
+    values: [string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setRootStateReceiver",
     values: [string]
   ): string;
   encodeFunctionData(
@@ -106,22 +138,38 @@ export interface RegistryInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "__Registry_init",
+    functionFragment: "SEND_MESSAGE_EVENT_SIG",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "childToRootToken",
+    functionFragment: "__FxStateRootTunnel_init",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "checkpointManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "fxChildTunnel",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "fxRoot", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getRoleAdmin",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "mapToken", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "processedExits",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "receiveMessage",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -132,7 +180,19 @@ export interface RegistryInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "rootToChildToken",
+    functionFragment: "rootStateReceiver",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "sendMessageToChild",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setFxChildTunnel",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setRootStateReceiver",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -153,7 +213,6 @@ export interface RegistryInterface extends utils.Interface {
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
-    "MapToken(address,address)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -165,7 +224,6 @@ export interface RegistryInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MapToken"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
@@ -185,13 +243,6 @@ export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
 export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
-
-export type MapTokenEvent = TypedEvent<
-  [string, string],
-  { _rootToken: string; _childToken: string }
->;
-
-export type MapTokenEventFilter = TypedEventFilter<MapTokenEvent>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string],
@@ -235,13 +286,13 @@ export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface Registry extends BaseContract {
-  contractName: "Registry";
+export interface FxStateRootTunnel extends BaseContract {
+  contractName: "FxStateRootTunnel";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: RegistryInterface;
+  interface: FxStateRootTunnelInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -265,14 +316,19 @@ export interface Registry extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    __Registry_init(
+    SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<[string]>;
+
+    __FxStateRootTunnel_init(
+      _checkpointManager: string,
+      _fxRoot: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    childToRootToken(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    checkpointManager(overrides?: CallOverrides): Promise<[string]>;
+
+    fxChildTunnel(overrides?: CallOverrides): Promise<[string]>;
+
+    fxRoot(overrides?: CallOverrides): Promise<[string]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -288,15 +344,19 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    mapToken(
-      _rootToken: string,
-      _childToken: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
+
+    processedExits(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    receiveMessage(
+      inputData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -314,10 +374,22 @@ export interface Registry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    rootToChildToken(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<[string]>;
+    rootStateReceiver(overrides?: CallOverrides): Promise<[string]>;
+
+    sendMessageToChild(
+      message: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setFxChildTunnel(
+      _fxChildTunnel: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setRootStateReceiver(
+      _rootStateReceiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -345,11 +417,19 @@ export interface Registry extends BaseContract {
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  __Registry_init(
+  SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<string>;
+
+  __FxStateRootTunnel_init(
+    _checkpointManager: string,
+    _fxRoot: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  childToRootToken(arg0: string, overrides?: CallOverrides): Promise<string>;
+  checkpointManager(overrides?: CallOverrides): Promise<string>;
+
+  fxChildTunnel(overrides?: CallOverrides): Promise<string>;
+
+  fxRoot(overrides?: CallOverrides): Promise<string>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -365,15 +445,16 @@ export interface Registry extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  mapToken(
-    _rootToken: string,
-    _childToken: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   owner(overrides?: CallOverrides): Promise<string>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
+
+  processedExits(arg0: BytesLike, overrides?: CallOverrides): Promise<boolean>;
+
+  receiveMessage(
+    inputData: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -391,7 +472,22 @@ export interface Registry extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  rootToChildToken(arg0: string, overrides?: CallOverrides): Promise<string>;
+  rootStateReceiver(overrides?: CallOverrides): Promise<string>;
+
+  sendMessageToChild(
+    message: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setFxChildTunnel(
+    _fxChildTunnel: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setRootStateReceiver(
+    _rootStateReceiver: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   supportsInterface(
     interfaceId: BytesLike,
@@ -419,9 +515,19 @@ export interface Registry extends BaseContract {
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    __Registry_init(overrides?: CallOverrides): Promise<void>;
+    SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<string>;
 
-    childToRootToken(arg0: string, overrides?: CallOverrides): Promise<string>;
+    __FxStateRootTunnel_init(
+      _checkpointManager: string,
+      _fxRoot: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    checkpointManager(overrides?: CallOverrides): Promise<string>;
+
+    fxChildTunnel(overrides?: CallOverrides): Promise<string>;
+
+    fxRoot(overrides?: CallOverrides): Promise<string>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -437,15 +543,19 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    mapToken(
-      _rootToken: string,
-      _childToken: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     owner(overrides?: CallOverrides): Promise<string>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
+
+    processedExits(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    receiveMessage(
+      inputData: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -461,7 +571,22 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    rootToChildToken(arg0: string, overrides?: CallOverrides): Promise<string>;
+    rootStateReceiver(overrides?: CallOverrides): Promise<string>;
+
+    sendMessageToChild(
+      message: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setFxChildTunnel(
+      _fxChildTunnel: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setRootStateReceiver(
+      _rootStateReceiver: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -501,12 +626,6 @@ export interface Registry extends BaseContract {
       beacon?: string | null
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
-
-    "MapToken(address,address)"(
-      _rootToken?: null,
-      _childToken?: null
-    ): MapTokenEventFilter;
-    MapToken(_rootToken?: null, _childToken?: null): MapTokenEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
@@ -563,14 +682,19 @@ export interface Registry extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    __Registry_init(
+    SEND_MESSAGE_EVENT_SIG(overrides?: CallOverrides): Promise<BigNumber>;
+
+    __FxStateRootTunnel_init(
+      _checkpointManager: string,
+      _fxRoot: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    childToRootToken(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    checkpointManager(overrides?: CallOverrides): Promise<BigNumber>;
+
+    fxChildTunnel(overrides?: CallOverrides): Promise<BigNumber>;
+
+    fxRoot(overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -589,15 +713,19 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    mapToken(
-      _rootToken: string,
-      _childToken: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
+
+    processedExits(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    receiveMessage(
+      inputData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -615,9 +743,21 @@ export interface Registry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    rootToChildToken(
-      arg0: string,
-      overrides?: CallOverrides
+    rootStateReceiver(overrides?: CallOverrides): Promise<BigNumber>;
+
+    sendMessageToChild(
+      message: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setFxChildTunnel(
+      _fxChildTunnel: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setRootStateReceiver(
+      _rootStateReceiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     supportsInterface(
@@ -649,14 +789,21 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    __Registry_init(
+    SEND_MESSAGE_EVENT_SIG(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    __FxStateRootTunnel_init(
+      _checkpointManager: string,
+      _fxRoot: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    childToRootToken(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    checkpointManager(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    fxChildTunnel(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    fxRoot(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -675,15 +822,19 @@ export interface Registry extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    mapToken(
-      _rootToken: string,
-      _childToken: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    processedExits(
+      arg0: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    receiveMessage(
+      inputData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -701,9 +852,21 @@ export interface Registry extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    rootToChildToken(
-      arg0: string,
-      overrides?: CallOverrides
+    rootStateReceiver(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    sendMessageToChild(
+      message: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setFxChildTunnel(
+      _fxChildTunnel: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setRootStateReceiver(
+      _rootStateReceiver: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(

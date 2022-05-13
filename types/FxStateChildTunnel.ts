@@ -18,125 +18,31 @@ import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
-export declare namespace IEtherZDAOChef {
-  export type ZDAOConfigStruct = {
-    title: string;
-    gnosisSafe: string;
-    token: string;
-    amount: BigNumberish;
-    duration: BigNumberish;
-    votingThreshold: BigNumberish;
-    minimumVotingParticipants: BigNumberish;
-    minimumTotalVotingTokens: BigNumberish;
-    isRelativeMajority: boolean;
-  };
-
-  export type ZDAOConfigStructOutput = [
-    string,
-    string,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    boolean
-  ] & {
-    title: string;
-    gnosisSafe: string;
-    token: string;
-    amount: BigNumber;
-    duration: BigNumber;
-    votingThreshold: BigNumber;
-    minimumVotingParticipants: BigNumber;
-    minimumTotalVotingTokens: BigNumber;
-    isRelativeMajority: boolean;
-  };
-}
-
-export declare namespace IEtherZDAO {
-  export type ProposalStruct = {
-    proposalId: BigNumberish;
-    createdBy: string;
-    yes: BigNumberish;
-    no: BigNumberish;
-    voters: BigNumberish;
-    ipfs: string;
-    target: string;
-    value: BigNumberish;
-    data: BytesLike;
-    snapshot: BigNumberish;
-    collected: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-
-  export type ProposalStructOutput = [
-    BigNumber,
-    string,
-    BigNumber,
-    BigNumber,
-    BigNumber,
-    string,
-    string,
-    BigNumber,
-    string,
-    BigNumber,
-    boolean,
-    boolean,
-    boolean
-  ] & {
-    proposalId: BigNumber;
-    createdBy: string;
-    yes: BigNumber;
-    no: BigNumber;
-    voters: BigNumber;
-    ipfs: string;
-    target: string;
-    value: BigNumber;
-    data: string;
-    snapshot: BigNumber;
-    collected: boolean;
-    executed: boolean;
-    canceled: boolean;
-  };
-}
-
-export interface EtherZDAOInterface extends utils.Interface {
-  contractName: "EtherZDAO";
+export interface FxStateChildTunnelInterface extends utils.Interface {
+  contractName: "FxStateChildTunnel";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
-    "cancelProposal(address,uint256)": FunctionFragment;
-    "collectProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
-    "createProposal(address,address,uint256,bytes,string)": FunctionFragment;
-    "destroyed()": FunctionFragment;
-    "executeProposal(address,uint256)": FunctionFragment;
+    "__FxStateChildTunnel_init(address)": FunctionFragment;
+    "childStateReceiver()": FunctionFragment;
+    "fxChild()": FunctionFragment;
+    "fxRootTunnel()": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
-    "lastProposalId()": FunctionFragment;
-    "listProposals(uint256,uint256)": FunctionFragment;
-    "numberOfProposals()": FunctionFragment;
     "owner()": FunctionFragment;
     "paused()": FunctionFragment;
-    "proposalIds(uint256)": FunctionFragment;
-    "proposals(uint256)": FunctionFragment;
+    "processMessageFromRoot(uint256,address,bytes)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "setDestroyed(bool)": FunctionFragment;
-    "setGnosisSafe(address)": FunctionFragment;
-    "setVotingToken(address,uint256)": FunctionFragment;
-    "state(uint256)": FunctionFragment;
+    "sendMessageToRoot(bytes)": FunctionFragment;
+    "setChildStateReceiver(address)": FunctionFragment;
+    "setFxRootTunnel(address)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "version()": FunctionFragment;
-    "zDAOChef()": FunctionFragment;
-    "zDAOInfo()": FunctionFragment;
-    "zDAOOwner()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -144,25 +50,17 @@ export interface EtherZDAOInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "__ZDAO_init",
-    values: [string, BigNumberish, string, IEtherZDAOChef.ZDAOConfigStruct]
+    functionFragment: "__FxStateChildTunnel_init",
+    values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "cancelProposal",
-    values: [string, BigNumberish]
+    functionFragment: "childStateReceiver",
+    values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "fxChild", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "collectProposal",
-    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "createProposal",
-    values: [string, string, BigNumberish, BytesLike, string]
-  ): string;
-  encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "executeProposal",
-    values: [string, BigNumberish]
+    functionFragment: "fxRootTunnel",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -176,27 +74,11 @@ export interface EtherZDAOInterface extends utils.Interface {
     functionFragment: "hasRole",
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "lastProposalId",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "listProposals",
-    values: [BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "numberOfProposals",
-    values?: undefined
-  ): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "proposalIds",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "proposals",
-    values: [BigNumberish]
+    functionFragment: "processMessageFromRoot",
+    values: [BigNumberish, string, BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
@@ -211,18 +93,17 @@ export interface EtherZDAOInterface extends utils.Interface {
     values: [BytesLike, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setDestroyed",
-    values: [boolean]
+    functionFragment: "sendMessageToRoot",
+    values: [BytesLike]
   ): string;
   encodeFunctionData(
-    functionFragment: "setGnosisSafe",
+    functionFragment: "setChildStateReceiver",
     values: [string]
   ): string;
   encodeFunctionData(
-    functionFragment: "setVotingToken",
-    values: [string, BigNumberish]
+    functionFragment: "setFxRootTunnel",
+    values: [string]
   ): string;
-  encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
@@ -237,33 +118,22 @@ export interface EtherZDAOInterface extends utils.Interface {
     values: [string, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOChef", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOInfo", values?: undefined): string;
-  encodeFunctionData(functionFragment: "zDAOOwner", values?: undefined): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "__ZDAO_init",
+    functionFragment: "__FxStateChildTunnel_init",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelProposal",
+    functionFragment: "childStateReceiver",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "fxChild", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "collectProposal",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "createProposal",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(functionFragment: "destroyed", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "executeProposal",
+    functionFragment: "fxRootTunnel",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -272,25 +142,12 @@ export interface EtherZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "grantRole", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasRole", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "lastProposalId",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "listProposals",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "numberOfProposals",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "proposalIds",
+    functionFragment: "processMessageFromRoot",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "proposals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -301,18 +158,17 @@ export interface EtherZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setDestroyed",
+    functionFragment: "sendMessageToRoot",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setGnosisSafe",
+    functionFragment: "setChildStateReceiver",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setVotingToken",
+    functionFragment: "setFxRootTunnel",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -327,13 +183,11 @@ export interface EtherZDAOInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOChef", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOInfo", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "zDAOOwner", data: BytesLike): Result;
 
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
+    "MessageSent(bytes)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
@@ -345,6 +199,7 @@ export interface EtherZDAOInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "MessageSent"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
@@ -364,6 +219,10 @@ export type AdminChangedEventFilter = TypedEventFilter<AdminChangedEvent>;
 export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
+
+export type MessageSentEvent = TypedEvent<[string], { message: string }>;
+
+export type MessageSentEventFilter = TypedEventFilter<MessageSentEvent>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string],
@@ -407,13 +266,13 @@ export type UpgradedEvent = TypedEvent<[string], { implementation: string }>;
 
 export type UpgradedEventFilter = TypedEventFilter<UpgradedEvent>;
 
-export interface EtherZDAO extends BaseContract {
-  contractName: "EtherZDAO";
+export interface FxStateChildTunnel extends BaseContract {
+  contractName: "FxStateChildTunnel";
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
 
-  interface: EtherZDAOInterface;
+  interface: FxStateChildTunnelInterface;
 
   queryFilter<TEvent extends TypedEvent>(
     event: TypedEventFilter<TEvent>,
@@ -437,44 +296,16 @@ export interface EtherZDAO extends BaseContract {
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
-      _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+    __FxStateChildTunnel_init(
+      _fxChild: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    childStateReceiver(overrides?: CallOverrides): Promise<[string]>;
 
-    collectProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    fxChild(overrides?: CallOverrides): Promise<[string]>;
 
-    createProposal(
-      _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
-      _ipfs: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    destroyed(overrides?: CallOverrides): Promise<[boolean]>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    fxRootTunnel(overrides?: CallOverrides): Promise<[string]>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -490,63 +321,16 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    listProposals(
-      _startIndex: BigNumberish,
-      _count: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [IEtherZDAO.ProposalStructOutput[]] & {
-        records: IEtherZDAO.ProposalStructOutput[];
-      }
-    >;
-
-    numberOfProposals(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     owner(overrides?: CallOverrides): Promise<[string]>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
-    proposalIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        string,
-        string,
-        BigNumber,
-        string,
-        BigNumber,
-        boolean,
-        boolean,
-        boolean
-      ] & {
-        proposalId: BigNumber;
-        createdBy: string;
-        yes: BigNumber;
-        no: BigNumber;
-        voters: BigNumber;
-        ipfs: string;
-        target: string;
-        value: BigNumber;
-        data: string;
-        snapshot: BigNumber;
-        collected: boolean;
-        executed: boolean;
-        canceled: boolean;
-      }
-    >;
+    processMessageFromRoot(
+      stateId: BigNumberish,
+      rootMessageSender: string,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -564,26 +348,20 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setDestroyed(
-      _destroyed: boolean,
+    sendMessageToRoot(
+      message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setGnosisSafe(
-      _gnosisSafe: string,
+    setChildStateReceiver(
+      _childStateReceiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
+    setFxRootTunnel(
+      _fxRootTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -607,86 +385,20 @@ export interface EtherZDAO extends BaseContract {
     ): Promise<ContractTransaction>;
 
     version(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    zDAOChef(overrides?: CallOverrides): Promise<[string]>;
-
-    zDAOInfo(
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean,
-        boolean
-      ] & {
-        zDAOId: BigNumber;
-        title: string;
-        createdBy: string;
-        gnosisSafe: string;
-        token: string;
-        amount: BigNumber;
-        duration: BigNumber;
-        votingThreshold: BigNumber;
-        minimumVotingParticipants: BigNumber;
-        minimumTotalVotingTokens: BigNumber;
-        snapshot: BigNumber;
-        isRelativeMajority: boolean;
-        destroyed: boolean;
-      }
-    >;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<[string]>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-  __ZDAO_init(
-    _zDAOChef: string,
-    _zDAOId: BigNumberish,
-    _createdBy: string,
-    _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+  __FxStateChildTunnel_init(
+    _fxChild: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  cancelProposal(
-    arg0: string,
-    _proposalId: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  childStateReceiver(overrides?: CallOverrides): Promise<string>;
 
-  collectProposal(
-    _proposalId: BigNumberish,
-    _voters: BigNumberish,
-    _yes: BigNumberish,
-    _no: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  fxChild(overrides?: CallOverrides): Promise<string>;
 
-  createProposal(
-    _createdBy: string,
-    _target: string,
-    _value: BigNumberish,
-    _data: BytesLike,
-    _ipfs: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  destroyed(overrides?: CallOverrides): Promise<boolean>;
-
-  executeProposal(
-    _executeBy: string,
-    _proposalId: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  fxRootTunnel(overrides?: CallOverrides): Promise<string>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -702,59 +414,16 @@ export interface EtherZDAO extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  lastProposalId(overrides?: CallOverrides): Promise<BigNumber>;
-
-  listProposals(
-    _startIndex: BigNumberish,
-    _count: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<IEtherZDAO.ProposalStructOutput[]>;
-
-  numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
-
   owner(overrides?: CallOverrides): Promise<string>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
 
-  proposalIds(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  proposals(
-    arg0: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      BigNumber,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      string,
-      string,
-      BigNumber,
-      string,
-      BigNumber,
-      boolean,
-      boolean,
-      boolean
-    ] & {
-      proposalId: BigNumber;
-      createdBy: string;
-      yes: BigNumber;
-      no: BigNumber;
-      voters: BigNumber;
-      ipfs: string;
-      target: string;
-      value: BigNumber;
-      data: string;
-      snapshot: BigNumber;
-      collected: boolean;
-      executed: boolean;
-      canceled: boolean;
-    }
-  >;
+  processMessageFromRoot(
+    stateId: BigNumberish,
+    rootMessageSender: string,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -772,23 +441,20 @@ export interface EtherZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setDestroyed(
-    _destroyed: boolean,
+  sendMessageToRoot(
+    message: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setGnosisSafe(
-    _gnosisSafe: string,
+  setChildStateReceiver(
+    _childStateReceiver: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setVotingToken(
-    _token: string,
-    _amount: BigNumberish,
+  setFxRootTunnel(
+    _fxRootTunnel: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  state(_proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   supportsInterface(
     interfaceId: BytesLike,
@@ -813,85 +479,19 @@ export interface EtherZDAO extends BaseContract {
 
   version(overrides?: CallOverrides): Promise<BigNumber>;
 
-  zDAOChef(overrides?: CallOverrides): Promise<string>;
-
-  zDAOInfo(
-    overrides?: CallOverrides
-  ): Promise<
-    [
-      BigNumber,
-      string,
-      string,
-      string,
-      string,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      BigNumber,
-      boolean,
-      boolean
-    ] & {
-      zDAOId: BigNumber;
-      title: string;
-      createdBy: string;
-      gnosisSafe: string;
-      token: string;
-      amount: BigNumber;
-      duration: BigNumber;
-      votingThreshold: BigNumber;
-      minimumVotingParticipants: BigNumber;
-      minimumTotalVotingTokens: BigNumber;
-      snapshot: BigNumber;
-      isRelativeMajority: boolean;
-      destroyed: boolean;
-    }
-  >;
-
-  zDAOOwner(overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
-      _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+    __FxStateChildTunnel_init(
+      _fxChild: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    childStateReceiver(overrides?: CallOverrides): Promise<string>;
 
-    collectProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    fxChild(overrides?: CallOverrides): Promise<string>;
 
-    createProposal(
-      _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
-      _ipfs: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    destroyed(overrides?: CallOverrides): Promise<boolean>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    fxRootTunnel(overrides?: CallOverrides): Promise<string>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -907,59 +507,16 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<BigNumber>;
-
-    listProposals(
-      _startIndex: BigNumberish,
-      _count: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<IEtherZDAO.ProposalStructOutput[]>;
-
-    numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<string>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
 
-    proposalIds(
-      arg0: BigNumberish,
+    processMessageFromRoot(
+      stateId: BigNumberish,
+      rootMessageSender: string,
+      data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        string,
-        string,
-        BigNumber,
-        string,
-        BigNumber,
-        boolean,
-        boolean,
-        boolean
-      ] & {
-        proposalId: BigNumber;
-        createdBy: string;
-        yes: BigNumber;
-        no: BigNumber;
-        voters: BigNumber;
-        ipfs: string;
-        target: string;
-        value: BigNumber;
-        data: string;
-        snapshot: BigNumber;
-        collected: boolean;
-        executed: boolean;
-        canceled: boolean;
-      }
-    >;
+    ): Promise<void>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -975,23 +532,20 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setDestroyed(_destroyed: boolean, overrides?: CallOverrides): Promise<void>;
-
-    setGnosisSafe(
-      _gnosisSafe: string,
+    sendMessageToRoot(
+      message: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
+    setChildStateReceiver(
+      _childStateReceiver: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    state(
-      _proposalId: BigNumberish,
+    setFxRootTunnel(
+      _fxRootTunnel: string,
       overrides?: CallOverrides
-    ): Promise<number>;
+    ): Promise<void>;
 
     supportsInterface(
       interfaceId: BytesLike,
@@ -1015,44 +569,6 @@ export interface EtherZDAO extends BaseContract {
     ): Promise<void>;
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOChef(overrides?: CallOverrides): Promise<string>;
-
-    zDAOInfo(
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        string,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        BigNumber,
-        boolean,
-        boolean
-      ] & {
-        zDAOId: BigNumber;
-        title: string;
-        createdBy: string;
-        gnosisSafe: string;
-        token: string;
-        amount: BigNumber;
-        duration: BigNumber;
-        votingThreshold: BigNumber;
-        minimumVotingParticipants: BigNumber;
-        minimumTotalVotingTokens: BigNumber;
-        snapshot: BigNumber;
-        isRelativeMajority: boolean;
-        destroyed: boolean;
-      }
-    >;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
@@ -1069,6 +585,9 @@ export interface EtherZDAO extends BaseContract {
       beacon?: string | null
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
+
+    "MessageSent(bytes)"(message?: null): MessageSentEventFilter;
+    MessageSent(message?: null): MessageSentEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
@@ -1125,44 +644,16 @@ export interface EtherZDAO extends BaseContract {
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
-      _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+    __FxStateChildTunnel_init(
+      _fxChild: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    childStateReceiver(overrides?: CallOverrides): Promise<BigNumber>;
 
-    collectProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    fxChild(overrides?: CallOverrides): Promise<BigNumber>;
 
-    createProposal(
-      _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
-      _ipfs: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    destroyed(overrides?: CallOverrides): Promise<BigNumber>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
+    fxRootTunnel(overrides?: CallOverrides): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -1181,28 +672,15 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<BigNumber>;
-
-    listProposals(
-      _startIndex: BigNumberish,
-      _count: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
-
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposalIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    processMessageFromRoot(
+      stateId: BigNumberish,
+      rootMessageSender: string,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     renounceOwnership(
@@ -1221,25 +699,19 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setDestroyed(
-      _destroyed: boolean,
+    sendMessageToRoot(
+      message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setGnosisSafe(
-      _gnosisSafe: string,
+    setChildStateReceiver(
+      _childStateReceiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
+    setFxRootTunnel(
+      _fxRootTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     supportsInterface(
@@ -1264,12 +736,6 @@ export interface EtherZDAO extends BaseContract {
     ): Promise<BigNumber>;
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOChef(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOInfo(overrides?: CallOverrides): Promise<BigNumber>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1277,44 +743,18 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    __ZDAO_init(
-      _zDAOChef: string,
-      _zDAOId: BigNumberish,
-      _createdBy: string,
-      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+    __FxStateChildTunnel_init(
+      _fxChild: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    cancelProposal(
-      arg0: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    childStateReceiver(
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    collectProposal(
-      _proposalId: BigNumberish,
-      _voters: BigNumberish,
-      _yes: BigNumberish,
-      _no: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    fxChild(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    createProposal(
-      _createdBy: string,
-      _target: string,
-      _value: BigNumberish,
-      _data: BytesLike,
-      _ipfs: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    destroyed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    executeProposal(
-      _executeBy: string,
-      _proposalId: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
+    fxRootTunnel(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -1333,28 +773,15 @@ export interface EtherZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    lastProposalId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    listProposals(
-      _startIndex: BigNumberish,
-      _count: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    numberOfProposals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    proposalIds(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    proposals(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    processMessageFromRoot(
+      stateId: BigNumberish,
+      rootMessageSender: string,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     renounceOwnership(
@@ -1373,25 +800,19 @@ export interface EtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setDestroyed(
-      _destroyed: boolean,
+    sendMessageToRoot(
+      message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setGnosisSafe(
-      _gnosisSafe: string,
+    setChildStateReceiver(
+      _childStateReceiver: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setVotingToken(
-      _token: string,
-      _amount: BigNumberish,
+    setFxRootTunnel(
+      _fxRootTunnel: string,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    state(
-      _proposalId: BigNumberish,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(
@@ -1416,11 +837,5 @@ export interface EtherZDAO extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOChef(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOInfo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    zDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

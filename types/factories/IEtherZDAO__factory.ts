@@ -8,122 +8,162 @@ import type { IEtherZDAO, IEtherZDAOInterface } from "../IEtherZDAO";
 
 const _abi = [
   {
-    anonymous: false,
     inputs: [
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "_zDAOId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "_propoalId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "yes",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "no",
-        type: "uint256",
-      },
-    ],
-    name: "ProposalCollected",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "uint256",
-        name: "_zDAOId",
-        type: "uint256",
-      },
-      {
-        indexed: true,
         internalType: "address",
-        name: "_proposalAuthor",
+        name: "_zDAOChef",
         type: "address",
       },
       {
-        indexed: true,
-        internalType: "uint256",
-        name: "_proposalId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_startTimestamp",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "_endTimestamp",
-        type: "uint256",
-      },
-    ],
-    name: "ProposalCreated",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
         internalType: "uint256",
         name: "_zDAOId",
         type: "uint256",
       },
       {
-        indexed: true,
+        internalType: "address",
+        name: "_createdBy",
+        type: "address",
+      },
+      {
+        components: [
+          {
+            internalType: "string",
+            name: "title",
+            type: "string",
+          },
+          {
+            internalType: "address",
+            name: "gnosisSafe",
+            type: "address",
+          },
+          {
+            internalType: "address",
+            name: "token",
+            type: "address",
+          },
+          {
+            internalType: "uint256",
+            name: "amount",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "duration",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "votingThreshold",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minimumVotingParticipants",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minimumTotalVotingTokens",
+            type: "uint256",
+          },
+          {
+            internalType: "bool",
+            name: "isRelativeMajority",
+            type: "bool",
+          },
+        ],
+        internalType: "struct IEtherZDAOChef.ZDAOConfig",
+        name: "_zDAOConfig",
+        type: "tuple",
+      },
+    ],
+    name: "__ZDAO_init",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_cancelBy",
+        type: "address",
+      },
+      {
         internalType: "uint256",
-        name: "_proposalId",
+        name: "_proposalid",
         type: "uint256",
       },
     ],
-    name: "ProposalExecuted",
-    type: "event",
+    name: "cancelProposal",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
     inputs: [
       {
         internalType: "uint256",
-        name: "_startTimestamp",
+        name: "_proposalId",
         type: "uint256",
       },
       {
         internalType: "uint256",
-        name: "_endTimestamp",
+        name: "_voters",
         type: "uint256",
       },
       {
-        internalType: "contract IERC20Upgradeable",
-        name: "_token",
+        internalType: "uint256",
+        name: "_yes",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_no",
+        type: "uint256",
+      },
+    ],
+    name: "collectProposal",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_createdBy",
+        type: "address",
+      },
+      {
+        internalType: "address",
+        name: "_target",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "_amount",
+        name: "_value",
         type: "uint256",
       },
       {
-        internalType: "bytes32",
+        internalType: "bytes",
+        name: "_data",
+        type: "bytes",
+      },
+      {
+        internalType: "string",
         name: "_ipfs",
-        type: "bytes32",
+        type: "string",
       },
     ],
     name: "createProposal",
-    outputs: [],
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -142,6 +182,11 @@ const _abi = [
   },
   {
     inputs: [
+      {
+        internalType: "address",
+        name: "_executeBy",
+        type: "address",
+      },
       {
         internalType: "uint256",
         name: "_proposalId",
@@ -162,7 +207,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "_endIndex",
+        name: "_count",
         type: "uint256",
       },
     ],
@@ -182,16 +227,6 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "startTimestamp",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "endTimestamp",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
             name: "yes",
             type: "uint256",
           },
@@ -202,23 +237,28 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "reserved",
+            name: "voters",
             type: "uint256",
           },
           {
-            internalType: "bytes32",
+            internalType: "string",
             name: "ipfs",
-            type: "bytes32",
+            type: "string",
           },
           {
-            internalType: "contract IERC20Upgradeable",
-            name: "token",
+            internalType: "address",
+            name: "target",
             type: "address",
           },
           {
             internalType: "uint256",
-            name: "amount",
+            name: "value",
             type: "uint256",
+          },
+          {
+            internalType: "bytes",
+            name: "data",
+            type: "bytes",
           },
           {
             internalType: "uint256",
@@ -226,9 +266,19 @@ const _abi = [
             type: "uint256",
           },
           {
-            internalType: "enum IEtherZDAO.ProposalState",
-            name: "state",
-            type: "uint8",
+            internalType: "bool",
+            name: "collected",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "executed",
+            type: "bool",
+          },
+          {
+            internalType: "bool",
+            name: "canceled",
+            type: "bool",
           },
         ],
         internalType: "struct IEtherZDAO.Proposal[]",
@@ -268,14 +318,51 @@ const _abi = [
   {
     inputs: [
       {
-        internalType: "bytes",
-        name: "_data",
-        type: "bytes",
+        internalType: "address",
+        name: "_gnosisSafe",
+        type: "address",
       },
     ],
-    name: "setVoteResult",
+    name: "setGnosisSafe",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_token",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+    ],
+    name: "setVotingToken",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+    ],
+    name: "state",
+    outputs: [
+      {
+        internalType: "enum IEtherZDAO.ProposalState",
+        name: "",
+        type: "uint8",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

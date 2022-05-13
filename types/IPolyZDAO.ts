@@ -13,7 +13,7 @@ import {
   Signer,
   utils,
 } from "ethers";
-import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
+import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
@@ -24,9 +24,11 @@ export declare namespace IPolyZDAO {
     endTimestamp: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
-    reserved: BigNumberish;
+    voters: BigNumberish;
     snapshot: BigNumberish;
-    state: BigNumberish;
+    collected: boolean;
+    executed: boolean;
+    canceled: boolean;
   };
 
   export type ProposalStructOutput = [
@@ -37,37 +39,52 @@ export declare namespace IPolyZDAO {
     BigNumber,
     BigNumber,
     BigNumber,
-    number
+    boolean,
+    boolean,
+    boolean
   ] & {
     proposalId: BigNumber;
     startTimestamp: BigNumber;
     endTimestamp: BigNumber;
     yes: BigNumber;
     no: BigNumber;
-    reserved: BigNumber;
+    voters: BigNumber;
     snapshot: BigNumber;
-    state: number;
+    collected: boolean;
+    executed: boolean;
+    canceled: boolean;
   };
 }
 
 export interface IPolyZDAOInterface extends utils.Interface {
   contractName: "IPolyZDAO";
   functions: {
-    "canCollectResult(uint256)": FunctionFragment;
+    "__ZDAO_init(address,address,uint256,uint256)": FunctionFragment;
+    "canCollectProposal(uint256)": FunctionFragment;
     "canVote(uint256,address)": FunctionFragment;
-    "collectResult(uint256)": FunctionFragment;
-    "createProposal(uint256,uint256,uint256)": FunctionFragment;
+    "cancelProposal(uint256)": FunctionFragment;
+    "choiceOfVoter(uint256,address)": FunctionFragment;
+    "collectProposal(uint256)": FunctionFragment;
+    "createProposal(uint256,uint256)": FunctionFragment;
     "destroyed()": FunctionFragment;
-    "getVoterChoice(uint256,address)": FunctionFragment;
+    "executeProposal(uint256)": FunctionFragment;
     "listProposals(uint256,uint256)": FunctionFragment;
+    "listVoters(uint256,uint256,uint256)": FunctionFragment;
     "numberOfProposals()": FunctionFragment;
     "setDestroyed(bool)": FunctionFragment;
-    "vote(uint256,uint8)": FunctionFragment;
+    "state(uint256)": FunctionFragment;
+    "vote(uint256,address,uint256)": FunctionFragment;
+    "votesResultOfProposal(uint256)": FunctionFragment;
+    "votingPowerOfVoter(uint256,address)": FunctionFragment;
     "zDAOId()": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "canCollectResult",
+    functionFragment: "__ZDAO_init",
+    values: [string, string, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "canCollectProposal",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -75,21 +92,33 @@ export interface IPolyZDAOInterface extends utils.Interface {
     values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "collectResult",
+    functionFragment: "cancelProposal",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "choiceOfVoter",
+    values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "collectProposal",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "createProposal",
-    values: [BigNumberish, BigNumberish, BigNumberish]
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "getVoterChoice",
-    values: [BigNumberish, string]
+    functionFragment: "executeProposal",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "listProposals",
     values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "listVoters",
+    values: [BigNumberish, BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "numberOfProposals",
@@ -99,19 +128,40 @@ export interface IPolyZDAOInterface extends utils.Interface {
     functionFragment: "setDestroyed",
     values: [boolean]
   ): string;
+  encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "vote",
-    values: [BigNumberish, BigNumberish]
+    values: [BigNumberish, string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "votesResultOfProposal",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "votingPowerOfVoter",
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(functionFragment: "zDAOId", values?: undefined): string;
 
   decodeFunctionResult(
-    functionFragment: "canCollectResult",
+    functionFragment: "__ZDAO_init",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "canCollectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "canVote", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "collectResult",
+    functionFragment: "cancelProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "choiceOfVoter",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "collectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -120,13 +170,14 @@ export interface IPolyZDAOInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "destroyed", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "getVoterChoice",
+    functionFragment: "executeProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "listProposals",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "listVoters", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "numberOfProposals",
     data: BytesLike
@@ -135,50 +186,20 @@ export interface IPolyZDAOInterface extends utils.Interface {
     functionFragment: "setDestroyed",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "votesResultOfProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "votingPowerOfVoter",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "zDAOId", data: BytesLike): Result;
 
-  events: {
-    "CastVote(uint256,uint256,address,uint256)": EventFragment;
-    "CollectResult(uint256,uint256,uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,uint256,uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "CastVote"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "CollectResult"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
+  events: {};
 }
-
-export type CastVoteEvent = TypedEvent<
-  [BigNumber, BigNumber, string, BigNumber],
-  {
-    _zDAOId: BigNumber;
-    _proposalId: BigNumber;
-    _voter: string;
-    _choice: BigNumber;
-  }
->;
-
-export type CastVoteEventFilter = TypedEventFilter<CastVoteEvent>;
-
-export type CollectResultEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _proposalId: BigNumber; yes: BigNumber; no: BigNumber }
->;
-
-export type CollectResultEventFilter = TypedEventFilter<CollectResultEvent>;
-
-export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
-  {
-    _zDAOId: BigNumber;
-    _proposalId: BigNumber;
-    _startTimestamp: BigNumber;
-    _endTimestamp: BigNumber;
-  }
->;
-
-export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
 
 export interface IPolyZDAO extends BaseContract {
   contractName: "IPolyZDAO";
@@ -208,7 +229,15 @@ export interface IPolyZDAO extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
-    canCollectResult(
+    __ZDAO_init(
+      _zDAOChef: string,
+      _staking: string,
+      _zDAOId: BigNumberish,
+      _duration: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    canCollectProposal(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
@@ -219,7 +248,18 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    collectResult(
+    cancelProposal(
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    choiceOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
+    collectProposal(
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -227,23 +267,38 @@ export interface IPolyZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     destroyed(overrides?: CallOverrides): Promise<[boolean]>;
 
-    getVoterChoice(
+    executeProposal(
       _proposalId: BigNumberish,
-      _voter: string,
-      overrides?: CallOverrides
-    ): Promise<[number]>;
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     listProposals(
       _startIndex: BigNumberish,
+      _count: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [IPolyZDAO.ProposalStructOutput[]] & {
+        records: IPolyZDAO.ProposalStructOutput[];
+      }
+    >;
+
+    listVoters(
+      _proposalId: BigNumberish,
+      _startIndex: BigNumberish,
       _endIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[IPolyZDAO.ProposalStructOutput[]]>;
+    ): Promise<
+      [string[], BigNumber[], BigNumber[]] & {
+        voters: string[];
+        choices: BigNumber[];
+        votes: BigNumber[];
+      }
+    >;
 
     numberOfProposals(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -252,16 +307,47 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
     vote(
       _proposalId: BigNumberish,
+      _voter: string,
       _choice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    votesResultOfProposal(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        voters: BigNumber;
+        yes: BigNumber;
+        no: BigNumber;
+      }
+    >;
+
+    votingPowerOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     zDAOId(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
-  canCollectResult(
+  __ZDAO_init(
+    _zDAOChef: string,
+    _staking: string,
+    _zDAOId: BigNumberish,
+    _duration: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  canCollectProposal(
     _proposalId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
@@ -272,7 +358,18 @@ export interface IPolyZDAO extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  collectResult(
+  cancelProposal(
+    _proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  choiceOfVoter(
+    _proposalId: BigNumberish,
+    _voter: string,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  collectProposal(
     _proposalId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -280,23 +377,34 @@ export interface IPolyZDAO extends BaseContract {
   createProposal(
     _proposalId: BigNumberish,
     _startTimestamp: BigNumberish,
-    _endTimestamp: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   destroyed(overrides?: CallOverrides): Promise<boolean>;
 
-  getVoterChoice(
+  executeProposal(
     _proposalId: BigNumberish,
-    _voter: string,
-    overrides?: CallOverrides
-  ): Promise<number>;
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   listProposals(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IPolyZDAO.ProposalStructOutput[]>;
+
+  listVoters(
+    _proposalId: BigNumberish,
+    _startIndex: BigNumberish,
+    _endIndex: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [string[], BigNumber[], BigNumber[]] & {
+      voters: string[];
+      choices: BigNumber[];
+      votes: BigNumber[];
+    }
+  >;
 
   numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -305,16 +413,44 @@ export interface IPolyZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  state(_proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
+
   vote(
     _proposalId: BigNumberish,
+    _voter: string,
     _choice: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  votesResultOfProposal(
+    _proposalId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      voters: BigNumber;
+      yes: BigNumber;
+      no: BigNumber;
+    }
+  >;
+
+  votingPowerOfVoter(
+    _proposalId: BigNumberish,
+    _voter: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
-    canCollectResult(
+    __ZDAO_init(
+      _zDAOChef: string,
+      _staking: string,
+      _zDAOId: BigNumberish,
+      _duration: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    canCollectProposal(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
@@ -325,88 +461,108 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    collectResult(
+    cancelProposal(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    createProposal(
-      _proposalId: BigNumberish,
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    destroyed(overrides?: CallOverrides): Promise<boolean>;
-
-    getVoterChoice(
+    choiceOfVoter(
       _proposalId: BigNumberish,
       _voter: string,
       overrides?: CallOverrides
     ): Promise<number>;
 
+    collectProposal(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        voters: BigNumber;
+        yes: BigNumber;
+        no: BigNumber;
+      }
+    >;
+
+    createProposal(
+      _proposalId: BigNumberish,
+      _startTimestamp: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    destroyed(overrides?: CallOverrides): Promise<boolean>;
+
+    executeProposal(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     listProposals(
+      _startIndex: BigNumberish,
+      _count: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<IPolyZDAO.ProposalStructOutput[]>;
+
+    listVoters(
+      _proposalId: BigNumberish,
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<IPolyZDAO.ProposalStructOutput[]>;
+    ): Promise<
+      [string[], BigNumber[], BigNumber[]] & {
+        voters: string[];
+        choices: BigNumber[];
+        votes: BigNumber[];
+      }
+    >;
 
     numberOfProposals(overrides?: CallOverrides): Promise<BigNumber>;
 
     setDestroyed(_destroyed: boolean, overrides?: CallOverrides): Promise<void>;
 
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
     vote(
       _proposalId: BigNumberish,
+      _voter: string,
       _choice: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
+    votesResultOfProposal(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        voters: BigNumber;
+        yes: BigNumber;
+        no: BigNumber;
+      }
+    >;
+
+    votingPowerOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
-  filters: {
-    "CastVote(uint256,uint256,address,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      _voter?: string | null,
-      _choice?: null
-    ): CastVoteEventFilter;
-    CastVote(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      _voter?: string | null,
-      _choice?: null
-    ): CastVoteEventFilter;
-
-    "CollectResult(uint256,uint256,uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      yes?: null,
-      no?: null
-    ): CollectResultEventFilter;
-    CollectResult(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      yes?: null,
-      no?: null
-    ): CollectResultEventFilter;
-
-    "ProposalCreated(uint256,uint256,uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
-    ): ProposalCreatedEventFilter;
-    ProposalCreated(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
-    ): ProposalCreatedEventFilter;
-  };
+  filters: {};
 
   estimateGas: {
-    canCollectResult(
+    __ZDAO_init(
+      _zDAOChef: string,
+      _staking: string,
+      _zDAOId: BigNumberish,
+      _duration: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    canCollectProposal(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -417,7 +573,18 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    collectResult(
+    cancelProposal(
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    choiceOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    collectProposal(
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -425,19 +592,24 @@ export interface IPolyZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     destroyed(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getVoterChoice(
+    executeProposal(
       _proposalId: BigNumberish,
-      _voter: string,
-      overrides?: CallOverrides
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     listProposals(
+      _startIndex: BigNumberish,
+      _count: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    listVoters(
+      _proposalId: BigNumberish,
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
       overrides?: CallOverrides
@@ -450,17 +622,42 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     vote(
       _proposalId: BigNumberish,
+      _voter: string,
       _choice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    votesResultOfProposal(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    votingPowerOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     zDAOId(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    canCollectResult(
+    __ZDAO_init(
+      _zDAOChef: string,
+      _staking: string,
+      _zDAOId: BigNumberish,
+      _duration: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    canCollectProposal(
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
@@ -471,7 +668,18 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    collectResult(
+    cancelProposal(
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    choiceOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    collectProposal(
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -479,19 +687,24 @@ export interface IPolyZDAO extends BaseContract {
     createProposal(
       _proposalId: BigNumberish,
       _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     destroyed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getVoterChoice(
+    executeProposal(
       _proposalId: BigNumberish,
-      _voter: string,
-      overrides?: CallOverrides
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     listProposals(
+      _startIndex: BigNumberish,
+      _count: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    listVoters(
+      _proposalId: BigNumberish,
       _startIndex: BigNumberish,
       _endIndex: BigNumberish,
       overrides?: CallOverrides
@@ -504,10 +717,27 @@ export interface IPolyZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     vote(
       _proposalId: BigNumberish,
+      _voter: string,
       _choice: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    votesResultOfProposal(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    votingPowerOfVoter(
+      _proposalId: BigNumberish,
+      _voter: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     zDAOId(overrides?: CallOverrides): Promise<PopulatedTransaction>;

@@ -4,7 +4,10 @@
 
 import { Contract, Signer, utils } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IRootTunnel, IRootTunnelInterface } from "../IRootTunnel";
+import type {
+  IRootStateReceiver,
+  IRootStateReceiverInterface,
+} from "../IRootStateReceiver";
 
 const _abi = [
   {
@@ -15,22 +18,22 @@ const _abi = [
         type: "bytes",
       },
     ],
-    name: "sendMessageToChild",
+    name: "processMessageFromChild",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
 ];
 
-export class IRootTunnel__factory {
+export class IRootStateReceiver__factory {
   static readonly abi = _abi;
-  static createInterface(): IRootTunnelInterface {
-    return new utils.Interface(_abi) as IRootTunnelInterface;
+  static createInterface(): IRootStateReceiverInterface {
+    return new utils.Interface(_abi) as IRootStateReceiverInterface;
   }
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IRootTunnel {
-    return new Contract(address, _abi, signerOrProvider) as IRootTunnel;
+  ): IRootStateReceiver {
+    return new Contract(address, _abi, signerOrProvider) as IRootStateReceiver;
   }
 }

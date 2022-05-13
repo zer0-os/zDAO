@@ -19,13 +19,15 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 
 export declare namespace IEtherZDAOChef {
   export type ZDAOConfigStruct = {
-    name: string;
+    title: string;
     gnosisSafe: string;
     token: string;
     amount: BigNumberish;
-    minPeriod: BigNumberish;
+    duration: BigNumberish;
+    votingThreshold: BigNumberish;
+    minimumVotingParticipants: BigNumberish;
+    minimumTotalVotingTokens: BigNumberish;
     isRelativeMajority: boolean;
-    threshold: BigNumberish;
   };
 
   export type ZDAOConfigStructOutput = [
@@ -34,16 +36,20 @@ export declare namespace IEtherZDAOChef {
     string,
     BigNumber,
     BigNumber,
-    boolean,
-    BigNumber
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean
   ] & {
-    name: string;
+    title: string;
     gnosisSafe: string;
     token: string;
     amount: BigNumber;
-    minPeriod: BigNumber;
+    duration: BigNumber;
+    votingThreshold: BigNumber;
+    minimumVotingParticipants: BigNumber;
+    minimumTotalVotingTokens: BigNumber;
     isRelativeMajority: boolean;
-    threshold: BigNumber;
   };
 
   export type ZDAORecordStruct = {
@@ -62,15 +68,20 @@ export declare namespace IEtherZDAOChef {
 export interface IEtherZDAOChefInterface extends utils.Interface {
   contractName: "IEtherZDAOChef";
   functions: {
-    "addNewDAO(uint256,(string,address,address,uint256,uint256,bool,uint256))": FunctionFragment;
+    "addNewDAO(uint256,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
     "addZNAAssociation(uint256,uint256)": FunctionFragment;
+    "cancelProposal(uint256,uint256)": FunctionFragment;
+    "createProposal(uint256,address,uint256,bytes,string)": FunctionFragment;
     "doeszDAOExistForzNA(uint256)": FunctionFragment;
+    "executeProposal(uint256,uint256)": FunctionFragment;
     "getzDAOById(uint256)": FunctionFragment;
     "getzDaoByZNA(uint256)": FunctionFragment;
     "listzDAOs(uint256,uint256)": FunctionFragment;
     "numberOfzDAOs()": FunctionFragment;
     "removeDAO(uint256)": FunctionFragment;
     "removeZNAAssociation(uint256,uint256)": FunctionFragment;
+    "setDAOGnosisSafe(uint256,address)": FunctionFragment;
+    "setDAOVotingToken(uint256,address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -82,8 +93,20 @@ export interface IEtherZDAOChefInterface extends utils.Interface {
     values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "cancelProposal",
+    values: [BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "createProposal",
+    values: [BigNumberish, string, BigNumberish, BytesLike, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "doeszDAOExistForzNA",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "executeProposal",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getzDAOById",
@@ -109,6 +132,14 @@ export interface IEtherZDAOChefInterface extends utils.Interface {
     functionFragment: "removeZNAAssociation",
     values: [BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setDAOGnosisSafe",
+    values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setDAOVotingToken",
+    values: [BigNumberish, string, BigNumberish]
+  ): string;
 
   decodeFunctionResult(functionFragment: "addNewDAO", data: BytesLike): Result;
   decodeFunctionResult(
@@ -116,7 +147,19 @@ export interface IEtherZDAOChefInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "cancelProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "createProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "doeszDAOExistForzNA",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "executeProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -137,18 +180,38 @@ export interface IEtherZDAOChefInterface extends utils.Interface {
     functionFragment: "removeZNAAssociation",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setDAOGnosisSafe",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setDAOVotingToken",
+    data: BytesLike
+  ): Result;
 
   events: {
     "DAOCreated(uint256,address,address)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
+    "DAOUpdateGnosisSafe(uint256,address)": EventFragment;
+    "DAOUpdateVotingtoken(uint256,address,uint256)": EventFragment;
     "LinkAdded(uint256,uint256)": EventFragment;
     "LinkRemoved(uint256,uint256)": EventFragment;
+    "ProposalCanceled(uint256,uint256,address)": EventFragment;
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,address,uint256)": EventFragment;
+    "ProposalExecuted(uint256,uint256,address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOUpdateGnosisSafe"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DAOUpdateVotingtoken"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LinkAdded"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "LinkRemoved"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCollected"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
 }
 
 export type DAOCreatedEvent = TypedEvent<
@@ -161,6 +224,22 @@ export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
 export type DAODestroyedEvent = TypedEvent<[BigNumber], { _daoId: BigNumber }>;
 
 export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
+
+export type DAOUpdateGnosisSafeEvent = TypedEvent<
+  [BigNumber, string],
+  { _daoId: BigNumber; _gnosisSafe: string }
+>;
+
+export type DAOUpdateGnosisSafeEventFilter =
+  TypedEventFilter<DAOUpdateGnosisSafeEvent>;
+
+export type DAOUpdateVotingtokenEvent = TypedEvent<
+  [BigNumber, string, BigNumber],
+  { _daoId: BigNumber; _token: string; _amount: BigNumber }
+>;
+
+export type DAOUpdateVotingtokenEventFilter =
+  TypedEventFilter<DAOUpdateVotingtokenEvent>;
 
 export type LinkAddedEvent = TypedEvent<
   [BigNumber, BigNumber],
@@ -175,6 +254,48 @@ export type LinkRemovedEvent = TypedEvent<
 >;
 
 export type LinkRemovedEventFilter = TypedEventFilter<LinkRemovedEvent>;
+
+export type ProposalCanceledEvent = TypedEvent<
+  [BigNumber, BigNumber, string],
+  { _zDAOId: BigNumber; _proposalId: BigNumber; _cancelBy: string }
+>;
+
+export type ProposalCanceledEventFilter =
+  TypedEventFilter<ProposalCanceledEvent>;
+
+export type ProposalCollectedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _propoalId: BigNumber;
+    _voters: BigNumber;
+    _yes: BigNumber;
+    _no: BigNumber;
+  }
+>;
+
+export type ProposalCollectedEventFilter =
+  TypedEventFilter<ProposalCollectedEvent>;
+
+export type ProposalCreatedEvent = TypedEvent<
+  [BigNumber, BigNumber, string, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _createdBy: string;
+    _snapshot: BigNumber;
+  }
+>;
+
+export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
+
+export type ProposalExecutedEvent = TypedEvent<
+  [BigNumber, BigNumber, string],
+  { _zDAOId: BigNumber; _proposalId: BigNumber; _executeBy: string }
+>;
+
+export type ProposalExecutedEventFilter =
+  TypedEventFilter<ProposalExecutedEvent>;
 
 export interface IEtherZDAOChef extends BaseContract {
   contractName: "IEtherZDAOChef";
@@ -216,15 +337,40 @@ export interface IEtherZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    cancelProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    createProposal(
+      _daoId: BigNumberish,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     doeszDAOExistForzNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    executeProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     getzDAOById(
       _daoId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[IEtherZDAOChef.ZDAORecordStructOutput]>;
+    ): Promise<
+      [IEtherZDAOChef.ZDAORecordStructOutput] & {
+        records: IEtherZDAOChef.ZDAORecordStructOutput;
+      }
+    >;
 
     getzDaoByZNA(
       _zNA: BigNumberish,
@@ -233,9 +379,13 @@ export interface IEtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[IEtherZDAOChef.ZDAORecordStructOutput[]]>;
+    ): Promise<
+      [IEtherZDAOChef.ZDAORecordStructOutput[]] & {
+        records: IEtherZDAOChef.ZDAORecordStructOutput[];
+      }
+    >;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -247,6 +397,19 @@ export interface IEtherZDAOChef extends BaseContract {
     removeZNAAssociation(
       _daoId: BigNumberish,
       _zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setDAOGnosisSafe(
+      _daoId: BigNumberish,
+      _gnosisSafe: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setDAOVotingToken(
+      _daoId: BigNumberish,
+      _token: string,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -263,10 +426,31 @@ export interface IEtherZDAOChef extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  cancelProposal(
+    _daoId: BigNumberish,
+    _proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  createProposal(
+    _daoId: BigNumberish,
+    _target: string,
+    _value: BigNumberish,
+    _data: BytesLike,
+    _ipfs: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   doeszDAOExistForzNA(
     _zNA: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  executeProposal(
+    _daoId: BigNumberish,
+    _proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   getzDAOById(
     _daoId: BigNumberish,
@@ -280,7 +464,7 @@ export interface IEtherZDAOChef extends BaseContract {
 
   listzDAOs(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IEtherZDAOChef.ZDAORecordStructOutput[]>;
 
@@ -297,6 +481,19 @@ export interface IEtherZDAOChef extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  setDAOGnosisSafe(
+    _daoId: BigNumberish,
+    _gnosisSafe: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setDAOVotingToken(
+    _daoId: BigNumberish,
+    _token: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
     addNewDAO(
       _zNA: BigNumberish,
@@ -310,10 +507,31 @@ export interface IEtherZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    cancelProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    createProposal(
+      _daoId: BigNumberish,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     doeszDAOExistForzNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    executeProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getzDAOById(
       _daoId: BigNumberish,
@@ -327,7 +545,7 @@ export interface IEtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<IEtherZDAOChef.ZDAORecordStructOutput[]>;
 
@@ -338,6 +556,19 @@ export interface IEtherZDAOChef extends BaseContract {
     removeZNAAssociation(
       _daoId: BigNumberish,
       _zNA: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setDAOGnosisSafe(
+      _daoId: BigNumberish,
+      _gnosisSafe: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setDAOVotingToken(
+      _daoId: BigNumberish,
+      _token: string,
+      _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -359,6 +590,26 @@ export interface IEtherZDAOChef extends BaseContract {
     ): DAODestroyedEventFilter;
     DAODestroyed(_daoId?: BigNumberish | null): DAODestroyedEventFilter;
 
+    "DAOUpdateGnosisSafe(uint256,address)"(
+      _daoId?: BigNumberish | null,
+      _gnosisSafe?: string | null
+    ): DAOUpdateGnosisSafeEventFilter;
+    DAOUpdateGnosisSafe(
+      _daoId?: BigNumberish | null,
+      _gnosisSafe?: string | null
+    ): DAOUpdateGnosisSafeEventFilter;
+
+    "DAOUpdateVotingtoken(uint256,address,uint256)"(
+      _daoId?: BigNumberish | null,
+      _token?: string | null,
+      _amount?: BigNumberish | null
+    ): DAOUpdateVotingtokenEventFilter;
+    DAOUpdateVotingtoken(
+      _daoId?: BigNumberish | null,
+      _token?: string | null,
+      _amount?: BigNumberish | null
+    ): DAOUpdateVotingtokenEventFilter;
+
     "LinkAdded(uint256,uint256)"(
       _daoId?: BigNumberish | null,
       _zNA?: BigNumberish | null
@@ -376,6 +627,56 @@ export interface IEtherZDAOChef extends BaseContract {
       _daoId?: BigNumberish | null,
       _zNA?: BigNumberish | null
     ): LinkRemovedEventFilter;
+
+    "ProposalCanceled(uint256,uint256,address)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _cancelBy?: string | null
+    ): ProposalCanceledEventFilter;
+    ProposalCanceled(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _cancelBy?: string | null
+    ): ProposalCanceledEventFilter;
+
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _propoalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+    ProposalCollected(
+      _zDAOId?: BigNumberish | null,
+      _propoalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+
+    "ProposalCreated(uint256,uint256,address,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _createdBy?: string | null,
+      _snapshot?: null
+    ): ProposalCreatedEventFilter;
+    ProposalCreated(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _createdBy?: string | null,
+      _snapshot?: null
+    ): ProposalCreatedEventFilter;
+
+    "ProposalExecuted(uint256,uint256,address)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _executeBy?: string | null
+    ): ProposalExecutedEventFilter;
+    ProposalExecuted(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _executeBy?: string | null
+    ): ProposalExecutedEventFilter;
   };
 
   estimateGas: {
@@ -391,9 +692,30 @@ export interface IEtherZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    cancelProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    createProposal(
+      _daoId: BigNumberish,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     doeszDAOExistForzNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    executeProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     getzDAOById(
@@ -408,7 +730,7 @@ export interface IEtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -422,6 +744,19 @@ export interface IEtherZDAOChef extends BaseContract {
     removeZNAAssociation(
       _daoId: BigNumberish,
       _zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setDAOGnosisSafe(
+      _daoId: BigNumberish,
+      _gnosisSafe: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setDAOVotingToken(
+      _daoId: BigNumberish,
+      _token: string,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -439,9 +774,30 @@ export interface IEtherZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    cancelProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    createProposal(
+      _daoId: BigNumberish,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     doeszDAOExistForzNA(
       _zNA: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    executeProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     getzDAOById(
@@ -456,7 +812,7 @@ export interface IEtherZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -470,6 +826,19 @@ export interface IEtherZDAOChef extends BaseContract {
     removeZNAAssociation(
       _daoId: BigNumberish,
       _zNA: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setDAOGnosisSafe(
+      _daoId: BigNumberish,
+      _gnosisSafe: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setDAOVotingToken(
+      _daoId: BigNumberish,
+      _token: string,
+      _amount: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

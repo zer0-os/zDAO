@@ -22,9 +22,9 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   contractName: "PolyZDAOChef";
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "__ZDAOChef_init(address,address,address,address)": FunctionFragment;
-    "fxChild()": FunctionFragment;
-    "fxRootTunnel()": FunctionFragment;
+    "__ZDAOChef_init(address,address,address)": FunctionFragment;
+    "childStateSender()": FunctionFragment;
+    "collectProposal(uint256,uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getzDAOById(uint256)": FunctionFragment;
     "grantRole(bytes32,address)": FunctionFragment;
@@ -33,19 +33,19 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     "numberOfzDAOs()": FunctionFragment;
     "owner()": FunctionFragment;
     "paused()": FunctionFragment;
-    "processMessageFromRoot(uint256,address,bytes)": FunctionFragment;
-    "registry()": FunctionFragment;
+    "processMessageFromRoot(bytes)": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
-    "sendMessageToRoot(bytes)": FunctionFragment;
-    "setFxRootTunnel(address)": FunctionFragment;
+    "setStaking(address)": FunctionFragment;
+    "setZDAOBase(address)": FunctionFragment;
     "staking()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "transferOwnership(address)": FunctionFragment;
     "upgradeTo(address)": FunctionFragment;
     "upgradeToAndCall(address,bytes)": FunctionFragment;
     "version()": FunctionFragment;
+    "vote(uint256,uint256,uint256)": FunctionFragment;
     "zDAOBase()": FunctionFragment;
     "zDAOIds(uint256)": FunctionFragment;
     "zDAOs(uint256)": FunctionFragment;
@@ -57,12 +57,15 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "__ZDAOChef_init",
-    values: [string, string, string, string]
+    values: [string, string, string]
   ): string;
-  encodeFunctionData(functionFragment: "fxChild", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "fxRootTunnel",
+    functionFragment: "childStateSender",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "collectProposal",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "getRoleAdmin",
@@ -92,9 +95,8 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "processMessageFromRoot",
-    values: [BigNumberish, string, BytesLike]
+    values: [BytesLike]
   ): string;
-  encodeFunctionData(functionFragment: "registry", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "renounceOwnership",
     values?: undefined
@@ -107,14 +109,8 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     functionFragment: "revokeRole",
     values: [BytesLike, string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "sendMessageToRoot",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "setFxRootTunnel",
-    values: [string]
-  ): string;
+  encodeFunctionData(functionFragment: "setStaking", values: [string]): string;
+  encodeFunctionData(functionFragment: "setZDAOBase", values: [string]): string;
   encodeFunctionData(functionFragment: "staking", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
@@ -130,6 +126,10 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     values: [string, BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "version", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "vote",
+    values: [BigNumberish, BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "zDAOBase", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "zDAOIds",
@@ -145,9 +145,12 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     functionFragment: "__ZDAOChef_init",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "fxChild", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "fxRootTunnel",
+    functionFragment: "childStateSender",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "collectProposal",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -171,7 +174,6 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     functionFragment: "processMessageFromRoot",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "registry", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "renounceOwnership",
     data: BytesLike
@@ -181,12 +183,9 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "revokeRole", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setStaking", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "sendMessageToRoot",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "setFxRootTunnel",
+    functionFragment: "setZDAOBase",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "staking", data: BytesLike): Result;
@@ -204,6 +203,7 @@ export interface PolyZDAOChefInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "version", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOBase", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOIds", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOs", data: BytesLike): Result;
@@ -211,11 +211,15 @@ export interface PolyZDAOChefInterface extends utils.Interface {
   events: {
     "AdminChanged(address,address)": EventFragment;
     "BeaconUpgraded(address)": EventFragment;
-    "DAOCreated(address,uint256,address,bool,uint256)": EventFragment;
+    "CastVote(uint256,uint256,address,uint256)": EventFragment;
+    "DAOCreated(address,uint256,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
-    "MessageSent(bytes)": EventFragment;
     "OwnershipTransferred(address,address)": EventFragment;
     "Paused(address)": EventFragment;
+    "ProposalCanceled(uint256,uint256)": EventFragment;
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256)": EventFragment;
+    "ProposalExecuted(uint256,uint256)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
@@ -225,11 +229,15 @@ export interface PolyZDAOChefInterface extends utils.Interface {
 
   getEvent(nameOrSignatureOrTopic: "AdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BeaconUpgraded"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "CastVote"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MessageSent"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCollected"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
@@ -248,15 +256,21 @@ export type BeaconUpgradedEvent = TypedEvent<[string], { beacon: string }>;
 
 export type BeaconUpgradedEventFilter = TypedEventFilter<BeaconUpgradedEvent>;
 
-export type DAOCreatedEvent = TypedEvent<
-  [string, BigNumber, string, boolean, BigNumber],
+export type CastVoteEvent = TypedEvent<
+  [BigNumber, BigNumber, string, BigNumber],
   {
-    _zDAO: string;
-    _daoId: BigNumber;
-    _token: string;
-    _isRelativeMajority: boolean;
-    _threshold: BigNumber;
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _voter: string;
+    _choice: BigNumber;
   }
+>;
+
+export type CastVoteEventFilter = TypedEventFilter<CastVoteEvent>;
+
+export type DAOCreatedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  { _zDAO: string; _daoId: BigNumber; _duration: BigNumber }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -264,10 +278,6 @@ export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
 export type DAODestroyedEvent = TypedEvent<[BigNumber], { _daoId: BigNumber }>;
 
 export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
-
-export type MessageSentEvent = TypedEvent<[string], { message: string }>;
-
-export type MessageSentEventFilter = TypedEventFilter<MessageSentEvent>;
 
 export type OwnershipTransferredEvent = TypedEvent<
   [string, string],
@@ -280,6 +290,43 @@ export type OwnershipTransferredEventFilter =
 export type PausedEvent = TypedEvent<[string], { account: string }>;
 
 export type PausedEventFilter = TypedEventFilter<PausedEvent>;
+
+export type ProposalCanceledEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber }
+>;
+
+export type ProposalCanceledEventFilter =
+  TypedEventFilter<ProposalCanceledEvent>;
+
+export type ProposalCollectedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _voters: BigNumber;
+    _yes: BigNumber;
+    _no: BigNumber;
+  }
+>;
+
+export type ProposalCollectedEventFilter =
+  TypedEventFilter<ProposalCollectedEvent>;
+
+export type ProposalCreatedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber; _startTimestamp: BigNumber }
+>;
+
+export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
+
+export type ProposalExecutedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber }
+>;
+
+export type ProposalExecutedEventFilter =
+  TypedEventFilter<ProposalExecutedEvent>;
 
 export type RoleAdminChangedEvent = TypedEvent<
   [string, string, string],
@@ -343,15 +390,18 @@ export interface PolyZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _stakingBase: string,
-      _registry: string,
+      _childStateSender: string,
       _zDAOBase: string,
-      _fxChild: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    fxChild(overrides?: CallOverrides): Promise<[string]>;
+    childStateSender(overrides?: CallOverrides): Promise<[string]>;
 
-    fxRootTunnel(overrides?: CallOverrides): Promise<[string]>;
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<[string]>;
 
@@ -374,9 +424,9 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string[]]>;
+    ): Promise<[string[]] & { records: string[] }>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
 
@@ -385,13 +435,9 @@ export interface PolyZDAOChef extends BaseContract {
     paused(overrides?: CallOverrides): Promise<[boolean]>;
 
     processMessageFromRoot(
-      stateId: BigNumberish,
-      rootMessageSender: string,
-      data: BytesLike,
+      _message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    registry(overrides?: CallOverrides): Promise<[string]>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -409,13 +455,13 @@ export interface PolyZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    sendMessageToRoot(
-      _message: BytesLike,
+    setStaking(
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setFxRootTunnel(
-      _fxRootTunnel: string,
+    setZDAOBase(
+      _zDAOBase: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -444,6 +490,13 @@ export interface PolyZDAOChef extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     zDAOBase(overrides?: CallOverrides): Promise<[string]>;
 
     zDAOIds(
@@ -458,15 +511,18 @@ export interface PolyZDAOChef extends BaseContract {
 
   __ZDAOChef_init(
     _stakingBase: string,
-    _registry: string,
+    _childStateSender: string,
     _zDAOBase: string,
-    _fxChild: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  fxChild(overrides?: CallOverrides): Promise<string>;
+  childStateSender(overrides?: CallOverrides): Promise<string>;
 
-  fxRootTunnel(overrides?: CallOverrides): Promise<string>;
+  collectProposal(
+    _daoId: BigNumberish,
+    _proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -486,7 +542,7 @@ export interface PolyZDAOChef extends BaseContract {
 
   listzDAOs(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string[]>;
 
@@ -497,13 +553,9 @@ export interface PolyZDAOChef extends BaseContract {
   paused(overrides?: CallOverrides): Promise<boolean>;
 
   processMessageFromRoot(
-    stateId: BigNumberish,
-    rootMessageSender: string,
-    data: BytesLike,
+    _message: BytesLike,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
-
-  registry(overrides?: CallOverrides): Promise<string>;
 
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -521,13 +573,13 @@ export interface PolyZDAOChef extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  sendMessageToRoot(
-    _message: BytesLike,
+  setStaking(
+    _staking: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setFxRootTunnel(
-    _fxRootTunnel: string,
+  setZDAOBase(
+    _zDAOBase: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -556,6 +608,13 @@ export interface PolyZDAOChef extends BaseContract {
 
   version(overrides?: CallOverrides): Promise<BigNumber>;
 
+  vote(
+    _daoId: BigNumberish,
+    _proposalId: BigNumberish,
+    _choice: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   zDAOBase(overrides?: CallOverrides): Promise<string>;
 
   zDAOIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -567,15 +626,18 @@ export interface PolyZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _stakingBase: string,
-      _registry: string,
+      _childStateSender: string,
       _zDAOBase: string,
-      _fxChild: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    fxChild(overrides?: CallOverrides): Promise<string>;
+    childStateSender(overrides?: CallOverrides): Promise<string>;
 
-    fxRootTunnel(overrides?: CallOverrides): Promise<string>;
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getRoleAdmin(role: BytesLike, overrides?: CallOverrides): Promise<string>;
 
@@ -598,7 +660,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
@@ -609,13 +671,9 @@ export interface PolyZDAOChef extends BaseContract {
     paused(overrides?: CallOverrides): Promise<boolean>;
 
     processMessageFromRoot(
-      stateId: BigNumberish,
-      rootMessageSender: string,
-      data: BytesLike,
+      _message: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    registry(overrides?: CallOverrides): Promise<string>;
 
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
@@ -631,15 +689,9 @@ export interface PolyZDAOChef extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    sendMessageToRoot(
-      _message: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setStaking(_staking: string, overrides?: CallOverrides): Promise<void>;
 
-    setFxRootTunnel(
-      _fxRootTunnel: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setZDAOBase(_zDAOBase: string, overrides?: CallOverrides): Promise<void>;
 
     staking(overrides?: CallOverrides): Promise<string>;
 
@@ -666,6 +718,13 @@ export interface PolyZDAOChef extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     zDAOBase(overrides?: CallOverrides): Promise<string>;
 
     zDAOIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -688,28 +747,34 @@ export interface PolyZDAOChef extends BaseContract {
     ): BeaconUpgradedEventFilter;
     BeaconUpgraded(beacon?: string | null): BeaconUpgradedEventFilter;
 
-    "DAOCreated(address,uint256,address,bool,uint256)"(
+    "CastVote(uint256,uint256,address,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voter?: string | null,
+      _choice?: null
+    ): CastVoteEventFilter;
+    CastVote(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voter?: string | null,
+      _choice?: null
+    ): CastVoteEventFilter;
+
+    "DAOCreated(address,uint256,uint256)"(
       _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _token?: string | null,
-      _isRelativeMajority?: null,
-      _threshold?: null
+      _duration?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _token?: string | null,
-      _isRelativeMajority?: null,
-      _threshold?: null
+      _duration?: null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(
       _daoId?: BigNumberish | null
     ): DAODestroyedEventFilter;
     DAODestroyed(_daoId?: BigNumberish | null): DAODestroyedEventFilter;
-
-    "MessageSent(bytes)"(message?: null): MessageSentEventFilter;
-    MessageSent(message?: null): MessageSentEventFilter;
 
     "OwnershipTransferred(address,address)"(
       previousOwner?: string | null,
@@ -722,6 +787,50 @@ export interface PolyZDAOChef extends BaseContract {
 
     "Paused(address)"(account?: null): PausedEventFilter;
     Paused(account?: null): PausedEventFilter;
+
+    "ProposalCanceled(uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalCanceledEventFilter;
+    ProposalCanceled(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalCanceledEventFilter;
+
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+    ProposalCollected(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+
+    "ProposalCreated(uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _startTimestamp?: null
+    ): ProposalCreatedEventFilter;
+    ProposalCreated(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _startTimestamp?: null
+    ): ProposalCreatedEventFilter;
+
+    "ProposalExecuted(uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalExecutedEventFilter;
+    ProposalExecuted(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalExecutedEventFilter;
 
     "RoleAdminChanged(bytes32,bytes32,bytes32)"(
       role?: BytesLike | null,
@@ -768,15 +877,18 @@ export interface PolyZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _stakingBase: string,
-      _registry: string,
+      _childStateSender: string,
       _zDAOBase: string,
-      _fxChild: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    fxChild(overrides?: CallOverrides): Promise<BigNumber>;
+    childStateSender(overrides?: CallOverrides): Promise<BigNumber>;
 
-    fxRootTunnel(overrides?: CallOverrides): Promise<BigNumber>;
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -802,7 +914,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -813,13 +925,9 @@ export interface PolyZDAOChef extends BaseContract {
     paused(overrides?: CallOverrides): Promise<BigNumber>;
 
     processMessageFromRoot(
-      stateId: BigNumberish,
-      rootMessageSender: string,
-      data: BytesLike,
+      _message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
-
-    registry(overrides?: CallOverrides): Promise<BigNumber>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -837,13 +945,13 @@ export interface PolyZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    sendMessageToRoot(
-      _message: BytesLike,
+    setStaking(
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setFxRootTunnel(
-      _fxRootTunnel: string,
+    setZDAOBase(
+      _zDAOBase: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -872,6 +980,13 @@ export interface PolyZDAOChef extends BaseContract {
 
     version(overrides?: CallOverrides): Promise<BigNumber>;
 
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     zDAOBase(overrides?: CallOverrides): Promise<BigNumber>;
 
     zDAOIds(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
@@ -886,15 +1001,18 @@ export interface PolyZDAOChef extends BaseContract {
 
     __ZDAOChef_init(
       _stakingBase: string,
-      _registry: string,
+      _childStateSender: string,
       _zDAOBase: string,
-      _fxChild: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    fxChild(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    childStateSender(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    fxRootTunnel(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     getRoleAdmin(
       role: BytesLike,
@@ -920,7 +1038,7 @@ export interface PolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -931,13 +1049,9 @@ export interface PolyZDAOChef extends BaseContract {
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     processMessageFromRoot(
-      stateId: BigNumberish,
-      rootMessageSender: string,
-      data: BytesLike,
+      _message: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
-
-    registry(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -955,13 +1069,13 @@ export interface PolyZDAOChef extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    sendMessageToRoot(
-      _message: BytesLike,
+    setStaking(
+      _staking: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setFxRootTunnel(
-      _fxRootTunnel: string,
+    setZDAOBase(
+      _zDAOBase: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -989,6 +1103,13 @@ export interface PolyZDAOChef extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     version(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
     zDAOBase(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

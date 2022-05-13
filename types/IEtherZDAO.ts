@@ -13,24 +13,61 @@ import {
   Signer,
   utils,
 } from "ethers";
-import { FunctionFragment, Result, EventFragment } from "@ethersproject/abi";
+import { FunctionFragment, Result } from "@ethersproject/abi";
 import { Listener, Provider } from "@ethersproject/providers";
 import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
+
+export declare namespace IEtherZDAOChef {
+  export type ZDAOConfigStruct = {
+    title: string;
+    gnosisSafe: string;
+    token: string;
+    amount: BigNumberish;
+    duration: BigNumberish;
+    votingThreshold: BigNumberish;
+    minimumVotingParticipants: BigNumberish;
+    minimumTotalVotingTokens: BigNumberish;
+    isRelativeMajority: boolean;
+  };
+
+  export type ZDAOConfigStructOutput = [
+    string,
+    string,
+    string,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    boolean
+  ] & {
+    title: string;
+    gnosisSafe: string;
+    token: string;
+    amount: BigNumber;
+    duration: BigNumber;
+    votingThreshold: BigNumber;
+    minimumVotingParticipants: BigNumber;
+    minimumTotalVotingTokens: BigNumber;
+    isRelativeMajority: boolean;
+  };
+}
 
 export declare namespace IEtherZDAO {
   export type ProposalStruct = {
     proposalId: BigNumberish;
     createdBy: string;
-    startTimestamp: BigNumberish;
-    endTimestamp: BigNumberish;
     yes: BigNumberish;
     no: BigNumberish;
-    reserved: BigNumberish;
-    ipfs: BytesLike;
-    token: string;
-    amount: BigNumberish;
+    voters: BigNumberish;
+    ipfs: string;
+    target: string;
+    value: BigNumberish;
+    data: BytesLike;
     snapshot: BigNumberish;
-    state: BigNumberish;
+    collected: boolean;
+    executed: boolean;
+    canceled: boolean;
   };
 
   export type ProposalStructOutput = [
@@ -39,50 +76,69 @@ export declare namespace IEtherZDAO {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
-    BigNumber,
     string,
     string,
     BigNumber,
+    string,
     BigNumber,
-    number
+    boolean,
+    boolean,
+    boolean
   ] & {
     proposalId: BigNumber;
     createdBy: string;
-    startTimestamp: BigNumber;
-    endTimestamp: BigNumber;
     yes: BigNumber;
     no: BigNumber;
-    reserved: BigNumber;
+    voters: BigNumber;
     ipfs: string;
-    token: string;
-    amount: BigNumber;
+    target: string;
+    value: BigNumber;
+    data: string;
     snapshot: BigNumber;
-    state: number;
+    collected: boolean;
+    executed: boolean;
+    canceled: boolean;
   };
 }
 
 export interface IEtherZDAOInterface extends utils.Interface {
   contractName: "IEtherZDAO";
   functions: {
-    "createProposal(uint256,uint256,address,uint256,bytes32)": FunctionFragment;
+    "__ZDAO_init(address,uint256,address,(string,address,address,uint256,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "cancelProposal(address,uint256)": FunctionFragment;
+    "collectProposal(uint256,uint256,uint256,uint256)": FunctionFragment;
+    "createProposal(address,address,uint256,bytes,string)": FunctionFragment;
     "destroyed()": FunctionFragment;
-    "executeProposal(uint256)": FunctionFragment;
+    "executeProposal(address,uint256)": FunctionFragment;
     "listProposals(uint256,uint256)": FunctionFragment;
     "numberOfProposals()": FunctionFragment;
     "setDestroyed(bool)": FunctionFragment;
-    "setVoteResult(bytes)": FunctionFragment;
+    "setGnosisSafe(address)": FunctionFragment;
+    "setVotingToken(address,uint256)": FunctionFragment;
+    "state(uint256)": FunctionFragment;
     "zDAOOwner()": FunctionFragment;
   };
 
   encodeFunctionData(
+    functionFragment: "__ZDAO_init",
+    values: [string, BigNumberish, string, IEtherZDAOChef.ZDAOConfigStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelProposal",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "collectProposal",
+    values: [BigNumberish, BigNumberish, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "createProposal",
-    values: [BigNumberish, BigNumberish, string, BigNumberish, BytesLike]
+    values: [string, string, BigNumberish, BytesLike, string]
   ): string;
   encodeFunctionData(functionFragment: "destroyed", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "executeProposal",
-    values: [BigNumberish]
+    values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "listProposals",
@@ -97,11 +153,28 @@ export interface IEtherZDAOInterface extends utils.Interface {
     values: [boolean]
   ): string;
   encodeFunctionData(
-    functionFragment: "setVoteResult",
-    values: [BytesLike]
+    functionFragment: "setGnosisSafe",
+    values: [string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "setVotingToken",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "zDAOOwner", values?: undefined): string;
 
+  decodeFunctionResult(
+    functionFragment: "__ZDAO_init",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "cancelProposal",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "collectProposal",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "createProposal",
     data: BytesLike
@@ -124,50 +197,18 @@ export interface IEtherZDAOInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "setVoteResult",
+    functionFragment: "setGnosisSafe",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "setVotingToken",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "zDAOOwner", data: BytesLike): Result;
 
-  events: {
-    "ProposalCollected(uint256,uint256,uint256,uint256)": EventFragment;
-    "ProposalCreated(uint256,address,uint256,uint256,uint256)": EventFragment;
-    "ProposalExecuted(uint256,uint256)": EventFragment;
-  };
-
-  getEvent(nameOrSignatureOrTopic: "ProposalCollected"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
+  events: {};
 }
-
-export type ProposalCollectedEvent = TypedEvent<
-  [BigNumber, BigNumber, BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _propoalId: BigNumber; yes: BigNumber; no: BigNumber }
->;
-
-export type ProposalCollectedEventFilter =
-  TypedEventFilter<ProposalCollectedEvent>;
-
-export type ProposalCreatedEvent = TypedEvent<
-  [BigNumber, string, BigNumber, BigNumber, BigNumber],
-  {
-    _zDAOId: BigNumber;
-    _proposalAuthor: string;
-    _proposalId: BigNumber;
-    _startTimestamp: BigNumber;
-    _endTimestamp: BigNumber;
-  }
->;
-
-export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
-
-export type ProposalExecutedEvent = TypedEvent<
-  [BigNumber, BigNumber],
-  { _zDAOId: BigNumber; _proposalId: BigNumber }
->;
-
-export type ProposalExecutedEventFilter =
-  TypedEventFilter<ProposalExecutedEvent>;
 
 export interface IEtherZDAO extends BaseContract {
   contractName: "IEtherZDAO";
@@ -197,25 +238,48 @@ export interface IEtherZDAO extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    __ZDAO_init(
+      _zDAOChef: string,
+      _zDAOId: BigNumberish,
+      _createdBy: string,
+      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalid: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     createProposal(
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
+      _createdBy: string,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     destroyed(overrides?: CallOverrides): Promise<[boolean]>;
 
     executeProposal(
+      _executeBy: string,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[IEtherZDAO.ProposalStructOutput[]]>;
 
@@ -226,33 +290,67 @@ export interface IEtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    setVoteResult(
-      _data: BytesLike,
+    setGnosisSafe(
+      _gnosisSafe: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    setVotingToken(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
 
     zDAOOwner(overrides?: CallOverrides): Promise<[string]>;
   };
 
+  __ZDAO_init(
+    _zDAOChef: string,
+    _zDAOId: BigNumberish,
+    _createdBy: string,
+    _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  cancelProposal(
+    _cancelBy: string,
+    _proposalid: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  collectProposal(
+    _proposalId: BigNumberish,
+    _voters: BigNumberish,
+    _yes: BigNumberish,
+    _no: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   createProposal(
-    _startTimestamp: BigNumberish,
-    _endTimestamp: BigNumberish,
-    _token: string,
-    _amount: BigNumberish,
-    _ipfs: BytesLike,
+    _createdBy: string,
+    _target: string,
+    _value: BigNumberish,
+    _data: BytesLike,
+    _ipfs: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   destroyed(overrides?: CallOverrides): Promise<boolean>;
 
   executeProposal(
+    _executeBy: string,
     _proposalId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   listProposals(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<IEtherZDAO.ProposalStructOutput[]>;
 
@@ -263,33 +361,64 @@ export interface IEtherZDAO extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  setVoteResult(
-    _data: BytesLike,
+  setGnosisSafe(
+    _gnosisSafe: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  setVotingToken(
+    _token: string,
+    _amount: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  state(_proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
   zDAOOwner(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
-    createProposal(
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
+    __ZDAO_init(
+      _zDAOChef: string,
+      _zDAOId: BigNumberish,
+      _createdBy: string,
+      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalid: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    createProposal(
+      _createdBy: string,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     destroyed(overrides?: CallOverrides): Promise<boolean>;
 
     executeProposal(
+      _executeBy: string,
       _proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<IEtherZDAO.ProposalStructOutput[]>;
 
@@ -297,70 +426,70 @@ export interface IEtherZDAO extends BaseContract {
 
     setDestroyed(_destroyed: boolean, overrides?: CallOverrides): Promise<void>;
 
-    setVoteResult(_data: BytesLike, overrides?: CallOverrides): Promise<void>;
+    setGnosisSafe(
+      _gnosisSafe: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setVotingToken(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<number>;
 
     zDAOOwner(overrides?: CallOverrides): Promise<string>;
   };
 
-  filters: {
-    "ProposalCollected(uint256,uint256,uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _propoalId?: BigNumberish | null,
-      yes?: null,
-      no?: null
-    ): ProposalCollectedEventFilter;
-    ProposalCollected(
-      _zDAOId?: BigNumberish | null,
-      _propoalId?: BigNumberish | null,
-      yes?: null,
-      no?: null
-    ): ProposalCollectedEventFilter;
-
-    "ProposalCreated(uint256,address,uint256,uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalAuthor?: string | null,
-      _proposalId?: BigNumberish | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
-    ): ProposalCreatedEventFilter;
-    ProposalCreated(
-      _zDAOId?: BigNumberish | null,
-      _proposalAuthor?: string | null,
-      _proposalId?: BigNumberish | null,
-      _startTimestamp?: null,
-      _endTimestamp?: null
-    ): ProposalCreatedEventFilter;
-
-    "ProposalExecuted(uint256,uint256)"(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null
-    ): ProposalExecutedEventFilter;
-    ProposalExecuted(
-      _zDAOId?: BigNumberish | null,
-      _proposalId?: BigNumberish | null
-    ): ProposalExecutedEventFilter;
-  };
+  filters: {};
 
   estimateGas: {
+    __ZDAO_init(
+      _zDAOChef: string,
+      _zDAOId: BigNumberish,
+      _createdBy: string,
+      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalid: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     createProposal(
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
+      _createdBy: string,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     destroyed(overrides?: CallOverrides): Promise<BigNumber>;
 
     executeProposal(
+      _executeBy: string,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -371,34 +500,68 @@ export interface IEtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    setVoteResult(
-      _data: BytesLike,
+    setGnosisSafe(
+      _gnosisSafe: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setVotingToken(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     zDAOOwner(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    __ZDAO_init(
+      _zDAOChef: string,
+      _zDAOId: BigNumberish,
+      _createdBy: string,
+      _zDAOConfig: IEtherZDAOChef.ZDAOConfigStruct,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    cancelProposal(
+      _cancelBy: string,
+      _proposalid: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    collectProposal(
+      _proposalId: BigNumberish,
+      _voters: BigNumberish,
+      _yes: BigNumberish,
+      _no: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     createProposal(
-      _startTimestamp: BigNumberish,
-      _endTimestamp: BigNumberish,
-      _token: string,
-      _amount: BigNumberish,
-      _ipfs: BytesLike,
+      _createdBy: string,
+      _target: string,
+      _value: BigNumberish,
+      _data: BytesLike,
+      _ipfs: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     destroyed(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     executeProposal(
+      _executeBy: string,
       _proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     listProposals(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -409,9 +572,20 @@ export interface IEtherZDAO extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    setVoteResult(
-      _data: BytesLike,
+    setGnosisSafe(
+      _gnosisSafe: string,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setVotingToken(
+      _token: string,
+      _amount: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    state(
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     zDAOOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;

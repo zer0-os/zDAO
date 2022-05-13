@@ -7,6 +7,8 @@ import {
   BigNumberish,
   BytesLike,
   CallOverrides,
+  ContractTransaction,
+  Overrides,
   PopulatedTransaction,
   Signer,
   utils,
@@ -18,11 +20,17 @@ import { TypedEventFilter, TypedEvent, TypedListener, OnEvent } from "./common";
 export interface IPolyZDAOChefInterface extends utils.Interface {
   contractName: "IPolyZDAOChef";
   functions: {
+    "collectProposal(uint256,uint256)": FunctionFragment;
     "getzDAOById(uint256)": FunctionFragment;
     "listzDAOs(uint256,uint256)": FunctionFragment;
     "numberOfzDAOs()": FunctionFragment;
+    "vote(uint256,uint256,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "collectProposal",
+    values: [BigNumberish, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "getzDAOById",
     values: [BigNumberish]
@@ -35,7 +43,15 @@ export interface IPolyZDAOChefInterface extends utils.Interface {
     functionFragment: "numberOfzDAOs",
     values?: undefined
   ): string;
+  encodeFunctionData(
+    functionFragment: "vote",
+    values: [BigNumberish, BigNumberish, BigNumberish]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "collectProposal",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getzDAOById",
     data: BytesLike
@@ -45,25 +61,42 @@ export interface IPolyZDAOChefInterface extends utils.Interface {
     functionFragment: "numberOfzDAOs",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "vote", data: BytesLike): Result;
 
   events: {
-    "DAOCreated(address,uint256,address,bool,uint256)": EventFragment;
+    "CastVote(uint256,uint256,address,uint256)": EventFragment;
+    "DAOCreated(address,uint256,uint256)": EventFragment;
     "DAODestroyed(uint256)": EventFragment;
+    "ProposalCanceled(uint256,uint256)": EventFragment;
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)": EventFragment;
+    "ProposalCreated(uint256,uint256,uint256)": EventFragment;
+    "ProposalExecuted(uint256,uint256)": EventFragment;
   };
 
+  getEvent(nameOrSignatureOrTopic: "CastVote"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAOCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "DAODestroyed"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCollected"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
 }
 
-export type DAOCreatedEvent = TypedEvent<
-  [string, BigNumber, string, boolean, BigNumber],
+export type CastVoteEvent = TypedEvent<
+  [BigNumber, BigNumber, string, BigNumber],
   {
-    _zDAO: string;
-    _daoId: BigNumber;
-    _token: string;
-    _isRelativeMajority: boolean;
-    _threshold: BigNumber;
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _voter: string;
+    _choice: BigNumber;
   }
+>;
+
+export type CastVoteEventFilter = TypedEventFilter<CastVoteEvent>;
+
+export type DAOCreatedEvent = TypedEvent<
+  [string, BigNumber, BigNumber],
+  { _zDAO: string; _daoId: BigNumber; _duration: BigNumber }
 >;
 
 export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
@@ -71,6 +104,43 @@ export type DAOCreatedEventFilter = TypedEventFilter<DAOCreatedEvent>;
 export type DAODestroyedEvent = TypedEvent<[BigNumber], { _daoId: BigNumber }>;
 
 export type DAODestroyedEventFilter = TypedEventFilter<DAODestroyedEvent>;
+
+export type ProposalCanceledEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber }
+>;
+
+export type ProposalCanceledEventFilter =
+  TypedEventFilter<ProposalCanceledEvent>;
+
+export type ProposalCollectedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber],
+  {
+    _zDAOId: BigNumber;
+    _proposalId: BigNumber;
+    _voters: BigNumber;
+    _yes: BigNumber;
+    _no: BigNumber;
+  }
+>;
+
+export type ProposalCollectedEventFilter =
+  TypedEventFilter<ProposalCollectedEvent>;
+
+export type ProposalCreatedEvent = TypedEvent<
+  [BigNumber, BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber; _startTimestamp: BigNumber }
+>;
+
+export type ProposalCreatedEventFilter = TypedEventFilter<ProposalCreatedEvent>;
+
+export type ProposalExecutedEvent = TypedEvent<
+  [BigNumber, BigNumber],
+  { _zDAOId: BigNumber; _proposalId: BigNumber }
+>;
+
+export type ProposalExecutedEventFilter =
+  TypedEventFilter<ProposalExecutedEvent>;
 
 export interface IPolyZDAOChef extends BaseContract {
   contractName: "IPolyZDAOChef";
@@ -100,6 +170,12 @@ export interface IPolyZDAOChef extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     getzDAOById(
       _daoId: BigNumberish,
       overrides?: CallOverrides
@@ -107,24 +183,50 @@ export interface IPolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<[string[]]>;
+    ): Promise<[string[]] & { records: string[] }>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
+
+  collectProposal(
+    _daoId: BigNumberish,
+    _proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   getzDAOById(_daoId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   listzDAOs(
     _startIndex: BigNumberish,
-    _endIndex: BigNumberish,
+    _count: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string[]>;
 
   numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
 
+  vote(
+    _daoId: BigNumberish,
+    _proposalId: BigNumberish,
+    _choice: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     getzDAOById(
       _daoId: BigNumberish,
       overrides?: CallOverrides
@@ -132,36 +234,102 @@ export interface IPolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string[]>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
+
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
-    "DAOCreated(address,uint256,address,bool,uint256)"(
+    "CastVote(uint256,uint256,address,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voter?: string | null,
+      _choice?: null
+    ): CastVoteEventFilter;
+    CastVote(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voter?: string | null,
+      _choice?: null
+    ): CastVoteEventFilter;
+
+    "DAOCreated(address,uint256,uint256)"(
       _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _token?: string | null,
-      _isRelativeMajority?: null,
-      _threshold?: null
+      _duration?: null
     ): DAOCreatedEventFilter;
     DAOCreated(
       _zDAO?: string | null,
       _daoId?: BigNumberish | null,
-      _token?: string | null,
-      _isRelativeMajority?: null,
-      _threshold?: null
+      _duration?: null
     ): DAOCreatedEventFilter;
 
     "DAODestroyed(uint256)"(
       _daoId?: BigNumberish | null
     ): DAODestroyedEventFilter;
     DAODestroyed(_daoId?: BigNumberish | null): DAODestroyedEventFilter;
+
+    "ProposalCanceled(uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalCanceledEventFilter;
+    ProposalCanceled(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalCanceledEventFilter;
+
+    "ProposalCollected(uint256,uint256,uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+    ProposalCollected(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _voters?: null,
+      _yes?: null,
+      _no?: null
+    ): ProposalCollectedEventFilter;
+
+    "ProposalCreated(uint256,uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _startTimestamp?: null
+    ): ProposalCreatedEventFilter;
+    ProposalCreated(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null,
+      _startTimestamp?: null
+    ): ProposalCreatedEventFilter;
+
+    "ProposalExecuted(uint256,uint256)"(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalExecutedEventFilter;
+    ProposalExecuted(
+      _zDAOId?: BigNumberish | null,
+      _proposalId?: BigNumberish | null
+    ): ProposalExecutedEventFilter;
   };
 
   estimateGas: {
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     getzDAOById(
       _daoId: BigNumberish,
       overrides?: CallOverrides
@@ -169,14 +337,27 @@ export interface IPolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<BigNumber>;
+
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    collectProposal(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     getzDAOById(
       _daoId: BigNumberish,
       overrides?: CallOverrides
@@ -184,10 +365,17 @@ export interface IPolyZDAOChef extends BaseContract {
 
     listzDAOs(
       _startIndex: BigNumberish,
-      _endIndex: BigNumberish,
+      _count: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     numberOfzDAOs(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    vote(
+      _daoId: BigNumberish,
+      _proposalId: BigNumberish,
+      _choice: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
   };
 }

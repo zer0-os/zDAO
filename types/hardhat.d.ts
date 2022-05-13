@@ -13,6 +13,62 @@ import * as Contracts from ".";
 declare module "hardhat/types/runtime" {
   interface HardhatEthersHelpers extends HardhatEthersHelpersBase {
     getContractFactory(
+      name: "ZeroUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ZeroUpgradeable__factory>;
+    getContractFactory(
+      name: "EtherZDAO",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.EtherZDAO__factory>;
+    getContractFactory(
+      name: "EtherZDAOChef",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.EtherZDAOChef__factory>;
+    getContractFactory(
+      name: "FxStateRootTunnel",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.FxStateRootTunnel__factory>;
+    getContractFactory(
+      name: "IEtherZDAO",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IEtherZDAO__factory>;
+    getContractFactory(
+      name: "IEtherZDAOChef",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IEtherZDAOChef__factory>;
+    getContractFactory(
+      name: "IChildStateReceiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IChildStateReceiver__factory>;
+    getContractFactory(
+      name: "IChildStateSender",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IChildStateSender__factory>;
+    getContractFactory(
+      name: "IRootStateReceiver",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IRootStateReceiver__factory>;
+    getContractFactory(
+      name: "IRootStateSender",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IRootStateSender__factory>;
+    getContractFactory(
+      name: "IZNSHub",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IZNSHub__factory>;
+    getContractFactory(
+      name: "MockCollectibleUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockCollectibleUpgradeable__factory>;
+    getContractFactory(
+      name: "MockTokenUpgradeable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockTokenUpgradeable__factory>;
+    getContractFactory(
+      name: "MockZNSHub",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MockZNSHub__factory>;
+    getContractFactory(
       name: "AccessControlUpgradeable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.AccessControlUpgradeable__factory>;
@@ -101,53 +157,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Proxy__factory>;
     getContractFactory(
-      name: "ZeroUpgradeable",
+      name: "FxStateChildTunnel",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ZeroUpgradeable__factory>;
-    getContractFactory(
-      name: "EtherZDAO",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.EtherZDAO__factory>;
-    getContractFactory(
-      name: "EtherZDAOChef",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.EtherZDAOChef__factory>;
-    getContractFactory(
-      name: "IEtherZDAO",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IEtherZDAO__factory>;
-    getContractFactory(
-      name: "IEtherZDAOChef",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IEtherZDAOChef__factory>;
-    getContractFactory(
-      name: "IRootTunnel",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IRootTunnel__factory>;
-    getContractFactory(
-      name: "IZNSHub",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IZNSHub__factory>;
-    getContractFactory(
-      name: "MockCollectibleUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockCollectibleUpgradeable__factory>;
-    getContractFactory(
-      name: "MockTokenUpgradeable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockTokenUpgradeable__factory>;
-    getContractFactory(
-      name: "MockZNSHub",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.MockZNSHub__factory>;
-    getContractFactory(
-      name: "IChildTunnel",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.IChildTunnel__factory>;
-    getContractFactory(
-      name: "ILockable",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.ILockable__factory>;
+    ): Promise<Contracts.FxStateChildTunnel__factory>;
     getContractFactory(
       name: "IPolyZDAO",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -168,10 +180,6 @@ declare module "hardhat/types/runtime" {
       name: "PolyZDAOChef",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.PolyZDAOChef__factory>;
-    getContractFactory(
-      name: "Registry",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Registry__factory>;
     getContractFactory(
       name: "Staking",
       signerOrOptions?: ethers.Signer | FactoryOptions
@@ -197,6 +205,76 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IFxStateSender__factory>;
 
+    getContractAt(
+      name: "ZeroUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ZeroUpgradeable>;
+    getContractAt(
+      name: "EtherZDAO",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.EtherZDAO>;
+    getContractAt(
+      name: "EtherZDAOChef",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.EtherZDAOChef>;
+    getContractAt(
+      name: "FxStateRootTunnel",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.FxStateRootTunnel>;
+    getContractAt(
+      name: "IEtherZDAO",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IEtherZDAO>;
+    getContractAt(
+      name: "IEtherZDAOChef",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IEtherZDAOChef>;
+    getContractAt(
+      name: "IChildStateReceiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IChildStateReceiver>;
+    getContractAt(
+      name: "IChildStateSender",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IChildStateSender>;
+    getContractAt(
+      name: "IRootStateReceiver",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IRootStateReceiver>;
+    getContractAt(
+      name: "IRootStateSender",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IRootStateSender>;
+    getContractAt(
+      name: "IZNSHub",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.IZNSHub>;
+    getContractAt(
+      name: "MockCollectibleUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockCollectibleUpgradeable>;
+    getContractAt(
+      name: "MockTokenUpgradeable",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockTokenUpgradeable>;
+    getContractAt(
+      name: "MockZNSHub",
+      address: string,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MockZNSHub>;
     getContractAt(
       name: "AccessControlUpgradeable",
       address: string,
@@ -308,65 +386,10 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.Proxy>;
     getContractAt(
-      name: "ZeroUpgradeable",
+      name: "FxStateChildTunnel",
       address: string,
       signer?: ethers.Signer
-    ): Promise<Contracts.ZeroUpgradeable>;
-    getContractAt(
-      name: "EtherZDAO",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.EtherZDAO>;
-    getContractAt(
-      name: "EtherZDAOChef",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.EtherZDAOChef>;
-    getContractAt(
-      name: "IEtherZDAO",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IEtherZDAO>;
-    getContractAt(
-      name: "IEtherZDAOChef",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IEtherZDAOChef>;
-    getContractAt(
-      name: "IRootTunnel",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IRootTunnel>;
-    getContractAt(
-      name: "IZNSHub",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IZNSHub>;
-    getContractAt(
-      name: "MockCollectibleUpgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MockCollectibleUpgradeable>;
-    getContractAt(
-      name: "MockTokenUpgradeable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MockTokenUpgradeable>;
-    getContractAt(
-      name: "MockZNSHub",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.MockZNSHub>;
-    getContractAt(
-      name: "IChildTunnel",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.IChildTunnel>;
-    getContractAt(
-      name: "ILockable",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.ILockable>;
+    ): Promise<Contracts.FxStateChildTunnel>;
     getContractAt(
       name: "IPolyZDAO",
       address: string,
@@ -392,11 +415,6 @@ declare module "hardhat/types/runtime" {
       address: string,
       signer?: ethers.Signer
     ): Promise<Contracts.PolyZDAOChef>;
-    getContractAt(
-      name: "Registry",
-      address: string,
-      signer?: ethers.Signer
-    ): Promise<Contracts.Registry>;
     getContractAt(
       name: "Staking",
       address: string,

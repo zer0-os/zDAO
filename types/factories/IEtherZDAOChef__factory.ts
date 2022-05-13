@@ -59,6 +59,50 @@ const _abi = [
       },
       {
         indexed: true,
+        internalType: "address",
+        name: "_gnosisSafe",
+        type: "address",
+      },
+    ],
+    name: "DAOUpdateGnosisSafe",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_token",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+    ],
+    name: "DAOUpdateVotingtoken",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
         internalType: "uint256",
         name: "_zNA",
         type: "uint256",
@@ -87,6 +131,124 @@ const _abi = [
     type: "event",
   },
   {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_zDAOId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_cancelBy",
+        type: "address",
+      },
+    ],
+    name: "ProposalCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_zDAOId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_propoalId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_voters",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_yes",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_no",
+        type: "uint256",
+      },
+    ],
+    name: "ProposalCollected",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_zDAOId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_createdBy",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "_snapshot",
+        type: "uint256",
+      },
+    ],
+    name: "ProposalCreated",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_zDAOId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "_executeBy",
+        type: "address",
+      },
+    ],
+    name: "ProposalExecuted",
+    type: "event",
+  },
+  {
     inputs: [
       {
         internalType: "uint256",
@@ -97,7 +259,7 @@ const _abi = [
         components: [
           {
             internalType: "string",
-            name: "name",
+            name: "title",
             type: "string",
           },
           {
@@ -106,7 +268,7 @@ const _abi = [
             type: "address",
           },
           {
-            internalType: "contract IERC20Upgradeable",
+            internalType: "address",
             name: "token",
             type: "address",
           },
@@ -117,18 +279,28 @@ const _abi = [
           },
           {
             internalType: "uint256",
-            name: "minPeriod",
+            name: "duration",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "votingThreshold",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minimumVotingParticipants",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "minimumTotalVotingTokens",
             type: "uint256",
           },
           {
             internalType: "bool",
             name: "isRelativeMajority",
             type: "bool",
-          },
-          {
-            internalType: "uint256",
-            name: "threshold",
-            type: "uint256",
           },
         ],
         internalType: "struct IEtherZDAOChef.ZDAOConfig",
@@ -163,6 +335,57 @@ const _abi = [
     inputs: [
       {
         internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+    ],
+    name: "cancelProposal",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_target",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_value",
+        type: "uint256",
+      },
+      {
+        internalType: "bytes",
+        name: "_data",
+        type: "bytes",
+      },
+      {
+        internalType: "string",
+        name: "_ipfs",
+        type: "string",
+      },
+    ],
+    name: "createProposal",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
         name: "_zNA",
         type: "uint256",
       },
@@ -176,6 +399,24 @@ const _abi = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_proposalId",
+        type: "uint256",
+      },
+    ],
+    name: "executeProposal",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -207,7 +448,7 @@ const _abi = [
           },
         ],
         internalType: "struct IEtherZDAOChef.ZDAORecord",
-        name: "",
+        name: "records",
         type: "tuple",
       },
     ],
@@ -259,7 +500,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "_endIndex",
+        name: "_count",
         type: "uint256",
       },
     ],
@@ -284,7 +525,7 @@ const _abi = [
           },
         ],
         internalType: "struct IEtherZDAOChef.ZDAORecord[]",
-        name: "",
+        name: "records",
         type: "tuple[]",
       },
     ],
@@ -331,6 +572,47 @@ const _abi = [
       },
     ],
     name: "removeZNAAssociation",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_gnosisSafe",
+        type: "address",
+      },
+    ],
+    name: "setDAOGnosisSafe",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_daoId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "_token",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+    ],
+    name: "setDAOVotingToken",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
