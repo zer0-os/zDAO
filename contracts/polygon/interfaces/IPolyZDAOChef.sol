@@ -9,7 +9,11 @@ interface IPolyZDAOChef {
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
 
-  event DAOCreated(address indexed _zDAO, uint256 indexed _daoId, uint256 _duration);
+  event DAOCreated(
+    address indexed _zDAO,
+    uint256 indexed _daoId,
+    uint256 _duration
+  );
 
   event DAODestroyed(uint256 indexed _daoId);
 

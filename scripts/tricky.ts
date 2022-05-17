@@ -42,7 +42,7 @@ const main = async () => {
 
   if (network.name === "goerli" || network.name === "mainnet") {
     const payload = encodeCreateZDAO({
-      lastZDAOId: 1
+      lastZDAOId: 1,
     });
 
     console.log("payload", payload);

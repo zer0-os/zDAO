@@ -63,7 +63,7 @@ describe("ZDAO", async function () {
 
     zDAOConfig = {
       zDAOId,
-      duration: minDuration
+      duration: minDuration,
     };
 
     await zDAO.__ZDAO_init(
@@ -107,10 +107,7 @@ describe("ZDAO", async function () {
   ): Promise<ContractTransaction> => {
     return zDAO
       .connect(userA ?? zDAOChef)
-      .createProposal(
-        proposalConfig.proposalId,
-        proposalConfig.startTimestamp
-      );
+      .createProposal(proposalConfig.proposalId, proposalConfig.startTimestamp);
   };
 
   it("Proposal can be created by child tunnel when it receives message from Ethereum", async function () {
@@ -169,9 +166,7 @@ describe("ZDAO", async function () {
     ).to.be.revertedWith("Not a valid proposal");
 
     // mint to the end of proposal
-    await increaseTime(
-      zDAOConfig.duration
-    );
+    await increaseTime(zDAOConfig.duration);
 
     await expect(zDAO.connect(zDAOChef).collectProposal(proposalId)).to.be.not
       .reverted;

@@ -97,7 +97,11 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
     // send zDAO info to L2
     rootStateSender.sendMessageToChild(
-      abi.encode(uint256(MessageType.CreateZDAO), lastZDAOId, _zDAOConfig.duration)
+      abi.encode(
+        uint256(MessageType.CreateZDAO),
+        lastZDAOId,
+        _zDAOConfig.duration
+      )
     );
   }
 
@@ -176,12 +180,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
       _ipfs
     );
 
-    emit ProposalCreated(
-      _daoId,
-      proposalId,
-      msg.sender,
-      uint256(block.number)
-    );
+    emit ProposalCreated(_daoId, proposalId, msg.sender, uint256(block.number));
 
     // send proposal info to L2
     rootStateSender.sendMessageToChild(

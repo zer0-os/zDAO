@@ -18,7 +18,7 @@ import { blockNumber, mineToBlock } from "../shared/utilities";
 
 chai.use(smock.matchers);
 
-describe("Staking", async function () {
+describe.only("Staking", async function () {
   let owner: SignerWithAddress,
     locker: SignerWithAddress,
     userA: SignerWithAddress,

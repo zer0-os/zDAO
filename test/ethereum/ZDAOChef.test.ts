@@ -368,10 +368,13 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should execute by action", async function () {
-    const ERC20Factory = (await smock.mock<MockTokenUpgradeable__factory>("MockTokenUpgradeable")) as MockContractFactory<MockTokenUpgradeable__factory>;
-    const MockERC20 = (await ERC20Factory.deploy()) as MockContract<MockTokenUpgradeable>;
+    const ERC20Factory = (await smock.mock<MockTokenUpgradeable__factory>(
+      "MockTokenUpgradeable"
+    )) as MockContractFactory<MockTokenUpgradeable__factory>;
+    const MockERC20 =
+      (await ERC20Factory.deploy()) as MockContract<MockTokenUpgradeable>;
     await MockERC20.__MockTokenUpgradeable_init("VT", "VT");
-    
+
     await MockERC20.mintFor(userA.address, zDAOConfig.minimumTotalVotingTokens);
 
     zDAOConfig.token = MockERC20.address;
@@ -385,10 +388,13 @@ describe("ZDAOChef", async function () {
 
     proposalConfig.target = MockERC20.address;
     proposalConfig.value = 0;
-    proposalConfig.data = MockERC20.interface.encodeFunctionData('mintFor2', [userB.address, 10000000]);
+    proposalConfig.data = MockERC20.interface.encodeFunctionData("mintFor2", [
+      userB.address,
+      10000000,
+    ]);
     // proposalConfig.data = MockERC20.interface.encodeFunctionData('balanceOf', [userB.address]);
 
-    console.log('proposalConfig', proposalConfig);
+    console.log("proposalConfig", proposalConfig);
 
     await createProposal(userA, zDAOId);
     await increaseTime(zDAOConfig.duration);
@@ -417,7 +423,7 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    console.log('can Execute', await zDAO.state(proposalId));
+    console.log("can Execute", await zDAO.state(proposalId));
 
     await ZDAOChef.setVariable("rootStateSender", rootStateSender);
     await ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId);

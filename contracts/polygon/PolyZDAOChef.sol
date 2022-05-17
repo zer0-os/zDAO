@@ -162,11 +162,10 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
   }
 
   function _createProposal(bytes memory _message) internal virtual {
-    (
-      uint256 messageType,
-      uint256 zDAOId,
-      uint256 proposalId
-    ) = abi.decode(_message, (uint256, uint256, uint256));
+    (uint256 messageType, uint256 zDAOId, uint256 proposalId) = abi.decode(
+      _message,
+      (uint256, uint256, uint256)
+    );
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");

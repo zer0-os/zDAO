@@ -73,16 +73,21 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     zDAOInfo.destroyed = _destroyed;
   }
 
-  function createProposal(
-    uint256 _proposalId,
-    uint256 _startTimestamp
-  ) external onlyZDAOChef isActiveDAO {
+  function createProposal(uint256 _proposalId, uint256 _startTimestamp)
+    external
+    onlyZDAOChef
+    isActiveDAO
+  {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
     );
 
-    _createProposal(_proposalId, _startTimestamp, _startTimestamp + zDAOInfo.duration);
+    _createProposal(
+      _proposalId,
+      _startTimestamp,
+      _startTimestamp + zDAOInfo.duration
+    );
   }
 
   function cancelProposal(uint256 _proposalId)

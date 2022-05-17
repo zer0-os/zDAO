@@ -87,7 +87,9 @@ describe("ZDAO", async function () {
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );
-    expect(zDAOInfo.minimumTotalVotingTokens).to.be.equal(zDAOConfig.minimumTotalVotingTokens);
+    expect(zDAOInfo.minimumTotalVotingTokens).to.be.equal(
+      zDAOConfig.minimumTotalVotingTokens
+    );
     expect(zDAOInfo.snapshot).to.be.gt(0);
     expect(zDAOInfo.destroyed).to.be.equal(false);
   });

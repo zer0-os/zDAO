@@ -83,10 +83,8 @@ interface IPolyZDAO {
 
   function setDestroyed(bool _destroyed) external;
 
-  function createProposal(
-    uint256 _proposalId,
-    uint256 _startTimestamp
-  ) external;
+  function createProposal(uint256 _proposalId, uint256 _startTimestamp)
+    external;
 
   function cancelProposal(uint256 _proposalId) external;
 

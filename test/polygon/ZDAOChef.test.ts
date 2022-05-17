@@ -78,7 +78,7 @@ describe("ZDAOChef", async function () {
 
     zDAOPack = {
       lastZDAOId: 1,
-      duration: minDuration
+      duration: minDuration,
     };
 
     proposalPack = {
