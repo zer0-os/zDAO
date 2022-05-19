@@ -40,4 +40,42 @@ contract Registry is ZeroUpgradeable {
 
     emit MapToken(_rootToken, _childToken);
   }
+
+  function listRootTokens(uint256 _startIndex, uint256 _count)
+    external
+    view
+    returns (address[] memory records)
+  {
+    uint256 numRecords = _count;
+    if (numRecords > (rootTokens.length - _startIndex)) {
+      numRecords = rootTokens.length - _startIndex;
+    }
+
+    records = new address[](numRecords);
+
+    for (uint256 i = 0; i < numRecords; ++i) {
+      records[i] = rootTokens[_startIndex + i];
+    }
+
+    return records;
+  }
+
+  function listChildTokens(uint256 _startIndex, uint256 _count)
+    external
+    view
+    returns (address[] memory records)
+  {
+    uint256 numRecords = _count;
+    if (numRecords > (childTokens.length - _startIndex)) {
+      numRecords = childTokens.length - _startIndex;
+    }
+
+    records = new address[](numRecords);
+
+    for (uint256 i = 0; i < numRecords; ++i) {
+      records[i] = childTokens[_startIndex + i];
+    }
+
+    return records;
+  }
 }
