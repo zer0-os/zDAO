@@ -9,6 +9,7 @@ import {ERC165CheckerUpgradeable} from "../oz-upgradeable/utils/introspection/ER
 import "../oz-upgradeable/utils/Checkpoints.sol";
 import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
 import {IStaking} from "./interfaces/IStaking.sol";
+import {Registry} from "./Registry.sol";
 
 contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -30,38 +31,61 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   mapping(address => Checkpoints.History) private _checkpoints;
   Checkpoints.History private _totalCheckpoints;
 
+  Registry public registry;
+
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
+
+  modifier onlyRegisteredToken(address _token) {
+    require(
+      registry.childToRootToken(_token) != address(0),
+      "Only for registered token"
+    );
+    _;
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __Staking_init() public initializer {
+  function __Staking_init(Registry _registry) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
     __ERC721Holder_init();
+    registry = _registry;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function stakeERC20(address _token, uint256 _amount) external {
+  function stakeERC20(address _token, uint256 _amount)
+    external
+    onlyRegisteredToken(_token)
+  {
     require(!_isERC721(_token), "Should ERC20 token address");
     _stakeERC20(msg.sender, _token, _amount);
   }
 
-  function stakeERC721(address _token, uint256 _tokenId) external {
+  function stakeERC721(address _token, uint256 _tokenId)
+    external
+    onlyRegisteredToken(_token)
+  {
     require(_isERC721(_token), "Should ERC721 token address");
     _stakeERC721(msg.sender, _token, _tokenId);
   }
 
-  function unstakeERC20(address _token, uint256 _amount) external {
+  function unstakeERC20(address _token, uint256 _amount)
+    external
+    onlyRegisteredToken(_token)
+  {
     _unstakeERC20(msg.sender, _token, _amount);
   }
 
-  function unstakeERC721(address _token, uint256 _tokenId) external {
+  function unstakeERC721(address _token, uint256 _tokenId)
+    external
+    onlyRegisteredToken(_token)
+  {
     _unstakeERC721(msg.sender, _token, _tokenId);
   }
 

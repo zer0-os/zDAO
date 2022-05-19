@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { FxStateChildTunnel, PolyZDAOChef, Staking } from "../types";
+import { FxStateChildTunnel, PolyZDAOChef, Registry, Staking } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
@@ -33,6 +33,21 @@ const main = async () => {
         fxStateChildTunnel.address
       );
     await verifyContract(fxStateChildTunnelImpl);
+
+    // Registry
+    console.log("Deploying Registry proxy contract...");
+    const RegistryFactory = await ethers.getContractFactory("Registry");
+    const registry = (await upgrades.deployProxy(RegistryFactory, [], {
+      kind: "uups",
+      initializer: "__Registry_init",
+    })) as Registry;
+    await registry.deployed();
+    console.log(`\ndeployed: ${registry.address}`);
+
+    const registryImpl = await upgrades.erc1967.getImplementationAddress(
+      registry.address
+    );
+    await verifyContract(registryImpl);
 
     // Staking
     console.log("Deploying Staking proxy contract...");
@@ -91,6 +106,14 @@ const main = async () => {
       {
         Label: "FxStateChildTunnel implementation address",
         Info: fxStateChildTunnelImpl,
+      },
+      {
+        Label: "Registry proxy address",
+        Info: registry.address,
+      },
+      {
+        Label: "Registry implementation address",
+        Info: registryImpl,
       },
       {
         Label: "Staking proxy address",
