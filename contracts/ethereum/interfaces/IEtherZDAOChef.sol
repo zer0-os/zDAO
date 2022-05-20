@@ -113,13 +113,7 @@ interface IEtherZDAOChef {
 
   function removeZNAAssociation(uint256 _daoId, uint256 _zNA) external;
 
-  function createProposal(
-    uint256 _daoId,
-    address _target,
-    uint256 _value,
-    bytes calldata _data,
-    string calldata _ipfs
-  ) external;
+  function createProposal(uint256 _daoId, string calldata _ipfs) external;
 
   function cancelProposal(uint256 _daoId, uint256 _proposalId) external;
 

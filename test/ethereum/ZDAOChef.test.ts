@@ -98,9 +98,6 @@ describe("ZDAOChef", async function () {
     };
 
     proposalConfig = {
-      target: vToken.address,
-      value: minAmount.toNumber(),
-      data: "0x00",
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -113,13 +110,7 @@ describe("ZDAOChef", async function () {
     user: SignerWithAddress,
     daoId: number
   ): Promise<ContractTransaction> => {
-    return ZDAOChef.connect(user).createProposal(
-      daoId,
-      proposalConfig.target,
-      proposalConfig.value,
-      proposalConfig.data,
-      proposalConfig.ipfs
-    );
+    return ZDAOChef.connect(user).createProposal(daoId, proposalConfig.ipfs);
   };
 
   it("Only zNA owner can add new DAO", async function () {
@@ -361,10 +352,12 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
+    await ZDAOChef.setVariable("rootStateSender", rootStateSender.address);
+
     // should reverted because of invalid target, value and data
     await expect(
       ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)
-    ).to.be.revertedWith("Execution transaction reverted");
+    ).to.be.not.reverted;
   });
 
   it("Should execute by action", async function () {
@@ -386,12 +379,6 @@ describe("ZDAOChef", async function () {
     const zDAOId = 1;
     const proposalId = 1;
 
-    proposalConfig.target = MockERC20.address;
-    proposalConfig.value = 0;
-    proposalConfig.data = MockERC20.interface.encodeFunctionData("mintFor2", [
-      userB.address,
-      10000000,
-    ]);
     // proposalConfig.data = MockERC20.interface.encodeFunctionData('balanceOf', [userB.address]);
 
     console.log("proposalConfig", proposalConfig);

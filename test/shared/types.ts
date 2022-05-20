@@ -11,9 +11,6 @@ export interface ZDAOConfig {
 }
 
 export interface ProposalConfig {
-  target: string;
-  value: number;
-  data: string;
   ipfs: string;
 }
 
