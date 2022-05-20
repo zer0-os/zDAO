@@ -97,13 +97,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     zDAOInfo.amount = _amount;
   }
 
-  function createProposal(
-    address _createdBy,
-    address _target,
-    uint256 _value,
-    bytes calldata _data,
-    string calldata _ipfs
-  )
+  function createProposal(address _createdBy, string calldata _ipfs)
     external
     override
     onlyZDAOChef
@@ -111,13 +105,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     onlyValidTokenHolder(_createdBy)
     returns (uint256)
   {
-    uint256 proposalId = _createProposal(
-      _createdBy,
-      _target,
-      _value,
-      _data,
-      _ipfs
-    );
+    uint256 proposalId = _createProposal(_createdBy, _ipfs);
 
     return proposalId;
   }
@@ -145,13 +133,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     ProposalState state2 = this.state(_proposalId);
     require(state2 == ProposalState.Succeeded, "Not a succeeded proposal");
 
-    Proposal storage proposal = proposals[_proposalId];
-
-    (bool success, ) = proposal.target.call{value: proposal.value}(
-      proposal.data
-    );
-    require(success, "Execution transaction reverted");
-
     proposals[_proposalId].executed = true;
   }
 
@@ -178,13 +159,11 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _createProposal(
-    address _createdBy,
-    address _target,
-    uint256 _value,
-    bytes memory _data,
-    string memory _ipfs
-  ) internal virtual returns (uint256 proposalId) {
+  function _createProposal(address _createdBy, string memory _ipfs)
+    internal
+    virtual
+    returns (uint256 proposalId)
+  {
     lastProposalId++;
 
     proposals[lastProposalId] = Proposal({
@@ -194,9 +173,6 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       no: 0,
       voters: 0,
       ipfs: _ipfs,
-      target: _target,
-      value: _value,
-      data: _data,
       snapshot: block.number,
       collected: false,
       executed: false,

@@ -60,12 +60,6 @@ interface IEtherZDAO {
     uint256 voters;
     /// @notice IPFS hash which contains meta information of this proposal
     string ipfs;
-    /// @notice Target address to be called if succeed for execution
-    address target;
-    /// @notice Ether amount to be passed(e.g. msg.value) if succeed for execution
-    uint256 value;
-    /// @notice Parameters to be passed if succeed for execution
-    bytes data;
     /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
     /// @notice Flag marking whether this proposal has been collected
@@ -97,13 +91,9 @@ interface IEtherZDAO {
 
   function setVotingToken(address _token, uint256 _amount) external;
 
-  function createProposal(
-    address _createdBy,
-    address _target,
-    uint256 _value,
-    bytes calldata _data,
-    string calldata _ipfs
-  ) external returns (uint256);
+  function createProposal(address _createdBy, string calldata _ipfs)
+    external
+    returns (uint256);
 
   function cancelProposal(address _cancelBy, uint256 _proposalid) external;
 

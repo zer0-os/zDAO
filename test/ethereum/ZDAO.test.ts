@@ -69,9 +69,6 @@ describe("ZDAO", async function () {
     zDAOInfo = await zDAO.zDAOInfo();
 
     proposalConfig = {
-      target: vToken.address,
-      value: minAmount.toNumber(),
-      data: "0x00",
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -99,13 +96,7 @@ describe("ZDAO", async function () {
   ): Promise<ContractTransaction> => {
     return zDAO
       .connect(zDAOChef)
-      .createProposal(
-        user.address,
-        proposalConfig.target,
-        proposalConfig.value,
-        proposalConfig.data,
-        proposalConfig.ipfs
-      );
+      .createProposal(user.address, proposalConfig.ipfs);
   };
 
   it("Only valid token holder can create proposal", async function () {
@@ -130,9 +121,6 @@ describe("ZDAO", async function () {
     expect(proposals[0].yes.toNumber()).to.be.equal(0);
     expect(proposals[0].no.toNumber()).to.be.equal(0);
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);
-    expect(proposals[0].target).to.be.equal(proposalConfig.target);
-    expect(proposals[0].value.toNumber()).to.be.equal(proposalConfig.value);
-    expect(proposals[0].data).to.be.equal(proposalConfig.data);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
     expect(proposals[0].executed).to.be.equal(false);
     expect(proposals[0].canceled).to.be.equal(false);

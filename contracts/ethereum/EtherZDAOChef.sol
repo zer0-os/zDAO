@@ -168,16 +168,10 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   function createProposal(
     uint256 _daoId,
-    address _target,
-    uint256 _value,
-    bytes calldata _data,
     string calldata _ipfs
   ) external override onlyValidZDAO(_daoId) {
     uint256 proposalId = zDAORecords[_daoId].zDAO.createProposal(
       msg.sender, // created by
-      _target,
-      _value,
-      _data,
       _ipfs
     );
 
