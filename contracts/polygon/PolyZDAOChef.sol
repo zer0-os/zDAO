@@ -5,6 +5,7 @@ pragma solidity ^0.8.11;
 import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../helpers/Proxy.sol";
 import {IChildStateSender, IChildStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
+import {IChildChainManager} from "./interfaces/IChildChainManager.sol";
 import {IPolyZDAOChef} from "./interfaces/IPolyZDAOChef.sol";
 import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
 import {Staking} from "./Staking.sol";
@@ -16,6 +17,8 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
   mapping(uint256 => IPolyZDAO) public zDAOs;
   uint256[] public zDAOIds;
+
+  IChildChainManager public childChainManager;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -36,13 +39,15 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
   function __ZDAOChef_init(
     Staking _stakingBase,
     IChildStateSender _childStateSender,
-    address _zDAOBase
+    address _zDAOBase,
+    IChildChainManager _childChainManager
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     staking = _stakingBase;
     childStateSender = _childStateSender;
     zDAOBase = _zDAOBase;
+    childChainManager = _childChainManager;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -120,12 +125,16 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     virtual
     returns (IPolyZDAO)
   {
-    (uint256 messageType, uint256 zDAOId, uint256 duration) = abi.decode(
-      _message,
-      (uint256, uint256, uint256)
-    );
+    (
+      uint256 messageType,
+      uint256 zDAOId,
+      uint256 duration,
+      address rootToken
+    ) = abi.decode(_message, (uint256, uint256, uint256, address));
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
+
+    address childToken = childChainManager.rootToChildToken(rootToken);
 
     IPolyZDAO zDAO = IPolyZDAO(
       createProxy(
@@ -135,7 +144,8 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
           address(this),
           staking,
           zDAOId,
-          duration
+          duration,
+          childToken
         )
       )
     );

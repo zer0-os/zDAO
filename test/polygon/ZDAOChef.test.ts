@@ -16,6 +16,7 @@ import {
   IChildStateSender,
   MockTokenUpgradeable__factory,
   MockTokenUpgradeable,
+  IChildChainManager,
 } from "../../types";
 import { Staking__factory } from "../../types/factories/Staking__factory";
 import { Staking } from "../../types/Staking";
@@ -37,6 +38,7 @@ describe("ZDAOChef", async function () {
   let staking: MockContract<Staking>,
     ZDAOChef: MockContract<PolyZDAOChef>,
     childStateSender: FakeContract<IChildStateSender>,
+    childChainManager: FakeContract<IChildChainManager>,
     vToken: MockContract<MockTokenUpgradeable>;
 
   let zDAOPack: CreateZDAOPack, proposalPack: CreateProposalPack;
@@ -49,6 +51,10 @@ describe("ZDAOChef", async function () {
     )) as MockContractFactory<PolyZDAOChef__factory>;
     const ZDAOFactory = await ethers.getContractFactory("PolyZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
+
+    childChainManager = (await smock.fake(
+      "IChildChainManager"
+    )) as FakeContract<IChildChainManager>;
 
     const StakingFactory = (await smock.mock<Staking__factory>(
       "Staking"
@@ -64,7 +70,8 @@ describe("ZDAOChef", async function () {
     await ZDAOChef.__ZDAOChef_init(
       staking.address,
       childStateSender.address,
-      zDAOBase.address
+      zDAOBase.address,
+      childChainManager.address
     );
 
     const VotingTokenFactory = (await smock.mock<MockTokenUpgradeable__factory>(
@@ -79,6 +86,7 @@ describe("ZDAOChef", async function () {
     zDAOPack = {
       lastZDAOId: 1,
       duration: minDuration,
+      token: vToken.address,
     };
 
     proposalPack = {

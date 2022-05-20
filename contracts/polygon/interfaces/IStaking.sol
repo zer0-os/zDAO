@@ -10,38 +10,35 @@ interface IStaking {
   event StakedERC20(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _amount,
-    uint256 _totalPerUser // total staked token amount
+    uint256 indexed _amount
   );
 
   event StakedERC721(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _tokenId,
-    uint256 _totalPerUser // total staked token amount
+    uint256 indexed _tokenId
   );
 
   event UnstakedERC20(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _amount,
-    uint256 _totalPerUser
+    uint256 indexed _amount
   );
 
   event UnstakedERC721(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _tokenId,
-    uint256 _totalPerUser
+    uint256 indexed _tokenId
   );
 
   /**
    * @dev Emitted when a token transfer or delegate change results in changes to a delegate's number of staking.
    */
   event StakingPowerChanged(
-    address indexed delegate,
-    uint256 oldValue,
-    uint256 newValue
+    address indexed _delegate,
+    address indexed _token,
+    uint256 _oldValue,
+    uint256 _newValue
   );
 
   /* -------------------------------------------------------------------------- */
@@ -60,22 +57,14 @@ interface IStaking {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function totalStaked() external view returns (uint256);
-
-  function pastTotalStaked(uint256 _blockNumber)
+  function stakingPower(address _user, address _token)
     external
     view
     returns (uint256);
 
-  function stakingPower(address _user) external view returns (uint256);
-
-  function pastStakingPower(address _user, uint256 _blockNumber)
-    external
-    view
-    returns (uint256);
-
-  function userStaked(address _user, address _token)
-    external
-    view
-    returns (uint256);
+  function pastStakingPower(
+    address _user,
+    address _token,
+    uint256 _blockNumber
+  ) external view returns (uint256);
 }

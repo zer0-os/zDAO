@@ -100,7 +100,8 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
       abi.encode(
         uint256(MessageType.CreateZDAO),
         lastZDAOId,
-        _zDAOConfig.duration
+        _zDAOConfig.duration,
+        _zDAOConfig.token
       )
     );
   }

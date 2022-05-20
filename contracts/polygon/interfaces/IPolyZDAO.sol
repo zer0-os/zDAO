@@ -10,6 +10,8 @@ interface IPolyZDAO {
     uint256 zDAOId;
     /// @notice Time duration of this proposal in seconds
     uint256 duration;
+    /// @notice Voting token on Polygon
+    address token;
     /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
     /// @notice Flag marking whether the zDAO has been destroyed
@@ -78,7 +80,8 @@ interface IPolyZDAO {
     address _zDAOChef,
     address _staking,
     uint256 _zDAOId,
-    uint256 _duration
+    uint256 _duration,
+    address _token
   ) external;
 
   function setDestroyed(bool _destroyed) external;

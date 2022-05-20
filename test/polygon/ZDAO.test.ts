@@ -36,6 +36,8 @@ describe("ZDAO", async function () {
 
   let zDAOConfig: PolyZDAOConfig, proposalConfig: PolyProposalConfig;
 
+  let BIG_POW: BigNumber;
+
   beforeEach("init setup", async function () {
     [owner, zDAOChef, userA, userB, userC] = await ethers.getSigners();
 
@@ -57,6 +59,8 @@ describe("ZDAO", async function () {
       (await VotingTokenFactory.deploy()) as MockContract<MockTokenUpgradeable>;
     await vToken.__MockTokenUpgradeable_init("vToken", "VT");
 
+    BIG_POW = BigNumber.from(10).pow(18);
+
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
     const minDuration = 300; // unit in seconds
@@ -70,7 +74,8 @@ describe("ZDAO", async function () {
       zDAOChef.address,
       staking.address,
       zDAOConfig.zDAOId,
-      zDAOConfig.duration
+      zDAOConfig.duration,
+      vToken.address
     );
 
     zDAOInfo = await zDAO.zDAOInfo();
@@ -80,9 +85,9 @@ describe("ZDAO", async function () {
       startTimestamp: await now(),
     };
 
-    await vToken.mintFor(userA.address, 10000000);
-    await vToken.mintFor(userB.address, 10000000);
-    await vToken.mintFor(userC.address, 10000000);
+    await vToken.mintFor(userA.address, BigNumber.from(10000000).mul(BIG_POW));
+    await vToken.mintFor(userB.address, BigNumber.from(10000000).mul(BIG_POW));
+    await vToken.mintFor(userC.address, BigNumber.from(10000000).mul(BIG_POW));
 
     await vToken
       .connect(userA)
@@ -122,7 +127,9 @@ describe("ZDAO", async function () {
   });
 
   it("Any staker should be able to vote on proposal", async function () {
-    await staking.connect(userB).stakeERC20(vToken.address, 1000);
+    await staking
+      .connect(userB)
+      .stakeERC20(vToken.address, BigNumber.from(1000).mul(BIG_POW));
     await mineToBlock(1);
 
     await createProposal();
@@ -146,9 +153,15 @@ describe("ZDAO", async function () {
   });
 
   it("Only can collect voting result after proposal ends", async function () {
-    await staking.connect(userA).stakeERC20(vToken.address, 1000);
-    await staking.connect(userB).stakeERC20(vToken.address, 2000);
-    await staking.connect(userC).stakeERC20(vToken.address, 3000);
+    await staking
+      .connect(userA)
+      .stakeERC20(vToken.address, BigNumber.from(1000).mul(BIG_POW));
+    await staking
+      .connect(userB)
+      .stakeERC20(vToken.address, BigNumber.from(2000).mul(BIG_POW));
+    await staking
+      .connect(userC)
+      .stakeERC20(vToken.address, BigNumber.from(3000).mul(BIG_POW));
     await mineToBlock(1);
 
     await createProposal();

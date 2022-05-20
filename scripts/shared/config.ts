@@ -11,6 +11,8 @@ interface EthereumConfig {
 interface PolygonConfig {
   // refer link: https://docs.polygon.technology/docs/develop/l1-l2-communication/state-transfer
   fxChild: string;
+  // refer link: https://docs.polygon.technology/docs/develop/ethereum-polygon/submit-mapping-request/#mapping-checklist
+  childChainManager: string;
 }
 
 const ethereumConfig: { [key in ethereumNetwork]: EthereumConfig } = {
@@ -29,9 +31,11 @@ const ethereumConfig: { [key in ethereumNetwork]: EthereumConfig } = {
 const polygonConfig: { [key in polygonNetwork]: PolygonConfig } = {
   polygonMumbai: {
     fxChild: "0xCf73231F28B7331BBe3124B907840A94851f9f11",
+    childChainManager: "0xb5505a6d998549090530911180f38aC5130101c6",
   },
   polygon: {
     fxChild: "0x8397259c983751DAf40400790063935a11afa28a",
+    childChainManager: "0xA6FA4fB5f76172d178d61B04b0ecd319C5d1C0aa",
   },
 };
 
