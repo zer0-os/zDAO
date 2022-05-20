@@ -34,21 +34,6 @@ const main = async () => {
       );
     await verifyContract(fxStateChildTunnelImpl);
 
-    // Registry
-    console.log("Deploying Registry proxy contract...");
-    const RegistryFactory = await ethers.getContractFactory("Registry");
-    const registry = (await upgrades.deployProxy(RegistryFactory, [], {
-      kind: "uups",
-      initializer: "__Registry_init",
-    })) as Registry;
-    await registry.deployed();
-    console.log(`\ndeployed: ${registry.address}`);
-
-    const registryImpl = await upgrades.erc1967.getImplementationAddress(
-      registry.address
-    );
-    await verifyContract(registryImpl);
-
     // Staking
     console.log("Deploying Staking proxy contract...");
     const StakingFactory = await ethers.getContractFactory("Staking");
@@ -76,7 +61,12 @@ const main = async () => {
     const ZDAOChefFactory = await ethers.getContractFactory("PolyZDAOChef");
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
-      [staking.address, fxStateChildTunnel.address, zDAOBase.address],
+      [
+        staking.address,
+        fxStateChildTunnel.address,
+        zDAOBase.address,
+        config[network.name].childChainManager,
+      ],
       {
         kind: "uups",
         initializer: "__ZDAOChef_init",
@@ -108,12 +98,8 @@ const main = async () => {
         Info: fxStateChildTunnelImpl,
       },
       {
-        Label: "Registry proxy address",
-        Info: registry.address,
-      },
-      {
-        Label: "Registry implementation address",
-        Info: registryImpl,
+        Label: "ChildChainManager proxy address",
+        Info: config[network.name].childChainManager,
       },
       {
         Label: "Staking proxy address",
