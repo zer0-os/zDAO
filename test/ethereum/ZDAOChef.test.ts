@@ -355,9 +355,8 @@ describe("ZDAOChef", async function () {
     await ZDAOChef.setVariable("rootStateSender", rootStateSender.address);
 
     // should reverted because of invalid target, value and data
-    await expect(
-      ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)
-    ).to.be.not.reverted;
+    await expect(ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)).to
+      .be.not.reverted;
   });
 
   it("Should execute by action", async function () {
