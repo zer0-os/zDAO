@@ -62,6 +62,13 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOBase = _zDAOBase;
   }
 
+  function setChildChainManager(IChildChainManager _childChainManager)
+    external
+    onlyOwner
+  {
+    childChainManager = _childChainManager;
+  }
+
   function vote(
     uint256 _daoId,
     uint256 _proposalId,
