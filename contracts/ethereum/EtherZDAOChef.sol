@@ -157,11 +157,10 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   function removeZNAAssociation(uint256 _daoId, uint256 _zNA)
     external
     override
-    onlyValidZDAO(_daoId)
     onlyZNAOwner(_zNA)
   {
-    uint256 currentDAOAssociation = zNATozDAOId[_zNA];
-    require(currentDAOAssociation == _daoId, "zNA not associated");
+    require(_daoId > 0 && _daoId <= lastZDAOId, "Invalid zDAO");
+    require(zNATozDAOId[_zNA] == _daoId, "zNA not associated");
 
     _disassociatezNA(_daoId, _zNA);
   }
@@ -363,10 +362,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     returns (ZDAORecord memory)
   {
     uint256 daoId = zNATozDAOId[_zNA];
-    require(
-      daoId > 0 && daoId <= lastZDAOId && !_isZDAODestroyed(daoId),
-      "No zDAO associated with zNA"
-    );
+    require(daoId > 0 && daoId <= lastZDAOId, "No zDAO associated with zNA");
     return zDAORecords[daoId];
   }
 
