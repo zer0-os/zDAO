@@ -50,6 +50,12 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
+  /**
+   * @notice Initializer function
+   * @param _zDAOChef Address to EtherZDAOChef contract
+   * @param _zDAOId Unique id for current zDAO
+   * @param _createdBy Address to zDAO owner
+   */
   function __ZDAO_init(
     address _zDAOChef,
     uint256 _zDAOId,
@@ -81,22 +87,51 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  /**
+   * @notice Destroy the zDAO
+   * @dev Callable by EtherZDAOChef
+   * @param _destroyed Flag marking whether zDAO has been destroyed
+   */
   function setDestroyed(bool _destroyed) external override onlyZDAOChef {
     zDAOInfo.destroyed = _destroyed;
   }
 
-  function setGnosisSafe(address _gnosisSafe) external onlyZDAOChef {
+  /**
+   * @notice Set Gnosis Safe address
+   * @dev Callable by EtherZDAOChef, only available for active zDAO
+   * @param _gnosisSafe Address to Gnosis Safe wallet
+   */
+  function setGnosisSafe(address _gnosisSafe)
+    external
+    override
+    isActiveDAO
+    onlyZDAOChef
+  {
     zDAOInfo.gnosisSafe = _gnosisSafe;
   }
 
+  /**
+   * @notice Set Voting Token and minimum holding token amount
+   * @dev Callable by EtherZDAOChef, only available for active zDAO
+   * @param _token Address to Voting Token
+   * @param _amount Minimum number of tokens required to become proposal creator
+   */
   function setVotingToken(address _token, uint256 _amount)
     external
+    override
+    isActiveDAO
     onlyZDAOChef
   {
     zDAOInfo.token = _token;
     zDAOInfo.amount = _amount;
   }
 
+  /**
+   * @notice Create a proposal with the IPFS which contains proposal meta data
+   * @dev Callable by EtherZDAOChef, only available for active zDAO
+   * @param _createdBy Address to the proposal owner
+   * @param _ipfs IPFS hash which contains proposal meta data e.g. body text
+   */
   function createProposal(address _createdBy, string calldata _ipfs)
     external
     override
@@ -110,6 +145,13 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     return proposalId;
   }
 
+  /**
+   * @notice Cancel a proposal, proposal owner can only cancel pending proposal
+   *      It means that proposal is still synchronizing to Polygon or active.
+   * @dev Callable by EtherZDAOChef, only available for active zDAO and valid
+   *      proposal
+   * @param _proposalId Proposal unique id to cancel
+   */
   function cancelProposal(address, uint256 _proposalId)
     external
     override
@@ -123,6 +165,16 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     proposals[_proposalId].canceled = true;
   }
 
+  /**
+   * @notice Execute proposal, only granted owner can execute proposal
+   *     Execute proposal means transfer assets from Gnosis Safe to certain
+   *     wallet address, once owner propose transaction on Gnosis Safe,
+   *     then the proposal can be flaged by executed state
+   * @dev Callable by EtherZDAOChef, only available for active zDAO and valid
+   *     proposal
+   * @param _executeBy Address to wallet who executed
+   * @param _proposalId Proposal unique id to execute
+   */
   function executeProposal(address _executeBy, uint256 _proposalId)
     external
     override
@@ -136,14 +188,27 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     proposals[_proposalId].executed = true;
   }
 
-  function collectProposal(
+  /**
+   * @notice Calculate proposal, anybody can calculate proposal.
+   *     Through proposal calculation, zDAO can receive the final voting result
+   *     from the Polygon. This function should be executed only when zDAOChef
+   *     receives the CalculateProposal event from the Polygon.
+   *     Proposal state is pending state until proposal calculation.
+   * @dev Callable by EtherZDAOchef, only available for active zDAO and valid
+   *     proposal
+   * @param _proposalId Proposal unique id to execute
+   * @param _voters Number of voters who participated in
+   * @param _yes Number of all the casted votes in favor of this proposal
+   * @param _no Number of all the casted votes in opposition to this proposal
+   */
+  function calculateProposal(
     uint256 _proposalId,
     uint256 _voters,
     uint256 _yes,
     uint256 _no
   ) external override onlyZDAOChef onlyValidProposal(_proposalId) {
     Proposal storage proposal = proposals[_proposalId];
-    require(!proposal.collected, "Already collected proposal");
+    require(!proposal.calculated, "Already calculated proposal");
 
     ProposalState state2 = this.state(_proposalId);
     require(state2 == ProposalState.Pending, "Not a pending proposal");
@@ -152,7 +217,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     proposal.yes = _yes;
     proposal.no = _no;
 
-    proposals[_proposalId].collected = true;
+    proposals[_proposalId].calculated = true;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -174,7 +239,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       voters: 0,
       ipfs: _ipfs,
       snapshot: block.number,
-      collected: false,
+      calculated: false,
       executed: false,
       canceled: false
     });
@@ -219,6 +284,20 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     return records;
   }
 
+  /**
+   * @notice Return the proposal state
+   *     Canceled if already canceled
+   *     Executed if already executed
+   *     Pending if the proposal is synchronizing to Polygon or already started,
+   *       but not calculated yet
+   *     The number of participated voters should be exceed minimum voting
+   *     participants, and total votes should also be exceed minimum total
+   *     voting tokens.
+   *     The voting result is determined by percentage, in which Yes votes takes
+   *     In relative majority, calculate the percentage in the total sum of yes
+   *     no votes. On the other hand, in absolute majority, calculate in total
+   *     supply.
+   */
   function state(uint256 _proposalId)
     external
     view
@@ -230,7 +309,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
       return ProposalState.Canceled;
     } else if (proposal.executed) {
       return ProposalState.Executed;
-    } else if (!proposal.collected) {
+    } else if (!proposal.calculated) {
       return ProposalState.Pending;
     }
     // Check quorum

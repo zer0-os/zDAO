@@ -11,6 +11,10 @@ contract FxStateChildTunnel is
   FxBaseChildTunnel,
   IChildStateSender
 {
+  /**
+   * Address to PolyZDAOChef contract which is responsible for processing
+   * the messages from the Ethereum network
+   */
   IChildStateReceiver public childStateReceiver;
 
   modifier onlyStateReceiver() {
@@ -46,6 +50,10 @@ contract FxStateChildTunnel is
     fxRootTunnel = _fxRootTunnel;
   }
 
+  /**
+   * @notice Send message to Ethereum
+   * @dev Callable only by PolyZDAOChef contract
+   */
   function sendMessageToRoot(bytes calldata message)
     external
     onlyStateReceiver

@@ -380,8 +380,6 @@ describe("ZDAOChef", async function () {
 
     // proposalConfig.data = MockERC20.interface.encodeFunctionData('balanceOf', [userB.address]);
 
-    console.log("proposalConfig", proposalConfig);
-
     await createProposal(userA, zDAOId);
     await increaseTime(zDAOConfig.duration);
 
@@ -408,8 +406,6 @@ describe("ZDAOChef", async function () {
         })
       )
     ).to.be.not.reverted;
-
-    console.log("can Execute", await zDAO.state(proposalId));
 
     await ZDAOChef.setVariable("rootStateSender", rootStateSender);
     await ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId);

@@ -17,6 +17,8 @@ interface IPolyZDAOChef {
 
   event DAODestroyed(uint256 indexed _daoId);
 
+  event DAOTokenUpdated(uint256 indexed _daoId, address indexed _token);
+
   event ProposalCreated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
@@ -27,7 +29,7 @@ interface IPolyZDAOChef {
 
   event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
 
-  event ProposalCollected(
+  event ProposalCalculated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
     uint256 _voters,
@@ -52,7 +54,7 @@ interface IPolyZDAOChef {
     uint256 _choice
   ) external;
 
-  function collectProposal(uint256 _daoId, uint256 _proposalId) external;
+  function calculateProposal(uint256 _daoId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

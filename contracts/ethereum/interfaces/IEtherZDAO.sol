@@ -62,8 +62,8 @@ interface IEtherZDAO {
     string ipfs;
     /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
-    /// @notice Flag marking whether this proposal has been collected
-    bool collected;
+    /// @notice Flag marking whether this proposal has been calculated
+    bool calculated;
     /// @notice Flag marking whether this proposal has been executed
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
@@ -99,7 +99,7 @@ interface IEtherZDAO {
 
   function executeProposal(address _executeBy, uint256 _proposalId) external;
 
-  function collectProposal(
+  function calculateProposal(
     uint256 _proposalId,
     uint256 _voters,
     uint256 _yes,

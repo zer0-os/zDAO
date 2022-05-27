@@ -144,8 +144,9 @@ describe("ZDAO", async function () {
 
     const proposalId = 1;
 
-    await expect(zDAO.connect(zDAOChef).collectProposal(proposalId, 1, 70, 30))
-      .to.be.not.reverted;
+    await expect(
+      zDAO.connect(zDAOChef).calculateProposal(proposalId, 1, 70, 30)
+    ).to.be.not.reverted;
 
     const proposal = await zDAO.proposals(proposalId);
 

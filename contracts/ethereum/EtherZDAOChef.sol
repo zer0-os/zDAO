@@ -12,6 +12,10 @@ import {console} from "hardhat/console.sol";
 
 contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   IZNSHub public znsHub;
+  /**
+   * Address to FxStateRootTunnel which is responsible for sending message
+   * from Ethereum to Polygon
+   */
   IRootStateSender public rootStateSender;
   address public zDAOBase;
 
@@ -73,6 +77,15 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     zDAOBase = _zDAOBase;
   }
 
+  /**
+   * @notice Add new zDAO associating with given zNA.
+   *     Create new EtherZDAO contract and associate new zDAO with given zNA.
+   *     Once create new zDAO, it should be synchronized to Polygon.
+   *     Users can create proposal and cast a vote after zDAO synchronization.
+   * @dev Only zNA owner can create zDAO
+   * @param _zNA zNA unique Id
+   * @param _zDAOConfig Structure of zDAO information
+   */
   function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig)
     external
     override
@@ -106,6 +119,13 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
   }
 
+  /**
+   * @notice Remove zDAO by zDAOId.
+   *     Removed state should be synchronized to Polygon, so that stop
+   *     user voting
+   * @dev Only zDAO owner can remove zDAO, and only for valid zDAO
+   * @param _daoId zDAO unique id
+   */
   function removeDAO(uint256 _daoId)
     external
     override
@@ -122,6 +142,12 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
   }
 
+  /**
+   * @notice Set Gnosis Safe address for given zDAO
+   * @dev Callable by zDAO owner and for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _gnosisSafe Address to Gnosis Safe
+   */
   function setDAOGnosisSafe(uint256 _daoId, address _gnosisSafe)
     external
     override
@@ -133,6 +159,13 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     emit DAOUpdateGnosisSafe(_daoId, _gnosisSafe);
   }
 
+  /**
+   * @notice Set voting token and minimum holding amount
+   * @dev Callable by zDAO owner and for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _token Voting token address, ERC20 or ERc721
+   * @param _amount Minimum holding amount required to become proposal creator
+   */
   function setDAOVotingToken(
     uint256 _daoId,
     address _token,
@@ -143,8 +176,18 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     emit DAOUpdateVotingtoken(_daoId, _token, _amount);
 
     // todo, send message to L2
+    // send proposal info to L2
+    rootStateSender.sendMessageToChild(
+      abi.encode(uint256(ITunnel.MessageType.UpdateToken), _daoId, _token)
+    );
   }
 
+  /**
+   * @notice Add association with zNA
+   * @dev Callable by zDAO owner and for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _zNA zNA id required to associate
+   */
   function addZNAAssociation(uint256 _daoId, uint256 _zNA)
     external
     override
@@ -154,6 +197,12 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     _associatezNA(_daoId, _zNA);
   }
 
+  /**
+   * @notice Remove association from given zDAO
+   * @dev Callable by zDAO owner and for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _zNA zNA id required to remove
+   */
   function removeZNAAssociation(uint256 _daoId, uint256 _zNA)
     external
     override
@@ -165,6 +214,14 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     _disassociatezNA(_daoId, _zNA);
   }
 
+  /**
+   * @notice Create a proposal, check the comment of createProposal function
+   *     in the EtherZDAO contract.
+   *     Once create a new proposal, it should be synchronized to Polygon.
+   * @dev Only for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _ipfs IPFS which contains proposal information
+   */
   function createProposal(uint256 _daoId, string calldata _ipfs)
     external
     override
@@ -187,6 +244,13 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
   }
 
+  /**
+   * @notice Cancel proposal, check the comment of cancelProposal function
+   *     in the EtherZDAO contract.
+   * @dev Only for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _proposalId Proposal unique id
+   */
   function cancelProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
@@ -205,6 +269,13 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
   }
 
+  /**
+   * @notice Execute proposal, check the comment of executeProposal function
+   *     in the EtherZDAO contract.
+   * @dev Only for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _proposalId Proposal unique id
+   */
   function executeProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
@@ -223,6 +294,11 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
   }
 
+  /**
+   * @notice Process message from the Polygon network
+   *     The message is encoded by certain format according to protocol type
+   * @dev Callable by root state sender
+   */
   function processMessageFromChild(bytes calldata _message) external override {
     require(msg.sender == address(rootStateSender), "Not a state sender");
     _processMessageFromChild(_message);
@@ -234,12 +310,12 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   function _processMessageFromChild(bytes memory _message) internal {
     uint256 messageType = abi.decode(_message, (uint256));
-    if (messageType == uint256(ITunnel.MessageType.CollectProposal)) {
-      _collectProposal(_message);
+    if (messageType == uint256(ITunnel.MessageType.CalculateProposal)) {
+      _calculateProposal(_message);
     }
   }
 
-  function _collectProposal(bytes memory _message) internal virtual {
+  function _calculateProposal(bytes memory _message) internal virtual {
     (
       uint256 messageType2,
       uint256 zDAOId,
@@ -257,9 +333,9 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     );
 
     // let zDAO decode
-    zDAORecords[zDAOId].zDAO.collectProposal(proposalId, voters, yes, no);
+    zDAORecords[zDAOId].zDAO.calculateProposal(proposalId, voters, yes, no);
 
-    emit ProposalCollected(zDAOId, proposalId, voters, yes, no);
+    emit ProposalCalculated(zDAOId, proposalId, voters, yes, no);
   }
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {

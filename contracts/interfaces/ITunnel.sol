@@ -10,7 +10,8 @@ interface ITunnel {
     CreateProposal,
     CancelProposal,
     ExecuteProposal,
-    CollectProposal
+    CalculateProposal,
+    UpdateToken
   }
 }
 

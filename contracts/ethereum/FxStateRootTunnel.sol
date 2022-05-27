@@ -11,6 +11,10 @@ contract FxStateRootTunnel is
   FxBaseRootTunnel,
   IRootStateSender
 {
+  /**
+   * Address to EtherZDAOChef contract which is responsible for processing
+   * the messages from the Polygon network
+   */
   IRootStateReceiver public rootStateReceiver;
 
   modifier onlyStateReceiver() {
@@ -50,6 +54,10 @@ contract FxStateRootTunnel is
     fxChildTunnel = _fxChildTunnel;
   }
 
+  /**
+   * @notice Send message to Polygon
+   * @dev Callable only by EtherZDAOChef contract
+   */
   function sendMessageToChild(bytes calldata message)
     external
     onlyStateReceiver

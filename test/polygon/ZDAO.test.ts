@@ -175,13 +175,13 @@ describe("ZDAO", async function () {
     await zDAO.connect(zDAOChef).vote(proposalId, userC.address, choice + 1);
 
     await expect(
-      zDAO.connect(zDAOChef).collectProposal(proposalId)
+      zDAO.connect(zDAOChef).calculateProposal(proposalId)
     ).to.be.revertedWith("Not a valid proposal");
 
     // mint to the end of proposal
     await increaseTime(zDAOConfig.duration);
 
-    await expect(zDAO.connect(zDAOChef).collectProposal(proposalId)).to.be.not
+    await expect(zDAO.connect(zDAOChef).calculateProposal(proposalId)).to.be.not
       .reverted;
 
     const {

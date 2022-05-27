@@ -29,8 +29,8 @@ interface IPolyZDAO {
     Active,
     Canceled,
     Executed,
-    Collecting,
-    Collected
+    Calculating,
+    Calculated
   }
 
   struct Proposal {
@@ -48,8 +48,8 @@ interface IPolyZDAO {
     uint256 voters;
     /// @notice Snapshot block number on which proposal has been created
     uint256 snapshot;
-    /// @notice Flag marking whether this proposal has been collected
-    bool collected;
+    /// @notice Flag marking whether this proposal has been calculated
+    bool calculated;
     /// @notice Flag marking whether this proposal has been executed
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
@@ -86,6 +86,8 @@ interface IPolyZDAO {
 
   function setDestroyed(bool _destroyed) external;
 
+  function updateToken(address _token) external;
+
   function createProposal(uint256 _proposalId, uint256 _startTimestamp)
     external;
 
@@ -93,7 +95,7 @@ interface IPolyZDAO {
 
   function executeProposal(uint256 _proposalId) external;
 
-  function collectProposal(uint256 _proposalId)
+  function calculateProposal(uint256 _proposalId)
     external
     returns (
       uint256 voters,
@@ -138,7 +140,10 @@ interface IPolyZDAO {
     view
     returns (bool);
 
-  function canCollectProposal(uint256 _proposalId) external view returns (bool);
+  function canCalculateProposal(uint256 _proposalId)
+    external
+    view
+    returns (bool);
 
   function choiceOfVoter(uint256 _proposalId, address _voter)
     external

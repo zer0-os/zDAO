@@ -75,6 +75,18 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     zDAOInfo.destroyed = _destroyed;
   }
 
+  function updateToken(address _token) external override onlyZDAOChef {
+    zDAOInfo.token = _token;
+  }
+
+  /**
+   * @notice Create a proposal on Polygon with the information which was
+   *     received from the Ethereum.
+   *     EtherZDAOChef only sends the proposal id created on Ethereum.
+   * @dev Callable by PolyZDAOChef, only available for active zDAO
+   * @param _proposalId Proposal unique id
+   * @param _startTimestamp Current block timestamp
+   */
   function createProposal(uint256 _proposalId, uint256 _startTimestamp)
     external
     onlyZDAOChef
@@ -92,6 +104,13 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     );
   }
 
+  /**
+   * @notice Mark a proposal as canceled state.
+   *     Once the proposal is canceled on Ethereum, that is synchronized to
+   *     Polygon. The proposal should be active prior to cancel.
+   * @dev Callable by PolyZDAOChef, only available for active zDAO
+   * @param _proposalId Proposal unique id
+   */
   function cancelProposal(uint256 _proposalId)
     external
     onlyZDAOChef
@@ -99,12 +118,18 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     onlyValidProposal(_proposalId)
   {
     require(
-      !proposals[_proposalId].canceled && !proposals[_proposalId].collected,
-      "Already canceled or collected proposal"
+      !proposals[_proposalId].canceled && !proposals[_proposalId].calculated,
+      "Already canceled or calculateed proposal"
     );
     _cancelProposal(_proposalId);
   }
 
+  /**
+   * @notice Mark a proposal as executed state, executing a proposal is
+   *     executed on Ethereum and synchronized to Polygon to update the state.
+   * @dev Callable by PolyZDAOChef, only available for active zDAO
+   * @param _proposalId Proposal unique id
+   */
   function executeProposal(uint256 _proposalId)
     external
     onlyZDAOChef
@@ -112,13 +137,20 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     onlyValidProposal(_proposalId)
   {
     require(
-      !proposals[_proposalId].canceled && proposals[_proposalId].collected,
+      !proposals[_proposalId].canceled && proposals[_proposalId].calculated,
       "Not a valid proposal"
     );
     _executeProposal(_proposalId);
   }
 
-  function collectProposal(uint256 _proposalId)
+  /**
+   * @notice Calculate a proposal, the proposal should be ended and not canceled
+   *     Anyone can calculate a proposal if it ends, and the transaction of
+   *     proposal calculation will be sent to Ethereum.
+   * @dev Callable by PolyZDAOChef, only available for active zDAO
+   * @param _proposalId Proposal unique id
+   */
+  function calculateProposal(uint256 _proposalId)
     external
     onlyZDAOChef
     isActiveDAO
@@ -132,7 +164,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     Proposal storage proposal = proposals[_proposalId];
     require(
       !proposal.canceled &&
-        !proposal.collected &&
+        !proposal.calculated &&
         block.timestamp > proposal.endTimestamp, // proposal has already ended
       "Not a valid proposal"
     );
@@ -141,9 +173,18 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     yes = proposal.yes;
     no = proposal.no;
 
-    proposal.collected = true;
+    proposal.calculated = true;
   }
 
+  /**
+   * @notice Cast a vote with user's choice. Anyone who have voting power can
+   *     participate a voting.
+   * @dev Callable by PolyZDAOChef, only available for active zDAO and valid
+   *     proposal
+   * @param _proposalId Proposal unique id
+   * @param _voter Voter address
+   * @param _choice Voter choice, yes(1) or no(2)
+   */
   function vote(
     uint256 _proposalId,
     address _voter,
@@ -201,7 +242,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       no: 0,
       voters: 0,
       snapshot: block.number,
-      collected: false,
+      calculated: false,
       executed: false,
       canceled: false
     });
@@ -260,7 +301,7 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     proposal.voters = votes.voters.length;
   }
 
-  function _canCollectProposal(uint256 _proposalId)
+  function _canCalculateProposal(uint256 _proposalId)
     internal
     view
     virtual
@@ -330,10 +371,10 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
       return ProposalState.Active;
     } else if (proposal.executed) {
       return ProposalState.Executed;
-    } else if (proposal.collected) {
-      return ProposalState.Collected;
+    } else if (proposal.calculated) {
+      return ProposalState.Calculated;
     }
-    return ProposalState.Collecting;
+    return ProposalState.Calculating;
   }
 
   function votesResultOfProposal(uint256 _proposalId)
@@ -362,13 +403,13 @@ contract PolyZDAO is ZeroUpgradeable, IPolyZDAO {
     return _canVote(_proposalId, _voter, zDAOInfo.token);
   }
 
-  function canCollectProposal(uint256 _proposalId)
+  function canCalculateProposal(uint256 _proposalId)
     external
     view
     override
     returns (bool)
   {
-    return _canCollectProposal(_proposalId);
+    return _canCalculateProposal(_proposalId);
   }
 
   function choiceOfVoter(uint256 _proposalId, address _voter)

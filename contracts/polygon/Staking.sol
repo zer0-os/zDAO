@@ -38,20 +38,43 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  /**
+   * @notice Stake ERC20 token, the staking contract save the checkpoint which
+   *     contains snapshot of block number and accumulated staked amount.
+   * @param _token Address to ERC20 token
+   * @param _amount Token amount to stake
+   */
   function stakeERC20(address _token, uint256 _amount) external {
     require(!_isERC721(_token), "Should ERC20 token address");
     _stakeERC20(msg.sender, _token, _amount);
   }
 
+  /**
+   * @notice Stake ERC721 token, as same as stakeERC20, this stores checkpoints
+   * @param _token Address to ERC721 token
+   * @param _tokenId Token Id
+   */
   function stakeERC721(address _token, uint256 _tokenId) external {
     require(_isERC721(_token), "Should ERC721 token address");
     _stakeERC721(msg.sender, _token, _tokenId);
   }
 
+  /**
+   * @notice Unstake ERC20 token, as same as stakeERC20, this stores
+   *     checkpoints with accumulated token amount.
+   * @param _token Address to ERC20 token
+   * @param _amount Token amount to unstake
+   */
   function unstakeERC20(address _token, uint256 _amount) external {
     _unstakeERC20(msg.sender, _token, _amount);
   }
 
+  /**
+   * @notice Unstake ERC721 token, as same as stakeERC20, this stores
+   *     checkpoints with accumulated token amount.
+   * @param _token Address to ERC721 token
+   * @param _tokenId Token id
+   */
   function unstakeERC721(address _token, uint256 _tokenId) external {
     _unstakeERC721(msg.sender, _token, _tokenId);
   }
@@ -164,6 +187,11 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
+  /**
+   * @notice Get accumulated staking power at current block number
+   * @param _user User address
+   * @param _token Address to staked token(ERC20 or ERC721)
+   */
   function stakingPower(address _user, address _token)
     external
     view
@@ -176,6 +204,12 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     return _checkpoints[_user][_token].latest() / 10**decimals;
   }
 
+  /**
+   * @notice Get accumulated staking power at given block number
+   * @param _user User address
+   * @param _token Address to staked token(ERC20 or ERC721)
+   * @param _blockNumber Block number
+   */
   function pastStakingPower(
     address _user,
     address _token,

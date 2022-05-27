@@ -85,7 +85,7 @@ interface IEtherZDAOChef {
     address indexed _executeBy
   );
 
-  event ProposalCollected(
+  event ProposalCalculated(
     uint256 indexed _zDAOId,
     uint256 indexed _propoalId,
     uint256 _voters,

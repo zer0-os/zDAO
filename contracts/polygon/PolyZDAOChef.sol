@@ -11,13 +11,26 @@ import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
 import {Staking} from "./Staking.sol";
 
 contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
+  /**
+   * Address to Staking contract, which returns staking power as voting power
+   * based on staked amount
+   */
   Staking public staking;
+  /**
+   * Address to FxStateChildTunnel which is responsible for sending message
+   * from Ethereum to Polygon
+   */
   IChildStateSender public childStateSender;
   address public zDAOBase;
 
   mapping(uint256 => IPolyZDAO) public zDAOs;
   uint256[] public zDAOIds;
 
+  /**
+   * Address to ChildChainManagerProxy contract
+   * Refer: https://docs.polygon.technology/docs/develop/ethereum-polygon/submit-mapping-request/
+   * This contract contains the mapped root and child tokens
+   */
   IChildChainManager public childChainManager;
 
   /* -------------------------------------------------------------------------- */
@@ -69,6 +82,13 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     childChainManager = _childChainManager;
   }
 
+  /**
+   * @notice Cast a vote with user's choice
+   * @dev Only for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _proposalId Proposal unique id
+   * @param _choice User's choice; yes(1) or no(2)
+   */
   function vote(
     uint256 _daoId,
     uint256 _proposalId,
@@ -79,21 +99,29 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     emit CastVote(_daoId, _proposalId, msg.sender, _choice);
   }
 
-  function collectProposal(uint256 _daoId, uint256 _proposalId)
+  /**
+   * @notice Calculate proposal, check the comment of calculateProposal function
+   *     in the PolyZDAO contract.
+   *     Once calculate proposal, it should be sent to Ethereum.
+   * @dev Only for valid zDAO
+   * @param _daoId zDAO unique id
+   * @param _proposalId Proposal unique id
+   */
+  function calculateProposal(uint256 _daoId, uint256 _proposalId)
     external
     override
     onlyValidZDAO(_daoId)
   {
-    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_daoId].collectProposal(
+    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_daoId].calculateProposal(
       _proposalId
     );
 
-    emit ProposalCollected(_daoId, _proposalId, voters, yes, no);
+    emit ProposalCalculated(_daoId, _proposalId, voters, yes, no);
 
     // send collected result to L1
     childStateSender.sendMessageToRoot(
       abi.encode(
-        uint256(ITunnel.MessageType.CollectProposal),
+        uint256(ITunnel.MessageType.CalculateProposal),
         _daoId,
         _proposalId,
         voters,
@@ -103,6 +131,11 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     );
   }
 
+  /**
+   * @notice Process message from the Ethereum network
+   *     The message is encoded by certain format according to protocol type
+   * @dev Callable by root state sender
+   */
   function processMessageFromRoot(bytes calldata _message) external {
     require(msg.sender == address(childStateSender), "Not a state sender");
     _processMessageFromRoot(_message);
@@ -124,6 +157,8 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
       _cancelProposal(_message);
     } else if (messageType == uint256(MessageType.ExecuteProposal)) {
       _executeProposal(_message);
+    } else if (messageType == uint256(MessageType.UpdateToken)) {
+      _updateToken(_message);
     }
   }
 
@@ -218,6 +253,20 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     zDAOs[zDAOId].executeProposal(proposalId);
 
     emit ProposalExecuted(zDAOId, proposalId);
+  }
+
+  function _updateToken(bytes memory _message) internal virtual {
+    (uint256 messageType, uint256 zDAOId, address token) = abi.decode(
+      _message,
+      (uint256, uint256, address)
+    );
+
+    require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
+    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+
+    zDAOs[zDAOId].updateToken(token);
+
+    emit DAOTokenUpdated(zDAOId, token);
   }
 
   /* -------------------------------------------------------------------------- */
