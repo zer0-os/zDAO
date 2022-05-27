@@ -150,15 +150,20 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
    *      It means that proposal is still synchronizing to Polygon or active.
    * @dev Callable by EtherZDAOChef, only available for active zDAO and valid
    *      proposal
+   * @param _cancelBy Address to user who is going to cancel proposal
    * @param _proposalId Proposal unique id to cancel
    */
-  function cancelProposal(address, uint256 _proposalId)
+  function cancelProposal(address _cancelBy, uint256 _proposalId)
     external
     override
     onlyZDAOChef
     isActiveDAO
     onlyValidProposal(_proposalId)
   {
+    require(
+      proposals[_proposalId].createdBy == _cancelBy,
+      "Not a proposal creator"
+    );
     ProposalState state2 = this.state(_proposalId);
     require(state2 == ProposalState.Pending, "Not a pending proposal");
 
@@ -172,7 +177,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
    *     then the proposal can be flaged by executed state
    * @dev Callable by EtherZDAOChef, only available for active zDAO and valid
    *     proposal
-   * @param _executeBy Address to wallet who executed
+   * @param _executeBy Address to wallet who is going to executed
    * @param _proposalId Proposal unique id to execute
    */
   function executeProposal(address _executeBy, uint256 _proposalId)

@@ -154,4 +154,18 @@ describe("ZDAO", async function () {
     expect(proposal.yes.toNumber()).to.be.equal(70);
     expect(proposal.no.toNumber()).to.be.equal(30);
   });
+
+  it("Only proposal creator can cancel the proposal", async function () {
+    // create proposal
+    vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
+    await createProposal(userA);
+
+    const proposalId = 1;
+    await expect(
+      zDAO.connect(zDAOChef).cancelProposal(userB.address, proposalId)
+    ).to.be.revertedWith("Not a proposal creator");
+    await expect(
+      zDAO.connect(zDAOChef).cancelProposal(userA.address, proposalId)
+    ).to.be.not.reverted;
+  });
 });
