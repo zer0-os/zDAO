@@ -40,9 +40,9 @@ interface IPolyZDAO {
     uint256 startTimestamp;
     /// @notice Timestamp when the proposal ends
     uint256 endTimestamp;
-    /// @notice The number of collected voting power in favor of this proposal
+    /// @notice The number of calculated voting power in favor of this proposal
     uint256 yes;
-    /// @notice The number of collected voting power in opposition to this proposal
+    /// @notice The number of calculated voting power in opposition to this proposal
     uint256 no;
     /// @notice The number of voters who votes
     uint256 voters;

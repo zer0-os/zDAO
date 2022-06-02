@@ -152,7 +152,7 @@ describe("ZDAO", async function () {
     expect(lastChoice).to.be.equal(choice + 1);
   });
 
-  it("Only can collect voting result after proposal ends", async function () {
+  it("Only can calculate voting result after proposal ends", async function () {
     await staking
       .connect(userA)
       .stakeERC20(vToken.address, BigNumber.from(1000).mul(BIG_POW));

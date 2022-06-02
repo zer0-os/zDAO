@@ -22,7 +22,7 @@ import {
   MockTokenUpgradeable__factory,
 } from "../../types";
 import { IRootStateSender } from "../../types/IRootStateSender";
-import { encodeCollectProposal } from "../shared/messagePack";
+import { encodeCalculateProposal } from "../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../shared/types";
 import { increaseTime, mineToBlock, now } from "../shared/utilities";
 
@@ -244,7 +244,7 @@ describe("ZDAOChef", async function () {
     await expect(createProposal(userA, zDAOId)).to.be.not.reverted;
   });
 
-  it("Should collect voting result", async function () {
+  it("Should calculate voting result", async function () {
     await addNewDAO(zNAOwner);
 
     const zDAOId = 1;
@@ -256,7 +256,7 @@ describe("ZDAOChef", async function () {
     await mineToBlock(10);
 
     const proposalId = 1;
-    const message = encodeCollectProposal({
+    const message = encodeCalculateProposal({
       zDAOId,
       proposalId,
       voters: 1,
@@ -303,7 +303,7 @@ describe("ZDAOChef", async function () {
     // should not execute proposal if proposal state is failed
     await expect(
       ZDAOChef.connect(userA).processMessageFromChild(
-        encodeCollectProposal({
+        encodeCalculateProposal({
           zDAOId,
           proposalId,
           voters: 1,
@@ -342,7 +342,7 @@ describe("ZDAOChef", async function () {
     // should execute proposal if proposal state is succeeded
     await expect(
       ZDAOChef.connect(userA).processMessageFromChild(
-        encodeCollectProposal({
+        encodeCalculateProposal({
           zDAOId,
           proposalId,
           voters: 1,
@@ -397,7 +397,7 @@ describe("ZDAOChef", async function () {
     // should execute proposal if proposal state is succeeded
     await expect(
       ZDAOChef.connect(userA).processMessageFromChild(
-        encodeCollectProposal({
+        encodeCalculateProposal({
           zDAOId,
           proposalId,
           voters: 1,

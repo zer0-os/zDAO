@@ -7,7 +7,7 @@ enum MessageType {
   CreateProposal = 3,
   CancelProposal = 4,
   ExecuteProposal = 5,
-  CollectProposal = 6,
+  CalculateProposal = 6,
 }
 
 export interface CreateZDAOPack {
@@ -46,7 +46,7 @@ export const encodeCreateProposal = (pack: CreateProposalPack): string => {
   );
 };
 
-export interface CollectProposalPack {
+export interface CalculateProposalPack {
   zDAOId: number;
   proposalId: number;
   voters: number;
@@ -54,11 +54,11 @@ export interface CollectProposalPack {
   no: number;
 }
 
-export const encodeCollectProposal = (pack: CollectProposalPack): string => {
+export const encodeCalculateProposal = (pack: CalculateProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
     ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
     [
-      MessageType.CollectProposal,
+      MessageType.CalculateProposal,
       pack.zDAOId,
       pack.proposalId,
       pack.voters,

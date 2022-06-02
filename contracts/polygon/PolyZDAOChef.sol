@@ -118,7 +118,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
     emit ProposalCalculated(_daoId, _proposalId, voters, yes, no);
 
-    // send collected result to L1
+    // send calculated result to L1
     childStateSender.sendMessageToRoot(
       abi.encode(
         uint256(ITunnel.MessageType.CalculateProposal),
