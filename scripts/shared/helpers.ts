@@ -1,5 +1,6 @@
 import { run } from "hardhat";
 import { NomicLabsHardhatPluginError } from "hardhat/plugins";
+import * as zns from "@zero-tech/zns-sdk";
 
 export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
 
@@ -27,4 +28,8 @@ export const verifyContract = async (
       console.error(error);
     }
   }
+};
+
+export const znsHash = (zna: string): string => {
+  return zns.domains.domainNameToId(zna);
 };
