@@ -2,6 +2,7 @@
 
 pragma solidity ^0.8.11;
 
+import {console} from "hardhat/console.sol";
 import {ZeroUpgradeable} from "./abstracts/ZeroUpgradeable.sol";
 import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
 import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
@@ -11,7 +12,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
   IZNSHub public znsHub;
 
   // zNA    => zDAOId
-  mapping(uint256 => uint256) private zNATozDAOId;
+  mapping(uint256 => uint256) public zNATozDAOId;
   // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
   // PlatformType => IZDAOFactory
@@ -92,7 +93,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     bytes calldata _options
   ) external override onlyZNAOwner(_zNA) {
     uint256 zDAOId = zNATozDAOId[_zNA];
-    require(zDAOId == 0, "Do not allow to add new DAO with same zNA");
+    require(zDAOId == 0, "Already added DAO with same zNA");
 
     IZDAOFactory factory = zDAOFactories[_platformType];
     assert(address(factory) != address(0));
@@ -289,6 +290,14 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     uint256 zDAOId = zNATozDAOId[_zNA];
     require(zDAOId > 0 && zDAOId <= lastZDAOId, "No zDAO associated with zNA");
     return zDAORecords[zDAOId];
+  }
+
+  function getZDAOZNAs(uint256 _zDAOId)
+    external
+    view
+    returns (uint256[] memory)
+  {
+    return zDAORecords[_zDAOId].associatedzNAs;
   }
 
   function doesZNAExistForZNA(uint256 _zNA)
