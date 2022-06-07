@@ -1,35 +1,77 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.11;
 
 interface IZDAORegistry {
-  struct ZDAORecord {
-    uint256 id;
-    string ensSpace;
-    address gnosisSafe;
-    uint256[] associatedzNAs;
-    bool destroyed;
+  enum PlatformType {
+    Snapshot,
+    Polygon
   }
 
-  // function zNATozDAOId(uint256 zNA) external view returns (uint256);
+  struct ZDAORecord {
+    /// @notice PlatformType enumeration as uint256
+    uint256 platformType;
+    /// @notice Unique id for looking up zDAO
+    uint256 id;
+    /// @notice Address to zDAO contract, Zero address for Snapshot platform
+    address zDAO;
+    /// @notice zDAO owner and created by
+    address zDAOOwnedBy;
+    /// @notice Gnosis safe address where collected treasuries are stored
+    address gnosisSafe;
+    /// @notice Flag marking whether the zDAO has been destroyed
+    bool destroyed;
+    /// @notice Array of zNA ids associated with zDAO
+    uint256[] associatedzNAs;
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   Events                                   */
+  /* -------------------------------------------------------------------------- */
+
+  event DAOCreated(
+    uint256 indexed _platformType,
+    uint256 indexed _zDAOId,
+    address indexed _gnosisSafe,
+    address _creator,
+    address _zDAO
+  );
+
+  event DAODestroyed(uint256 indexed _zDAOId);
+
+  event DAOModified(uint256 indexed _zDAOId, address indexed _gnosisSafe);
+
+  event LinkAdded(uint256 indexed _zDAOId, uint256 indexed _zNA);
+
+  event LinkRemoved(uint256 indexed _zDAOId, uint256 indexed _zNA);
+
+  /* -------------------------------------------------------------------------- */
+  /*                             External Functions                             */
+  /* -------------------------------------------------------------------------- */
+
+  function addNewZDAO(
+    uint256 _platformType,
+    uint256 _zNA,
+    address _gnosisSafe,
+    bytes calldata _options
+  ) external;
+
+  function addZNAAssociation(uint256 _zDAOId, uint256 _zNA) external;
+
+  function removeZNAAssociation(uint256 _zDAOId, uint256 _zNA) external;
+
+  /* -------------------------------------------------------------------------- */
+  /*                               View Functions                               */
+  /* -------------------------------------------------------------------------- */
 
   function numberOfzDAOs() external view returns (uint256);
 
-  function getzDAOById(uint256 daoId) external view returns (ZDAORecord memory);
-
-  function getzDAOByEns(string calldata ensSpace) external view returns (ZDAORecord memory);
-
-  function listzDAOs(uint256 startIndex, uint256 endIndex)
+  function listZDAOs(uint256 _startIndex, uint256 _count)
     external
     view
     returns (ZDAORecord[] memory);
 
-  function doeszDAOExistForzNA(uint256 zNA) external view returns (bool);
+  function getZDAOByZNA(uint256 _zNA) external view returns (ZDAORecord memory);
 
-  function getzDaoByZNA(uint256 zNA) external view returns (ZDAORecord memory);
-
-  event DAOCreated(uint256 indexed daoId, string ensSpace, address gnosisSafe);
-  event DAOModified(uint256 indexed daoId, string endSpace, address gnosisSafe);
-  event DAODestroyed(uint256 indexed daoId);
-  event LinkAdded(uint256 indexed daoId, uint256 indexed zNA);
-  event LinkRemoved(uint256 indexed daoId, uint256 indexed zNA);
+  function doesZNAExistForZNA(uint256 _zNA) external view returns (bool);
 }

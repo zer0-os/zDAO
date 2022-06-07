@@ -1,228 +1,301 @@
 // SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.11;
 
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./interfaces/IZDAORegistry.sol";
-import "./interfaces/IZNSHub.sol";
+import {ZeroUpgradeable} from "./abstracts/ZeroUpgradeable.sol";
+import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
+import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
+import {IZNSHub} from "./interfaces/IZNSHub.sol";
 
-contract ZDAORegistry is IZDAORegistry, OwnableUpgradeable {
+contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
   IZNSHub public znsHub;
 
-  mapping(uint256 => uint256) private ensTozDAO;
+  // zNA    => zDAOId
   mapping(uint256 => uint256) private zNATozDAOId;
-
-  // The zdao at index 0 is a null zDAO
-  // We use a mapping instead of an array for upgradeability
+  // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
+  // PlatformType => IZDAOFactory
+  mapping(uint256 => IZDAOFactory) public zDAOFactories;
 
-  // More of a 'new zdao index' tracker
-  uint256 private numZDAOs;
+  uint256 public lastZDAOId;
 
-  modifier onlyZNAOwner(uint256 zNA) {
-    require(znsHub.ownerOf(zNA) == msg.sender, "Not zNA owner");
+  /* -------------------------------------------------------------------------- */
+  /*                                  Modifiers                                 */
+  /* -------------------------------------------------------------------------- */
+
+  modifier onlyZNAOwner(uint256 _zNA) {
+    require(znsHub.ownerOf(_zNA) == msg.sender, "Not a zNA owner");
     _;
   }
 
-  modifier onlyValidZDAO(uint256 daoId) {
-    require(daoId > 0 && daoId < numZDAOs && !zDAORecords[daoId].destroyed, "Invalid zDAO");
-    _;
-  }
-
-  function initialize(address _znsHub) external initializer {
-    __Ownable_init();
-
-    znsHub = IZNSHub(_znsHub);
-    zDAORecords[0] = ZDAORecord({
-      id: 0,
-      ensSpace: "",
-      gnosisSafe: address(0),
-      associatedzNAs: new uint256[](0),
-      destroyed: false
-    });
-
-    numZDAOs = 1;
-  }
-
-  function addNewDAO(string calldata ensSpace, address gnosisSafe) external onlyOwner {
-    uint256 ensId = _ensId(ensSpace);
-    require(ensTozDAO[ensId] == 0, "ENS already has zDAO");
-
-    zDAORecords[numZDAOs] = ZDAORecord({
-      id: numZDAOs,
-      ensSpace: ensSpace,
-      gnosisSafe: gnosisSafe,
-      associatedzNAs: new uint256[](0),
-      destroyed: false
-    });
-
-    ensTozDAO[ensId] = numZDAOs;
-
-    emit DAOCreated(numZDAOs, ensSpace, gnosisSafe);
-
-    numZDAOs += 1;
-  }
-
-  function addZNAAssociation(uint256 daoId, uint256 zNA)
-    external
-    onlyValidZDAO(daoId)
-    onlyZNAOwner(zNA)
-  {
-    _associatezNA(daoId, zNA);
-  }
-
-  function removeZNAAssociation(uint256 daoId, uint256 zNA)
-    external
-    onlyValidZDAO(daoId)
-    onlyZNAOwner(zNA)
-  {
-    uint256 currentDAOAssociation = zNATozDAOId[zNA];
-    require(currentDAOAssociation == daoId, "zNA not associated");
-
-    _disassociatezNA(daoId, zNA);
-  }
-
-  /* --- Admin functions  --- */
-
-  function adminSetZNSHub(address _znsHub) external onlyOwner {
-    znsHub = IZNSHub(_znsHub);
-  }
-
-  function adminRemoveDAO(uint256 daoId) external onlyValidZDAO(daoId) onlyOwner {
-    zDAORecords[daoId].destroyed = true;
-    ensTozDAO[_ensId(zDAORecords[daoId].ensSpace)] = 0;
-
-    emit DAODestroyed(daoId);
-  }
-
-  function adminAssociateZNA(uint256 daoId, uint256 zNA) external onlyOwner onlyValidZDAO(daoId) {
-    _associatezNA(daoId, zNA);
-  }
-
-  function adminDisassociateZNA(uint256 daoId, uint256 zNA)
-    external
-    onlyOwner
-    onlyValidZDAO(daoId)
-  {
-    uint256 currentDAOAssociation = zNATozDAOId[zNA];
-    require(currentDAOAssociation == daoId, "zNA not associated");
-
-    _disassociatezNA(daoId, zNA);
-  }
-
-  function adminModifyZDAO(
-    uint256 daoId,
-    string calldata ensSpace,
-    address gnosisSafe
-  ) external onlyOwner onlyValidZDAO(daoId) {
-    ZDAORecord storage zDAO = zDAORecords[daoId];
-
-    uint256 newEnsId = _ensId(ensSpace);
-    uint256 existingEnsId = _ensId(zDAO.ensSpace);
-
-    if (newEnsId != existingEnsId) {
-      ensTozDAO[existingEnsId] = 0;
-      ensTozDAO[newEnsId] = daoId;
-    }
-
-    zDAO.ensSpace = ensSpace;
-    zDAO.gnosisSafe = gnosisSafe;
-
-    emit DAOModified(daoId, ensSpace, gnosisSafe);
-  }
-
-  /* --- View Methods --- */
-
-  // The number of actual zDAO's (excludes '0' which is null)
-  function numberOfzDAOs() external view returns (uint256) {
-    return numZDAOs - 1;
-  }
-
-  function getzDAOById(uint256 daoId) external view returns (ZDAORecord memory) {
-    return zDAORecords[daoId];
-  }
-
-  function listzDAOs(uint256 startIndex, uint256 endIndex)
-    external
-    view
-    returns (ZDAORecord[] memory)
-  {
-    uint256 numDaos = numZDAOs;
-    require(startIndex != 0, "start index = 0, use 1");
-    require(startIndex <= endIndex, "start index > end");
-    require(startIndex < numDaos, "start index > length");
-    require(endIndex < numDaos, "end index > length");
-
-    if (numDaos == 1) {
-      return new ZDAORecord[](0);
-    }
-
-    uint256 numRecords = endIndex - startIndex + 1;
-    ZDAORecord[] memory records = new ZDAORecord[](numRecords);
-
-    for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAORecords[startIndex + i];
-    }
-
-    return records;
-  }
-
-  function getzDaoByZNA(uint256 zNA) external view returns (ZDAORecord memory) {
-    uint256 daoId = zNATozDAOId[zNA];
+  modifier onlyValidZDAO(uint256 _zDAOId) {
     require(
-      daoId != 0 && daoId < numZDAOs && !zDAORecords[daoId].destroyed,
-      "No zDAO associated with zNA"
+      _zDAOId > 0 && _zDAOId <= lastZDAOId && !_isZDAODestroyed(_zDAOId),
+      "Invalid zDAO"
     );
-    return zDAORecords[daoId];
+    _;
   }
 
-  function getzDAOByEns(string calldata ensSpace) external view returns (ZDAORecord memory) {
-    uint256 ensHash = _ensId(ensSpace);
-    uint256 daoId = ensTozDAO[ensHash];
-    require(daoId != 0, "No zDAO at ens space");
-    require(!zDAORecords[daoId].destroyed, "zDAO destroyed");
-
-    return zDAORecords[daoId];
+  modifier onlyDAOOwner(uint256 _zDAOId) {
+    require(
+      msg.sender == zDAORecords[_zDAOId].zDAOOwnedBy,
+      "Invalid zDAO Owner"
+    );
+    _;
   }
 
-  function doeszDAOExistForzNA(uint256 zNA) external view returns (bool) {
-    return zNATozDAOId[zNA] != 0;
+  /* -------------------------------------------------------------------------- */
+  /*                                 Initializer                                */
+  /* -------------------------------------------------------------------------- */
+
+  function __ZDAORegistry_init(IZNSHub _znsHub) public initializer {
+    ZeroUpgradeable.__ZeroUpgradeable_init();
+
+    znsHub = _znsHub;
   }
 
-  /* --- Internal Methods ---  */
+  /* -------------------------------------------------------------------------- */
+  /*                             External Functions                             */
+  /* -------------------------------------------------------------------------- */
 
-  function _associatezNA(uint256 daoId, uint256 zNA) internal {
-    uint256 currentDAOAssociation = zNATozDAOId[zNA];
-    require(currentDAOAssociation != daoId, "zNA already linked to DAO");
+  function setZNSHub(address _znsHub) external onlyOwner {
+    znsHub = IZNSHub(_znsHub);
+  }
+
+  function addZDAOFactory(
+    IZDAORegistry.PlatformType _platformType,
+    IZDAOFactory _factory
+  ) external onlyOwner {
+    uint256 platformType = uint256(_platformType);
+    require(
+      address(zDAOFactories[platformType]) == address(0),
+      "Already has factory address"
+    );
+    zDAOFactories[platformType] = _factory;
+  }
+
+  /**
+   * @notice Add new zDAO associating with given zNA.
+   *     Create new EtherZDAO contract and associate new zDAO with given zNA.
+   *     Once create new zDAO, it should be synchronized to Polygon.
+   *     Users can create proposal and cast a vote after zDAO synchronization.
+   * @dev Only zNA owner can create zDAO
+   * @param _platformType PlatformType enum value
+   * @param _zNA zNA unique Id
+   * @param _gnosisSafe Gnosis Safe address per zDAO
+   * @param _options Abi encode packed of the structure of zDAO information
+   */
+  function addNewZDAO(
+    uint256 _platformType,
+    uint256 _zNA,
+    address _gnosisSafe,
+    bytes calldata _options
+  ) external override onlyZNAOwner(_zNA) {
+    uint256 zDAOId = zNATozDAOId[_zNA];
+    require(zDAOId == 0, "Do not allow to add new DAO with same zNA");
+
+    IZDAOFactory factory = zDAOFactories[_platformType];
+    assert(address(factory) != address(0));
+
+    lastZDAOId++;
+    address zDAO = factory.addNewZDAO(lastZDAOId, _zNA, _gnosisSafe, _options);
+
+    zDAORecords[lastZDAOId] = ZDAORecord({
+      platformType: _platformType,
+      id: lastZDAOId,
+      zDAO: zDAO,
+      zDAOOwnedBy: msg.sender,
+      gnosisSafe: _gnosisSafe,
+      destroyed: false,
+      associatedzNAs: new uint256[](0)
+    });
+
+    emit DAOCreated(
+      _platformType,
+      lastZDAOId,
+      _gnosisSafe,
+      msg.sender,
+      address(zDAO)
+    );
+
+    // Associate zDAO with zNA
+    _associatezNA(lastZDAOId, _zNA);
+  }
+
+  /**
+   * @notice Add association with zNA
+   * @dev Callable by zDAO owner and for valid zDAO
+   * @param _zDAOId zDAO unique id
+   * @param _zNA zNA id required to associate
+   */
+  function addZNAAssociation(uint256 _zDAOId, uint256 _zNA)
+    external
+    override
+    onlyValidZDAO(_zDAOId)
+    onlyZNAOwner(_zNA)
+  {
+    _associatezNA(_zDAOId, _zNA);
+  }
+
+  /**
+   * @notice Remove association from given zDAO
+   * @dev Callable by zDAO owner and for valid zDAO
+   * @param _zDAOId zDAO unique id
+   * @param _zNA zNA id required to remove
+   */
+  function removeZNAAssociation(uint256 _zDAOId, uint256 _zNA)
+    external
+    override
+    onlyValidZDAO(_zDAOId)
+    onlyZNAOwner(_zNA)
+  {
+    require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
+    require(zNATozDAOId[_zNA] == _zDAOId, "zNA not associated");
+
+    _disassociatezNA(_zDAOId, _zNA);
+  }
+
+  /**
+   * @notice Remove zDAO by zDAOId.
+   *     Removed state should be synchronized to Polygon, so that stop
+   *     user voting
+   * @dev Only owner can remove zDAO, and only for valid zDAO
+   * @param _zDAOId zDAO unique id
+   */
+  function adminRemoveZDAO(uint256 _zDAOId)
+    external
+    onlyValidZDAO(_zDAOId)
+    onlyOwner
+  {
+    ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
+
+    IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
+    assert(address(factory) != address(0));
+
+    zDAORecord.destroyed = true;
+    factory.removeZDAO(_zDAOId);
+
+    emit DAODestroyed(_zDAOId);
+  }
+
+  function adminAssociateZNA(uint256 _zDAOId, uint256 _zNA)
+    external
+    onlyValidZDAO(_zDAOId)
+    onlyOwner
+  {
+    _associatezNA(_zDAOId, _zNA);
+  }
+
+  function adminDisassociateZNA(uint256 _zDAOId, uint256 _zNA)
+    external
+    onlyValidZDAO(_zDAOId)
+    onlyOwner
+  {
+    require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
+    require(zNATozDAOId[_zNA] == _zDAOId, "zNA not associated");
+
+    _disassociatezNA(_zDAOId, _zNA);
+  }
+
+  function adminModifyZDAO(uint256 _zDAOId, address _gnosisSafe)
+    external
+    onlyValidZDAO(_zDAOId)
+    onlyOwner
+  {
+    ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
+
+    IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
+    assert(address(factory) != address(0));
+
+    zDAORecord.gnosisSafe = _gnosisSafe;
+
+    emit DAOModified(_zDAOId, _gnosisSafe);
+  }
+
+  /* -------------------------------------------------------------------------- */
+  /*                             Internal Functions                             */
+  /* -------------------------------------------------------------------------- */
+
+  function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
+    return zDAORecords[_index].destroyed;
+  }
+
+  function _associatezNA(uint256 _zDAOId, uint256 _zNA) internal {
+    uint256 currentDAOAssociation = zNATozDAOId[_zNA];
+    require(currentDAOAssociation != _zDAOId, "zNA already linked to DAO");
 
     // If an association already exists, remove it
     if (currentDAOAssociation != 0) {
-      _disassociatezNA(currentDAOAssociation, zNA);
+      _disassociatezNA(currentDAOAssociation, _zNA);
     }
 
-    zNATozDAOId[zNA] = daoId;
-    zDAORecords[daoId].associatedzNAs.push(zNA);
+    zNATozDAOId[_zNA] = _zDAOId;
+    zDAORecords[_zDAOId].associatedzNAs.push(_zNA);
 
-    emit LinkAdded(daoId, zNA);
+    emit LinkAdded(_zDAOId, _zNA);
   }
 
-  function _disassociatezNA(uint256 daoId, uint256 zNA) internal {
-    ZDAORecord storage dao = zDAORecords[daoId];
-    uint256 length = zDAORecords[daoId].associatedzNAs.length;
+  function _disassociatezNA(uint256 _zDAOId, uint256 _zNA) internal {
+    ZDAORecord storage dao = zDAORecords[_zDAOId];
+    uint256 length = zDAORecords[_zDAOId].associatedzNAs.length;
 
     for (uint256 i = 0; i < length; i++) {
-      if (dao.associatedzNAs[i] == zNA) {
+      if (dao.associatedzNAs[i] == _zNA) {
         dao.associatedzNAs[i] = dao.associatedzNAs[length - 1];
         dao.associatedzNAs.pop();
-        zNATozDAOId[zNA] = 0;
+        zNATozDAOId[_zNA] = 0;
 
-        emit LinkRemoved(daoId, zNA);
+        emit LinkRemoved(_zDAOId, _zNA);
         break;
       }
     }
   }
 
-  function _ensId(string memory ensSpace) private pure returns (uint256) {
-    uint256 ensHash = uint256(keccak256(abi.encodePacked(ensSpace)));
-    return ensHash;
+  /* -------------------------------------------------------------------------- */
+  /*                               View Functions                               */
+  /* -------------------------------------------------------------------------- */
+
+  function numberOfzDAOs() external view override returns (uint256) {
+    return lastZDAOId;
+  }
+
+  function listZDAOs(uint256 _startIndex, uint256 _count)
+    external
+    view
+    override
+    returns (ZDAORecord[] memory records)
+  {
+    uint256 numRecords = _count;
+    if (numRecords > (lastZDAOId - _startIndex)) {
+      numRecords = lastZDAOId - _startIndex;
+    }
+
+    records = new ZDAORecord[](numRecords);
+
+    for (uint256 i = 0; i < numRecords; ++i) {
+      records[i] = zDAORecords[_startIndex + i + 1];
+    }
+
+    return records;
+  }
+
+  function getZDAOByZNA(uint256 _zNA)
+    external
+    view
+    override
+    returns (ZDAORecord memory)
+  {
+    uint256 zDAOId = zNATozDAOId[_zNA];
+    require(zDAOId > 0 && zDAOId <= lastZDAOId, "No zDAO associated with zNA");
+    return zDAORecords[zDAOId];
+  }
+
+  function doesZNAExistForZNA(uint256 _zNA)
+    external
+    view
+    override
+    returns (bool)
+  {
+    return zNATozDAOId[_zNA] != 0;
   }
 }
