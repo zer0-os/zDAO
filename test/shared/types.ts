@@ -14,7 +14,7 @@ export interface ProposalConfig {
   ipfs: string;
 }
 
-export interface PolyZDAOConfig {
+export interface ChildZDAOConfig {
   zDAOId: number;
   duration: number;
 }

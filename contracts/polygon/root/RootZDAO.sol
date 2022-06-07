@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.11;
 
-import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {ITunnel} from "../interfaces/ITunnel.sol";
-import {IEtherZDAO} from "./interfaces/IEtherZDAO.sol";
-import {IEtherZDAOChef} from "./interfaces/IEtherZDAOChef.sol";
+import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
+import {ITunnel} from "../../interfaces/ITunnel.sol";
+import {IRootZDAO} from "./interfaces/IRootZDAO.sol";
+import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
 import {console} from "hardhat/console.sol";
 
-contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
+contract RootZDAO is ZeroUpgradeable, IRootZDAO {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
   ZDAOInfo public zDAOInfo;
@@ -52,7 +52,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   /**
    * @notice Initializer function
-   * @param _zDAOChef Address to EtherZDAOChef contract
+   * @param _zDAOChef Address to RootZDAOChef contract
    * @param _zDAOId Unique id for current zDAO
    * @param _createdBy Address to zDAO owner
    */
@@ -60,7 +60,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
     address _zDAOChef,
     uint256 _zDAOId,
     address _createdBy,
-    IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
+    IRootZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
@@ -89,7 +89,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   /**
    * @notice Destroy the zDAO
-   * @dev Callable by EtherZDAOChef
+   * @dev Callable by RootZDAOChef
    * @param _destroyed Flag marking whether zDAO has been destroyed
    */
   function setDestroyed(bool _destroyed) external override onlyZDAOChef {
@@ -98,7 +98,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   /**
    * @notice Set Gnosis Safe address
-   * @dev Callable by EtherZDAOChef, only available for active zDAO
+   * @dev Callable by RootZDAOChef, only available for active zDAO
    * @param _gnosisSafe Address to Gnosis Safe wallet
    */
   function setGnosisSafe(address _gnosisSafe)
@@ -112,7 +112,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   /**
    * @notice Set Voting Token and minimum holding token amount
-   * @dev Callable by EtherZDAOChef, only available for active zDAO
+   * @dev Callable by RootZDAOChef, only available for active zDAO
    * @param _token Address to Voting Token
    * @param _amount Minimum number of tokens required to become proposal creator
    */
@@ -128,7 +128,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
 
   /**
    * @notice Create a proposal with the IPFS which contains proposal meta data
-   * @dev Callable by EtherZDAOChef, only available for active zDAO
+   * @dev Callable by RootZDAOChef, only available for active zDAO
    * @param _createdBy Address to the proposal owner
    * @param _ipfs IPFS hash which contains proposal meta data e.g. body text
    */
@@ -148,7 +148,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
   /**
    * @notice Cancel a proposal, proposal owner can only cancel pending proposal
    *      It means that proposal is still synchronizing to Polygon or active.
-   * @dev Callable by EtherZDAOChef, only available for active zDAO and valid
+   * @dev Callable by RootZDAOChef, only available for active zDAO and valid
    *      proposal
    * @param _cancelBy Address to user who is going to cancel proposal
    * @param _proposalId Proposal unique id to cancel
@@ -175,7 +175,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
    *     Execute proposal means transfer assets from Gnosis Safe to certain
    *     wallet address, once owner propose transaction on Gnosis Safe,
    *     then the proposal can be flaged by executed state
-   * @dev Callable by EtherZDAOChef, only available for active zDAO and valid
+   * @dev Callable by RootZDAOChef, only available for active zDAO and valid
    *     proposal
    * @param _executeBy Address to wallet who is going to executed
    * @param _proposalId Proposal unique id to execute
@@ -199,7 +199,7 @@ contract EtherZDAO is ZeroUpgradeable, IEtherZDAO {
    *     from the Polygon. This function should be executed only when zDAOChef
    *     receives the CalculateProposal event from the Polygon.
    *     Proposal state is pending state until proposal calculation.
-   * @dev Callable by EtherZDAOchef, only available for active zDAO and valid
+   * @dev Callable by RootZDAOchef, only available for active zDAO and valid
    *     proposal
    * @param _proposalId Proposal unique id to execute
    * @param _voters Number of voters who participated in

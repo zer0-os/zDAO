@@ -6,27 +6,26 @@ import {
 } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
-import { BigNumber } from "ethers";
 import { ethers } from "hardhat";
-import ZDAOJson from "../../artifacts/contracts/polygon/PolyZDAO.sol/PolyZDAO.json";
+import ZDAOJson from "../../../artifacts/contracts/polygon/child/ChildZDAO.sol/ChildZDAO.json";
 import {
-  PolyZDAO,
-  PolyZDAOChef,
-  PolyZDAOChef__factory,
+  ChildZDAO,
+  ChildZDAOChef,
+  ChildZDAOChef__factory,
   IChildStateSender,
   MockTokenUpgradeable__factory,
   MockTokenUpgradeable,
   IChildChainManager,
-} from "../../types";
-import { Staking__factory } from "../../types/factories/Staking__factory";
-import { Staking } from "../../types/Staking";
+} from "../../../types";
+import { Staking__factory } from "../../../types/factories/Staking__factory";
+import { Staking } from "../../../types/Staking";
 import {
   CreateProposalPack,
   CreateZDAOPack,
   encodeCreateProposal,
   encodeCreateZDAO,
   encodeDeleteZDAO,
-} from "../shared/messagePack";
+} from "../../shared/messagePack";
 
 chai.use(smock.matchers);
 
@@ -36,7 +35,7 @@ describe("ZDAOChef", async function () {
     userA: SignerWithAddress;
 
   let staking: MockContract<Staking>,
-    ZDAOChef: MockContract<PolyZDAOChef>,
+    ZDAOChef: MockContract<ChildZDAOChef>,
     childStateSender: FakeContract<IChildStateSender>,
     childChainManager: FakeContract<IChildChainManager>,
     vToken: MockContract<MockTokenUpgradeable>;
@@ -46,10 +45,10 @@ describe("ZDAOChef", async function () {
   beforeEach("init setup", async function () {
     [owner, zDAOOwner, userA] = await ethers.getSigners();
 
-    const ZDAOChefFactory = (await smock.mock<PolyZDAOChef__factory>(
-      "PolyZDAOChef"
-    )) as MockContractFactory<PolyZDAOChef__factory>;
-    const ZDAOFactory = await ethers.getContractFactory("PolyZDAO");
+    const ZDAOChefFactory = (await smock.mock<ChildZDAOChef__factory>(
+      "ChildZDAOChef"
+    )) as MockContractFactory<ChildZDAOChef__factory>;
+    const ZDAOFactory = await ethers.getContractFactory("ChildZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
     childChainManager = (await smock.fake(
@@ -66,7 +65,7 @@ describe("ZDAOChef", async function () {
       "IChildStateSender"
     )) as FakeContract<IChildStateSender>;
 
-    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<PolyZDAOChef>;
+    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<ChildZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       staking.address,
       childStateSender.address,
@@ -126,7 +125,7 @@ describe("ZDAOChef", async function () {
       ZDAOJson.abi,
       zDAOAddr,
       zDAOOwner
-    )) as PolyZDAO;
+    )) as ChildZDAO;
 
     const zDAOInfo = await zDAO.zDAOInfo();
     expect(zDAOInfo.zDAOId).to.be.equal(zDAOPack.lastZDAOId);
@@ -167,7 +166,7 @@ describe("ZDAOChef", async function () {
       ZDAOJson.abi,
       zDAOAddr,
       zDAOOwner
-    )) as PolyZDAO;
+    )) as ChildZDAO;
 
     expect(await zDAO.destroyed()).to.be.equal(true);
 
@@ -189,7 +188,7 @@ describe("ZDAOChef", async function () {
       ZDAOJson.abi,
       zDAOAddr,
       zDAOOwner
-    )) as PolyZDAO;
+    )) as ChildZDAO;
 
     // try to create proposal again
     await expect(createProposal(userA)).to.be.not.reverted;

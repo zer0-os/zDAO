@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.11;
 
-import {IERC20Upgradeable} from "../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {IEtherZDAOChef} from "./IEtherZDAOChef.sol";
+import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IRootZDAOChef} from "./IRootZDAOChef.sol";
 
-interface IEtherZDAO {
+interface IRootZDAO {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 zDAOId; // zDAO id
@@ -82,7 +82,7 @@ interface IEtherZDAO {
     address _zDAOChef,
     uint256 _zDAOId,
     address _createdBy,
-    IEtherZDAOChef.ZDAOConfig calldata _zDAOConfig
+    IRootZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external;
 
   function setDestroyed(bool _destroyed) external;

@@ -7,16 +7,16 @@ import {
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { ethers } from "hardhat";
-import { MockCollectibleUpgradeable__factory } from "../../types/factories/MockCollectibleUpgradeable__factory";
-import { Staking__factory } from "../../types/factories/Staking__factory";
-import { MockCollectibleUpgradeable } from "../../types/MockCollectibleUpgradeable";
-import { Staking } from "../../types/Staking";
+import { MockCollectibleUpgradeable__factory } from "../../../types/factories/MockCollectibleUpgradeable__factory";
+import { Staking__factory } from "../../../types/factories/Staking__factory";
+import { MockCollectibleUpgradeable } from "../../../types/MockCollectibleUpgradeable";
+import { Staking } from "../../../types/Staking";
 import {
   IChildChainManager,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
-} from "../../types";
-import { blockNumber, mineToBlock } from "../shared/utilities";
+} from "../../../types";
+import { blockNumber, mineToBlock } from "../../shared/utilities";
 import { BigNumber } from "ethers";
 
 chai.use(smock.matchers);

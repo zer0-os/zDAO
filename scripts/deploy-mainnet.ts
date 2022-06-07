@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { EtherZDAOChef, FxStateRootTunnel } from "../types";
+import { RootZDAOChef, FxStateRootTunnel } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
@@ -37,16 +37,16 @@ const main = async () => {
       );
     await verifyContract(fxStateRootTunnelImpl);
 
-    console.log("Deploying EtherZDAO implementation contract...");
-    const ZDAOFactory = await ethers.getContractFactory("EtherZDAO");
+    console.log("Deploying RootZDAO implementation contract...");
+    const ZDAOFactory = await ethers.getContractFactory("RootZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
     await zDAOBase.deployed();
     console.log(`\ndeployed: ${zDAOBase.address}`);
 
     await verifyContract(zDAOBase.address);
 
-    console.log("Deploying EtherZDAOChef proxy contract...");
-    const ZDAOChefFactory = await ethers.getContractFactory("EtherZDAOChef");
+    console.log("Deploying RootZDAOChef proxy contract...");
+    const ZDAOChefFactory = await ethers.getContractFactory("RootZDAOChef");
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
       [
@@ -58,7 +58,7 @@ const main = async () => {
         kind: "uups",
         initializer: "__ZDAOChef_init",
       }
-    )) as EtherZDAOChef;
+    )) as RootZDAOChef;
     await zDAOChef.deployed();
     console.log(`\ndeployed: ${zDAOChef.address}`);
 
@@ -85,15 +85,15 @@ const main = async () => {
         Info: fxStateRootTunnelImpl,
       },
       {
-        Label: "EtherZDAOChef proxy address",
+        Label: "RootZDAOChef proxy address",
         Info: zDAOChef.address,
       },
       {
-        Label: "EtherZDAOChef implementation address",
+        Label: "RootZDAOChef implementation address",
         Info: zDAOChefImpl,
       },
       {
-        Label: "EtherZDAO base address",
+        Label: "RootZDAO base address",
         Info: zDAOBase.address,
       },
     ]);

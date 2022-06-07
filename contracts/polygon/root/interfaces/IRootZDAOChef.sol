@@ -2,10 +2,10 @@
 
 pragma solidity ^0.8.11;
 
-import {IERC20Upgradeable} from "../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {IEtherZDAO} from "./IEtherZDAO.sol";
+import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IRootZDAO} from "./IRootZDAO.sol";
 
-interface IEtherZDAOChef {
+interface IRootZDAOChef {
   struct ZDAOConfig {
     /// @notice Title of the zDAO
     string title;
@@ -34,7 +34,7 @@ interface IEtherZDAOChef {
     /// @notice Unique id for looking up zDAO
     uint256 id;
     /// @notice Address to newly created EtherZDAO contract
-    IEtherZDAO zDAO;
+    IRootZDAO zDAO;
     /// @notice Array of zNA ids associated with zDAO
     uint256[] associatedzNAs;
   }

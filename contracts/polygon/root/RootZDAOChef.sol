@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.11;
 
-import {ZeroUpgradeable, IERC20Upgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {createProxy} from "../helpers/Proxy.sol";
-import {IZNSHub} from "../interfaces/IZNSHub.sol";
-import {IRootStateSender, IRootStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
-import {IEtherZDAOChef} from "./interfaces/IEtherZDAOChef.sol";
-import {IEtherZDAO} from "./interfaces/IEtherZDAO.sol";
+import {ZeroUpgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
+import {createProxy} from "../../helpers/Proxy.sol";
+import {IZNSHub} from "../../interfaces/IZNSHub.sol";
+import {IRootStateSender, IRootStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
+import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
+import {IRootZDAO} from "./interfaces/IRootZDAO.sol";
 import {console} from "hardhat/console.sol";
 
-contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
+contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
   IZNSHub public znsHub;
   /**
    * Address to FxStateRootTunnel which is responsible for sending message
@@ -79,7 +79,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   /**
    * @notice Add new zDAO associating with given zNA.
-   *     Create new EtherZDAO contract and associate new zDAO with given zNA.
+   *     Create new RootZDAO contract and associate new zDAO with given zNA.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
    * @dev Only zNA owner can create zDAO
@@ -95,7 +95,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
     require(daoId == 0, "Do not allow to add new DAO with same zNA");
 
     // Create zDAO contract
-    IEtherZDAO zDAO = _createZDAO(_zDAOConfig);
+    IRootZDAO zDAO = _createZDAO(_zDAOConfig);
 
     zDAORecords[lastZDAOId] = ZDAORecord({
       id: lastZDAOId,
@@ -216,7 +216,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   /**
    * @notice Create a proposal, check the comment of createProposal function
-   *     in the EtherZDAO contract.
+   *     in the RootZDAO contract.
    *     Once create a new proposal, it should be synchronized to Polygon.
    * @dev Only for valid zDAO
    * @param _daoId zDAO unique id
@@ -246,7 +246,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   /**
    * @notice Cancel proposal, check the comment of cancelProposal function
-   *     in the EtherZDAO contract.
+   *     in the RootZDAO contract.
    * @dev Only for valid zDAO
    * @param _daoId zDAO unique id
    * @param _proposalId Proposal unique id
@@ -271,7 +271,7 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
 
   /**
    * @notice Execute proposal, check the comment of executeProposal function
-   *     in the EtherZDAO contract.
+   *     in the RootZDAO contract.
    * @dev Only for valid zDAO
    * @param _daoId zDAO unique id
    * @param _proposalId Proposal unique id
@@ -345,15 +345,15 @@ contract EtherZDAOChef is ZeroUpgradeable, IRootStateReceiver, IEtherZDAOChef {
   function _createZDAO(ZDAOConfig calldata _zDAOConfig)
     internal
     virtual
-    returns (IEtherZDAO zDAO)
+    returns (IRootZDAO zDAO)
   {
     lastZDAOId++;
 
-    zDAO = IEtherZDAO(
+    zDAO = IRootZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          IEtherZDAO.__ZDAO_init.selector,
+          IRootZDAO.__ZDAO_init.selector,
           address(this),
           lastZDAOId,
           msg.sender, // zDAO createdBy

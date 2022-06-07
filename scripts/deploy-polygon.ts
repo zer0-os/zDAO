@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { FxStateChildTunnel, PolyZDAOChef, Registry, Staking } from "../types";
+import { FxStateChildTunnel, ChildZDAOChef, Registry, Staking } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
@@ -49,16 +49,16 @@ const main = async () => {
     );
     await verifyContract(stakingImpl);
 
-    console.log("Deploying PolyZDAO implementation contract...");
-    const ZDAOFactory = await ethers.getContractFactory("PolyZDAO");
+    console.log("Deploying ChildZDAO implementation contract...");
+    const ZDAOFactory = await ethers.getContractFactory("ChildZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
     await zDAOBase.deployed();
     console.log(`\ndeployed: ${zDAOBase.address}`);
 
     await verifyContract(zDAOBase.address);
 
-    console.log("Deploying PolyZDAOChef proxy contract...");
-    const ZDAOChefFactory = await ethers.getContractFactory("PolyZDAOChef");
+    console.log("Deploying ChildZDAOChef proxy contract...");
+    const ZDAOChefFactory = await ethers.getContractFactory("ChildZDAOChef");
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
       [
@@ -71,7 +71,7 @@ const main = async () => {
         kind: "uups",
         initializer: "__ZDAOChef_init",
       }
-    )) as PolyZDAOChef;
+    )) as ChildZDAOChef;
     await zDAOChef.deployed();
     console.log(`\ndeployed: ${zDAOChef.address}`);
 
@@ -110,15 +110,15 @@ const main = async () => {
         Info: stakingImpl,
       },
       {
-        Label: "PolyZDAOChef proxy address",
+        Label: "ChildZDAOChef proxy address",
         Info: zDAOChef.address,
       },
       {
-        Label: "PolyZDAOChef implementation address",
+        Label: "ChildZDAOChef implementation address",
         Info: zDAOChefImpl,
       },
       {
-        Label: "PolyZDAO base address",
+        Label: "ChildZDAO base address",
         Info: zDAOBase.address,
       },
     ]);

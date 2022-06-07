@@ -9,22 +9,22 @@ import * as zns from "@zero-tech/zns-sdk";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import ZDAOJson from "../../artifacts/contracts/ethereum/EtherZDAO.sol/EtherZDAO.json";
+import ZDAOJson from "../../../artifacts/contracts/polygon/root/RootZDAO.sol/RootZDAO.json";
 import {
   ERC20Upgradeable,
   ERC20Upgradeable__factory,
-  EtherZDAO,
-  EtherZDAOChef,
-  EtherZDAOChef__factory,
+  RootZDAO,
+  RootZDAOChef,
+  RootZDAOChef__factory,
   IERC20Upgradeable,
   IZNSHub,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
-} from "../../types";
-import { IRootStateSender } from "../../types/IRootStateSender";
-import { encodeCalculateProposal } from "../shared/messagePack";
-import { ProposalConfig, ZDAOConfig } from "../shared/types";
-import { increaseTime, mineToBlock, now } from "../shared/utilities";
+} from "../../../types";
+import { IRootStateSender } from "../../../types/IRootStateSender";
+import { encodeCalculateProposal } from "../../shared/messagePack";
+import { ProposalConfig, ZDAOConfig } from "../../shared/types";
+import { increaseTime, mineToBlock, now } from "../../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -42,7 +42,7 @@ describe("ZDAOChef", async function () {
 
   let ZNSHub: FakeContract<IZNSHub>,
     rootStateSender: FakeContract<IRootStateSender>,
-    ZDAOChef: MockContract<EtherZDAOChef>,
+    ZDAOChef: MockContract<RootZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
 
   let zDAOConfig: ZDAOConfig, proposalConfig: ProposalConfig;
@@ -50,10 +50,10 @@ describe("ZDAOChef", async function () {
   beforeEach("init setup", async function () {
     [owner, zNAOwner, zNAOwner2, userA, userB] = await ethers.getSigners();
 
-    const ZDAOChefFactory = (await smock.mock<EtherZDAOChef__factory>(
-      "EtherZDAOChef"
-    )) as MockContractFactory<EtherZDAOChef__factory>;
-    const ZDAOFactory = await ethers.getContractFactory("EtherZDAO");
+    const ZDAOChefFactory = (await smock.mock<RootZDAOChef__factory>(
+      "RootZDAOChef"
+    )) as MockContractFactory<RootZDAOChef__factory>;
+    const ZDAOFactory = await ethers.getContractFactory("RootZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
     rootStateSender = (await smock.fake(
@@ -62,7 +62,7 @@ describe("ZDAOChef", async function () {
 
     const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
 
-    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<EtherZDAOChef>;
+    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<RootZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       znsHubAddress,
       rootStateSender.address,
@@ -147,7 +147,7 @@ describe("ZDAOChef", async function () {
       ZDAOJson.abi,
       zDAORecord.zDAO,
       zNAOwner
-    )) as EtherZDAO;
+    )) as RootZDAO;
     expect(await zDAO.zDAOOwner()).to.be.equal(zNAOwner.address);
     // only one zNA association
     expect(zDAORecord.associatedzNAs.length).to.be.equal(1);
@@ -270,10 +270,10 @@ describe("ZDAOChef", async function () {
 
     const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "EtherZDAO",
+      "RootZDAO",
       zDAORecord.zDAO,
       userA
-    )) as EtherZDAO;
+    )) as RootZDAO;
 
     const proposal = await zDAO.proposals(proposalId);
     expect(proposal.yes).to.be.equal(70);
@@ -291,10 +291,10 @@ describe("ZDAOChef", async function () {
 
     const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "EtherZDAO",
+      "RootZDAO",
       zDAORecord.zDAO,
       userA
-    )) as EtherZDAO;
+    )) as RootZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
@@ -330,10 +330,10 @@ describe("ZDAOChef", async function () {
 
     const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "EtherZDAO",
+      "RootZDAO",
       zDAORecord.zDAO,
       userA
-    )) as EtherZDAO;
+    )) as RootZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
@@ -385,10 +385,10 @@ describe("ZDAOChef", async function () {
 
     const zDAORecord = await ZDAOChef.getzDAOById(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "EtherZDAO",
+      "RootZDAO",
       zDAORecord.zDAO,
       userA
-    )) as EtherZDAO;
+    )) as RootZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
 
     const rootStateSender = await ZDAOChef.rootStateSender();

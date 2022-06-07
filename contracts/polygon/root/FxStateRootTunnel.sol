@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.11;
 
-import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {IRootStateSender, IRootStateReceiver} from "../interfaces/ITunnel.sol";
-import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../tunnel/FxBaseRootTunnel.sol";
+import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
+import {IRootStateSender, IRootStateReceiver} from "../../interfaces/ITunnel.sol";
+import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../../tunnel/FxBaseRootTunnel.sol";
 
 contract FxStateRootTunnel is
   ZeroUpgradeable,
@@ -12,7 +12,7 @@ contract FxStateRootTunnel is
   IRootStateSender
 {
   /**
-   * Address to EtherZDAOChef contract which is responsible for processing
+   * Address to RootZDAOChef contract which is responsible for processing
    * the messages from the Polygon network
    */
   IRootStateReceiver public rootStateReceiver;
@@ -56,7 +56,7 @@ contract FxStateRootTunnel is
 
   /**
    * @notice Send message to Polygon
-   * @dev Callable only by EtherZDAOChef contract
+   * @dev Callable only by RootZDAOChef contract
    */
   function sendMessageToChild(bytes calldata message)
     external

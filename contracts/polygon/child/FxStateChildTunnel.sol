@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.11;
 
-import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {IChildStateSender, IChildStateReceiver} from "../interfaces/ITunnel.sol";
-import {FxBaseChildTunnel} from "../tunnel/FxBaseChildTunnel.sol";
+import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
+import {IChildStateSender, IChildStateReceiver} from "../../interfaces/ITunnel.sol";
+import {FxBaseChildTunnel} from "../../tunnel/FxBaseChildTunnel.sol";
 
 contract FxStateChildTunnel is
   ZeroUpgradeable,
@@ -12,7 +12,7 @@ contract FxStateChildTunnel is
   IChildStateSender
 {
   /**
-   * Address to PolyZDAOChef contract which is responsible for processing
+   * Address to ChildZDAOChef contract which is responsible for processing
    * the messages from the Ethereum network
    */
   IChildStateReceiver public childStateReceiver;
@@ -52,7 +52,7 @@ contract FxStateChildTunnel is
 
   /**
    * @notice Send message to Ethereum
-   * @dev Callable only by PolyZDAOChef contract
+   * @dev Callable only by ChildZDAOChef contract
    */
   function sendMessageToRoot(bytes calldata message)
     external

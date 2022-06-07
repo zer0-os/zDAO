@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.11;
 
-import {ZeroUpgradeable} from "../abstracts/ZeroUpgradeable.sol";
-import {createProxy} from "../helpers/Proxy.sol";
-import {IChildStateSender, IChildStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
+import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
+import {createProxy} from "../../helpers/Proxy.sol";
+import {IChildStateSender, IChildStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
 import {IChildChainManager} from "./interfaces/IChildChainManager.sol";
-import {IPolyZDAOChef} from "./interfaces/IPolyZDAOChef.sol";
-import {IPolyZDAO} from "./interfaces/IPolyZDAO.sol";
+import {IChildZDAOChef} from "./interfaces/IChildZDAOChef.sol";
+import {IChildZDAO} from "./interfaces/IChildZDAO.sol";
 import {Staking} from "./Staking.sol";
 
-contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
+contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
   /**
    * Address to Staking contract, which returns staking power as voting power
    * based on staked amount
@@ -23,7 +23,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
   IChildStateSender public childStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => IPolyZDAO) public zDAOs;
+  mapping(uint256 => IChildZDAO) public zDAOs;
   uint256[] public zDAOIds;
 
   /**
@@ -101,7 +101,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
   /**
    * @notice Calculate proposal, check the comment of calculateProposal function
-   *     in the PolyZDAO contract.
+   *     in the ChildZDAO contract.
    *     Once calculate proposal, it should be sent to Ethereum.
    * @dev Only for valid zDAO
    * @param _daoId zDAO unique id
@@ -165,7 +165,7 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
   function _createZDAO(bytes memory _message)
     internal
     virtual
-    returns (IPolyZDAO)
+    returns (IChildZDAO)
   {
     (
       uint256 messageType,
@@ -178,11 +178,11 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
 
     address childToken = childChainManager.rootToChildToken(rootToken);
 
-    IPolyZDAO zDAO = IPolyZDAO(
+    IChildZDAO zDAO = IChildZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          IPolyZDAO.__ZDAO_init.selector,
+          IChildZDAO.__ZDAO_init.selector,
           address(this),
           staking,
           zDAOId,
@@ -277,21 +277,21 @@ contract PolyZDAOChef is ZeroUpgradeable, IChildStateReceiver, IPolyZDAOChef {
     return zDAOIds.length;
   }
 
-  function getzDAOById(uint256 _daoId) external view returns (IPolyZDAO) {
+  function getzDAOById(uint256 _daoId) external view returns (IChildZDAO) {
     return zDAOs[_daoId];
   }
 
   function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (IPolyZDAO[] memory records)
+    returns (IChildZDAO[] memory records)
   {
     uint256 numRecords = _count;
     if (numRecords > (zDAOIds.length - _startIndex)) {
       numRecords = zDAOIds.length - _startIndex;
     }
 
-    records = new IPolyZDAO[](numRecords);
+    records = new IChildZDAO[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
       records[i] = zDAOs[zDAOIds[_startIndex + i]];

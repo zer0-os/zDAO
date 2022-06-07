@@ -8,9 +8,9 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import { IERC20Upgradeable, EtherZDAO, EtherZDAO__factory } from "../../types";
-import { ProposalConfig, ZDAOConfig } from "../shared/types";
-import { mineToBlock, now } from "../shared/utilities";
+import { IERC20Upgradeable, RootZDAO, RootZDAO__factory } from "../../../types";
+import { ProposalConfig, ZDAOConfig } from "../../shared/types";
+import { mineToBlock, now } from "../../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -23,7 +23,7 @@ describe("ZDAO", async function () {
 
   const zNA = "wilder.wheels";
 
-  let zDAO: MockContract<EtherZDAO>,
+  let zDAO: MockContract<RootZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
@@ -32,10 +32,10 @@ describe("ZDAO", async function () {
   beforeEach("init setup", async function () {
     [owner, zDAOChef, zNAOwner, userA, userB] = await ethers.getSigners();
 
-    const ZDAOFactory = (await smock.mock<EtherZDAO__factory>(
-      "EtherZDAO"
-    )) as MockContractFactory<EtherZDAO__factory>;
-    zDAO = (await ZDAOFactory.deploy()) as MockContract<EtherZDAO>;
+    const ZDAOFactory = (await smock.mock<RootZDAO__factory>(
+      "RootZDAO"
+    )) as MockContractFactory<RootZDAO__factory>;
+    zDAO = (await ZDAOFactory.deploy()) as MockContract<RootZDAO>;
 
     vToken = (await smock.fake(
       "IERC20Upgradeable"

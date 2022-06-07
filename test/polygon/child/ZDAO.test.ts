@@ -12,13 +12,13 @@ import {
   IERC20Upgradeable,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
-  PolyZDAO,
-  PolyZDAO__factory,
-} from "../../types";
-import { Staking__factory } from "../../types/factories/Staking__factory";
-import { Staking } from "../../types/Staking";
-import { PolyProposalConfig, PolyZDAOConfig } from "../shared/types";
-import { increaseTime, mineToBlock, now } from "../shared/utilities";
+  ChildZDAO,
+  ChildZDAO__factory,
+} from "../../../types";
+import { Staking__factory } from "../../../types/factories/Staking__factory";
+import { Staking } from "../../../types/Staking";
+import { PolyProposalConfig, ChildZDAOConfig } from "../../shared/types";
+import { increaseTime, mineToBlock, now } from "../../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -30,21 +30,21 @@ describe("ZDAO", async function () {
     userC: SignerWithAddress;
 
   let staking: MockContract<Staking>,
-    zDAO: MockContract<PolyZDAO>,
+    zDAO: MockContract<ChildZDAO>,
     vToken: MockContract<MockTokenUpgradeable>,
     zDAOInfo: any;
 
-  let zDAOConfig: PolyZDAOConfig, proposalConfig: PolyProposalConfig;
+  let zDAOConfig: ChildZDAOConfig, proposalConfig: PolyProposalConfig;
 
   let BIG_POW: BigNumber;
 
   beforeEach("init setup", async function () {
     [owner, zDAOChef, userA, userB, userC] = await ethers.getSigners();
 
-    const ZDAOFactory = (await smock.mock<PolyZDAO__factory>(
-      "PolyZDAO"
-    )) as MockContractFactory<PolyZDAO__factory>;
-    zDAO = (await ZDAOFactory.deploy()) as MockContract<PolyZDAO>;
+    const ZDAOFactory = (await smock.mock<ChildZDAO__factory>(
+      "ChildZDAO"
+    )) as MockContractFactory<ChildZDAO__factory>;
+    zDAO = (await ZDAOFactory.deploy()) as MockContract<ChildZDAO>;
 
     const StakingFactory = (await smock.mock<Staking__factory>(
       "Staking"

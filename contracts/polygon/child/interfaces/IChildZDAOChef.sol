@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.11;
 
-import {IPolyZDAO} from "./IPolyZDAO.sol";
+import {IChildZDAO} from "./IChildZDAO.sol";
 
-interface IPolyZDAOChef {
+interface IChildZDAOChef {
   /* -------------------------------------------------------------------------- */
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
@@ -62,10 +62,10 @@ interface IPolyZDAOChef {
 
   function numberOfzDAOs() external view returns (uint256);
 
-  function getzDAOById(uint256 _daoId) external view returns (IPolyZDAO);
+  function getzDAOById(uint256 _daoId) external view returns (IChildZDAO);
 
   function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (IPolyZDAO[] memory records);
+    returns (IChildZDAO[] memory records);
 }
