@@ -197,17 +197,18 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     _disassociatezNA(_zDAOId, _zNA);
   }
 
-  function adminModifyZDAO(uint256 _zDAOId, address _gnosisSafe)
-    external
-    onlyValidZDAO(_zDAOId)
-    onlyOwner
-  {
+  function adminModifyZDAO(
+    uint256 _zDAOId,
+    address _gnosisSafe,
+    bytes calldata _options
+  ) external onlyValidZDAO(_zDAOId) onlyOwner {
     ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
 
     IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
     assert(address(factory) != address(0));
 
     zDAORecord.gnosisSafe = _gnosisSafe;
+    factory.modifyZDAO(_zDAOId, _gnosisSafe, _options);
 
     emit DAOModified(_zDAOId, _gnosisSafe);
   }

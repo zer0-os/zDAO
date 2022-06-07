@@ -11,4 +11,10 @@ interface IZDAOFactory {
   ) external returns (address);
 
   function removeZDAO(uint256 _zDAOId) external;
+
+  function modifyZDAO(
+    uint256 _zDAOId,
+    address _gnosisSafe,
+    bytes calldata _options
+  ) external;
 }
