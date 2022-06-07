@@ -54,7 +54,9 @@ export interface CalculateProposalPack {
   no: number;
 }
 
-export const encodeCalculateProposal = (pack: CalculateProposalPack): string => {
+export const encodeCalculateProposal = (
+  pack: CalculateProposalPack
+): string => {
   return ethers.utils.defaultAbiCoder.encode(
     ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
     [

@@ -84,7 +84,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
    * @param _platformType PlatformType enum value
    * @param _zNA zNA unique Id
    * @param _gnosisSafe Gnosis Safe address per zDAO
-   * @param _options Abi encode packed of the structure of zDAO information
+   * @param _options Abi encoded the structure of zDAO information
    */
   function addNewZDAO(
     uint256 _platformType,

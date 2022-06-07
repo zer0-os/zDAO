@@ -30,41 +30,9 @@ interface IRootZDAOChef {
     bool isRelativeMajority;
   }
 
-  struct ZDAORecord {
-    /// @notice Unique id for looking up zDAO
-    uint256 id;
-    /// @notice Address to newly created EtherZDAO contract
-    IRootZDAO zDAO;
-    /// @notice Array of zNA ids associated with zDAO
-    uint256[] associatedzNAs;
-  }
-
   /* -------------------------------------------------------------------------- */
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
-
-  event DAOCreated(
-    uint256 indexed _daoId,
-    address indexed _creator,
-    address indexed _zDAO
-  );
-
-  event DAODestroyed(uint256 indexed _daoId);
-
-  event DAOUpdateGnosisSafe(
-    uint256 indexed _daoId,
-    address indexed _gnosisSafe
-  );
-
-  event DAOUpdateVotingtoken(
-    uint256 indexed _daoId,
-    address indexed _token,
-    uint256 indexed _amount
-  );
-
-  event LinkAdded(uint256 indexed _daoId, uint256 indexed _zNA);
-
-  event LinkRemoved(uint256 indexed _daoId, uint256 indexed _zNA);
 
   event ProposalCreated(
     uint256 indexed _zDAOId,
@@ -97,45 +65,13 @@ interface IRootZDAOChef {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig) external;
+  function createProposal(uint256 _zDAOId, string calldata _ipfs) external;
 
-  function removeDAO(uint256 _daoId) external;
+  function cancelProposal(uint256 _zDAOId, uint256 _proposalId) external;
 
-  function setDAOGnosisSafe(uint256 _daoId, address _gnosisSafe) external;
-
-  function setDAOVotingToken(
-    uint256 _daoId,
-    address _token,
-    uint256 _amount
-  ) external;
-
-  function addZNAAssociation(uint256 _daoId, uint256 _zNA) external;
-
-  function removeZNAAssociation(uint256 _daoId, uint256 _zNA) external;
-
-  function createProposal(uint256 _daoId, string calldata _ipfs) external;
-
-  function cancelProposal(uint256 _daoId, uint256 _proposalId) external;
-
-  function executeProposal(uint256 _daoId, uint256 _proposalId) external;
+  function executeProposal(uint256 _zDAOId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
-
-  function numberOfzDAOs() external view returns (uint256);
-
-  function getzDAOById(uint256 _daoId)
-    external
-    view
-    returns (ZDAORecord memory records);
-
-  function listzDAOs(uint256 _startIndex, uint256 _count)
-    external
-    view
-    returns (ZDAORecord[] memory records);
-
-  function getzDaoByZNA(uint256 _zNA) external view returns (ZDAORecord memory);
-
-  function doeszDAOExistForzNA(uint256 _zNA) external view returns (bool);
 }

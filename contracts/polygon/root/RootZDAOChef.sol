@@ -6,12 +6,18 @@ import {ZeroUpgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeabl
 import {createProxy} from "../../helpers/Proxy.sol";
 import {IZNSHub} from "../../interfaces/IZNSHub.sol";
 import {IRootStateSender, IRootStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
+import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
 import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
 import {IRootZDAO} from "./interfaces/IRootZDAO.sol";
 import {console} from "hardhat/console.sol";
 
-contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
-  IZNSHub public znsHub;
+contract RootZDAOChef is
+  ZeroUpgradeable,
+  IRootStateReceiver,
+  IRootZDAOChef,
+  IZDAOFactory
+{
+  address public zDAORegistry;
   /**
    * Address to FxStateRootTunnel which is responsible for sending message
    * from Ethereum to Polygon
@@ -19,8 +25,7 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
   IRootStateSender public rootStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => ZDAORecord) public zDAORecords;
-  mapping(uint256 => uint256) private zNATozDAOId;
+  mapping(uint256 => IRootZDAO) public zDAOs;
 
   uint256 public lastZDAOId;
 
@@ -28,23 +33,15 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyZNAOwner(uint256 _zNA) {
-    require(znsHub.ownerOf(_zNA) == msg.sender, "Not a zNA owner");
+  modifier onlyRegistry() {
+    require(msg.sender == zDAORegistry, "Not a registry");
     _;
   }
 
-  modifier onlyValidZDAO(uint256 _daoId) {
+  modifier onlyValidZDAO(uint256 _zDAOId) {
     require(
-      _daoId > 0 && _daoId <= lastZDAOId && !_isZDAODestroyed(_daoId),
+      _zDAOId > 0 && _zDAOId <= lastZDAOId && !_isZDAODestroyed(_zDAOId),
       "Invalid zDAO"
-    );
-    _;
-  }
-
-  modifier onlyDAOOwner(uint256 _daoId) {
-    require(
-      msg.sender == zDAORecords[_daoId].zDAO.zDAOOwner(),
-      "Invalid zDAO Owner"
     );
     _;
   }
@@ -54,13 +51,13 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   function __ZDAOChef_init(
-    IZNSHub _znsHub,
+    address _zDAORegistry,
     IRootStateSender _rootStateSender,
     address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
-    znsHub = _znsHub;
+    zDAORegistry = _zDAORegistry;
     rootStateSender = _rootStateSender;
     zDAOBase = _zDAOBase;
   }
@@ -68,10 +65,6 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
-
-  function setZNSHub(address _znsHub) external onlyOwner {
-    znsHub = IZNSHub(_znsHub);
-  }
 
   function setZDAOBase(address _zDAOBase) external onlyOwner {
     zDAOBase = _zDAOBase;
@@ -83,40 +76,44 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
    * @dev Only zNA owner can create zDAO
+   * @param _zDAOId zDAO unique id
    * @param _zNA zNA unique Id
-   * @param _zDAOConfig Structure of zDAO information
+   * @param _gnosisSafe Address to Gnosis Safe
+   * @param _options Abi encoded the structure of zDAO information
    */
-  function addNewDAO(uint256 _zNA, ZDAOConfig calldata _zDAOConfig)
-    external
-    override
-    onlyZNAOwner(_zNA)
-  {
-    uint256 daoId = zNATozDAOId[_zNA];
-    require(daoId == 0, "Do not allow to add new DAO with same zNA");
+  function addNewZDAO(
+    uint256 _zDAOId,
+    uint256 _zNA,
+    address _gnosisSafe,
+    bytes calldata _options
+  ) external override onlyRegistry returns (address) {
+    
+    (ZDAOConfig memory config) = abi.decode(_options, (ZDAOConfig));
+    config.gnosisSafe = _gnosisSafe;
 
-    // Create zDAO contract
-    IRootZDAO zDAO = _createZDAO(_zDAOConfig);
+    IRootZDAO zDAO = IRootZDAO(
+      createProxy(
+        zDAOBase,
+        abi.encodeWithSelector(
+          IRootZDAO.__ZDAO_init.selector,
+          address(this),
+          _zDAOId,
+          msg.sender, // zDAO createdBy
+          config
+        )
+      )
+    );
 
-    zDAORecords[lastZDAOId] = ZDAORecord({
-      id: lastZDAOId,
-      zDAO: zDAO,
-      associatedzNAs: new uint256[](0)
-    });
+    // IRootZDAO zDAO = IRootZDAO(address(0));
 
-    emit DAOCreated(lastZDAOId, msg.sender, address(zDAO));
-
-    // Associate zDAO with zNA
-    _associatezNA(lastZDAOId, _zNA);
+    zDAOs[_zDAOId] = zDAO;
 
     // send zDAO info to L2
     rootStateSender.sendMessageToChild(
-      abi.encode(
-        uint256(MessageType.CreateZDAO),
-        lastZDAOId,
-        _zDAOConfig.duration,
-        _zDAOConfig.token
-      )
+      abi.encode(uint256(MessageType.CreateZDAO), _zDAOId, config.duration, config.token)
     );
+
+    return address(zDAO);
   }
 
   /**
@@ -124,94 +121,29 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
    *     Removed state should be synchronized to Polygon, so that stop
    *     user voting
    * @dev Only zDAO owner can remove zDAO, and only for valid zDAO
-   * @param _daoId zDAO unique id
+   * @param _zDAOId zDAO unique id
    */
-  function removeDAO(uint256 _daoId)
-    external
-    override
-    onlyDAOOwner(_daoId)
-    onlyValidZDAO(_daoId)
-  {
-    zDAORecords[_daoId].zDAO.setDestroyed(true);
-
-    emit DAODestroyed(_daoId);
+  function removeZDAO(uint256 _zDAOId) external override onlyRegistry {
+    zDAOs[_zDAOId].setDestroyed(true);
 
     // send zDAO info to L2
     rootStateSender.sendMessageToChild(
-      abi.encode(uint256(MessageType.DeleteZDAO), _daoId)
+      abi.encode(uint256(MessageType.DeleteZDAO), _zDAOId)
     );
   }
 
-  /**
-   * @notice Set Gnosis Safe address for given zDAO
-   * @dev Callable by zDAO owner and for valid zDAO
-   * @param _daoId zDAO unique id
-   * @param _gnosisSafe Address to Gnosis Safe
-   */
-  function setDAOGnosisSafe(uint256 _daoId, address _gnosisSafe)
-    external
-    override
-    onlyDAOOwner(_daoId)
-    onlyValidZDAO(_daoId)
-  {
-    zDAORecords[_daoId].zDAO.setGnosisSafe(_gnosisSafe);
+  function modifyZDAO(
+    uint256 _zDAOId,
+    address _gnosisSafe,
+    bytes calldata _options
+  ) external override onlyRegistry {
+    (address token, uint256 amount) = abi.decode(_options, (address, uint256));
 
-    emit DAOUpdateGnosisSafe(_daoId, _gnosisSafe);
-  }
-
-  /**
-   * @notice Set voting token and minimum holding amount
-   * @dev Callable by zDAO owner and for valid zDAO
-   * @param _daoId zDAO unique id
-   * @param _token Voting token address, ERC20 or ERc721
-   * @param _amount Minimum holding amount required to become proposal creator
-   */
-  function setDAOVotingToken(
-    uint256 _daoId,
-    address _token,
-    uint256 _amount
-  ) external override onlyDAOOwner(_daoId) onlyValidZDAO(_daoId) {
-    zDAORecords[_daoId].zDAO.setVotingToken(_token, _amount);
-
-    emit DAOUpdateVotingtoken(_daoId, _token, _amount);
-
-    // todo, send message to L2
+    zDAOs[_zDAOId].modifyZDAO(_gnosisSafe, token, amount);
     // send proposal info to L2
     rootStateSender.sendMessageToChild(
-      abi.encode(uint256(ITunnel.MessageType.UpdateToken), _daoId, _token)
+      abi.encode(uint256(ITunnel.MessageType.UpdateToken), _zDAOId, token)
     );
-  }
-
-  /**
-   * @notice Add association with zNA
-   * @dev Callable by zDAO owner and for valid zDAO
-   * @param _daoId zDAO unique id
-   * @param _zNA zNA id required to associate
-   */
-  function addZNAAssociation(uint256 _daoId, uint256 _zNA)
-    external
-    override
-    onlyValidZDAO(_daoId)
-    onlyZNAOwner(_zNA)
-  {
-    _associatezNA(_daoId, _zNA);
-  }
-
-  /**
-   * @notice Remove association from given zDAO
-   * @dev Callable by zDAO owner and for valid zDAO
-   * @param _daoId zDAO unique id
-   * @param _zNA zNA id required to remove
-   */
-  function removeZNAAssociation(uint256 _daoId, uint256 _zNA)
-    external
-    override
-    onlyZNAOwner(_zNA)
-  {
-    require(_daoId > 0 && _daoId <= lastZDAOId, "Invalid zDAO");
-    require(zNATozDAOId[_zNA] == _daoId, "zNA not associated");
-
-    _disassociatezNA(_daoId, _zNA);
   }
 
   /**
@@ -219,26 +151,31 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
    *     in the RootZDAO contract.
    *     Once create a new proposal, it should be synchronized to Polygon.
    * @dev Only for valid zDAO
-   * @param _daoId zDAO unique id
+   * @param _zDAOId zDAO unique id
    * @param _ipfs IPFS which contains proposal information
    */
-  function createProposal(uint256 _daoId, string calldata _ipfs)
+  function createProposal(uint256 _zDAOId, string calldata _ipfs)
     external
     override
-    onlyValidZDAO(_daoId)
+    onlyValidZDAO(_zDAOId)
   {
-    uint256 proposalId = zDAORecords[_daoId].zDAO.createProposal(
+    uint256 proposalId = zDAOs[_zDAOId].createProposal(
       msg.sender, // created by
       _ipfs
     );
 
-    emit ProposalCreated(_daoId, proposalId, msg.sender, uint256(block.number));
+    emit ProposalCreated(
+      _zDAOId,
+      proposalId,
+      msg.sender,
+      uint256(block.number)
+    );
 
     // send proposal info to L2
     rootStateSender.sendMessageToChild(
       abi.encode(
         uint256(ITunnel.MessageType.CreateProposal),
-        _daoId,
+        _zDAOId,
         proposalId
       )
     );
@@ -248,22 +185,22 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
    * @notice Cancel proposal, check the comment of cancelProposal function
    *     in the RootZDAO contract.
    * @dev Only for valid zDAO
-   * @param _daoId zDAO unique id
+   * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
    */
-  function cancelProposal(uint256 _daoId, uint256 _proposalId)
+  function cancelProposal(uint256 _zDAOId, uint256 _proposalId)
     external
     override
-    onlyValidZDAO(_daoId)
+    onlyValidZDAO(_zDAOId)
   {
-    zDAORecords[_daoId].zDAO.cancelProposal(msg.sender, _proposalId);
+    zDAOs[_zDAOId].cancelProposal(msg.sender, _proposalId);
 
-    emit ProposalCanceled(_daoId, _proposalId, msg.sender);
+    emit ProposalCanceled(_zDAOId, _proposalId, msg.sender);
 
     rootStateSender.sendMessageToChild(
       abi.encode(
         uint256(ITunnel.MessageType.CancelProposal),
-        _daoId,
+        _zDAOId,
         _proposalId
       )
     );
@@ -273,22 +210,22 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
    * @notice Execute proposal, check the comment of executeProposal function
    *     in the RootZDAO contract.
    * @dev Only for valid zDAO
-   * @param _daoId zDAO unique id
+   * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
    */
-  function executeProposal(uint256 _daoId, uint256 _proposalId)
+  function executeProposal(uint256 _zDAOId, uint256 _proposalId)
     external
     override
-    onlyValidZDAO(_daoId)
+    onlyValidZDAO(_zDAOId)
   {
-    zDAORecords[_daoId].zDAO.executeProposal(msg.sender, _proposalId);
+    zDAOs[_zDAOId].executeProposal(msg.sender, _proposalId);
 
-    emit ProposalExecuted(_daoId, _proposalId, msg.sender);
+    emit ProposalExecuted(_zDAOId, _proposalId, msg.sender);
 
     rootStateSender.sendMessageToChild(
       abi.encode(
         uint256(ITunnel.MessageType.ExecuteProposal),
-        _daoId,
+        _zDAOId,
         _proposalId
       )
     );
@@ -333,121 +270,16 @@ contract RootZDAOChef is ZeroUpgradeable, IRootStateReceiver, IRootZDAOChef {
     );
 
     // let zDAO decode
-    zDAORecords[zDAOId].zDAO.calculateProposal(proposalId, voters, yes, no);
+    zDAOs[zDAOId].calculateProposal(proposalId, voters, yes, no);
 
     emit ProposalCalculated(zDAOId, proposalId, voters, yes, no);
   }
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
-    return zDAORecords[_index].zDAO.destroyed();
-  }
-
-  function _createZDAO(ZDAOConfig calldata _zDAOConfig)
-    internal
-    virtual
-    returns (IRootZDAO zDAO)
-  {
-    lastZDAOId++;
-
-    zDAO = IRootZDAO(
-      createProxy(
-        zDAOBase,
-        abi.encodeWithSelector(
-          IRootZDAO.__ZDAO_init.selector,
-          address(this),
-          lastZDAOId,
-          msg.sender, // zDAO createdBy
-          _zDAOConfig
-        )
-      )
-    );
-  }
-
-  function _associatezNA(uint256 _daoId, uint256 _zNA) internal {
-    uint256 currentDAOAssociation = zNATozDAOId[_zNA];
-    require(currentDAOAssociation != _daoId, "zNA already linked to DAO");
-
-    // If an association already exists, remove it
-    if (currentDAOAssociation != 0) {
-      _disassociatezNA(currentDAOAssociation, _zNA);
-    }
-
-    zNATozDAOId[_zNA] = _daoId;
-    zDAORecords[_daoId].associatedzNAs.push(_zNA);
-
-    emit LinkAdded(_daoId, _zNA);
-  }
-
-  function _disassociatezNA(uint256 daoId, uint256 zNA) internal {
-    ZDAORecord storage dao = zDAORecords[daoId];
-    uint256 length = zDAORecords[daoId].associatedzNAs.length;
-
-    for (uint256 i = 0; i < length; i++) {
-      if (dao.associatedzNAs[i] == zNA) {
-        dao.associatedzNAs[i] = dao.associatedzNAs[length - 1];
-        dao.associatedzNAs.pop();
-        zNATozDAOId[zNA] = 0;
-
-        emit LinkRemoved(daoId, zNA);
-        break;
-      }
-    }
+    return zDAOs[_index].destroyed();
   }
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
-
-  function numberOfzDAOs() external view override returns (uint256) {
-    return lastZDAOId;
-  }
-
-  function getzDAOById(uint256 _daoId)
-    external
-    view
-    override
-    returns (ZDAORecord memory)
-  {
-    return zDAORecords[_daoId];
-  }
-
-  function listzDAOs(uint256 _startIndex, uint256 _count)
-    external
-    view
-    override
-    returns (ZDAORecord[] memory records)
-  {
-    uint256 numRecords = _count;
-    if (numRecords > (lastZDAOId - _startIndex)) {
-      numRecords = lastZDAOId - _startIndex;
-    }
-
-    records = new ZDAORecord[](numRecords);
-
-    for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAORecords[_startIndex + i + 1];
-    }
-
-    return records;
-  }
-
-  function getzDaoByZNA(uint256 _zNA)
-    external
-    view
-    override
-    returns (ZDAORecord memory)
-  {
-    uint256 daoId = zNATozDAOId[_zNA];
-    require(daoId > 0 && daoId <= lastZDAOId, "No zDAO associated with zNA");
-    return zDAORecords[daoId];
-  }
-
-  function doeszDAOExistForzNA(uint256 _zNA)
-    external
-    view
-    override
-    returns (bool)
-  {
-    return zNATozDAOId[_zNA] != 0;
-  }
 }

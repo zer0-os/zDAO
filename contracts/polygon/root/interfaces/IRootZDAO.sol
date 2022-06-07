@@ -87,9 +87,11 @@ interface IRootZDAO {
 
   function setDestroyed(bool _destroyed) external;
 
-  function setGnosisSafe(address _gnosisSafe) external;
-
-  function setVotingToken(address _token, uint256 _amount) external;
+  function modifyZDAO(
+    address _gnosisSafe,
+    address _token,
+    uint256 _amount
+  ) external;
 
   function createProposal(address _createdBy, string calldata _ipfs)
     external

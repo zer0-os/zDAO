@@ -97,31 +97,18 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
   }
 
   /**
-   * @notice Set Gnosis Safe address
+   * @notice Set Gnosis Safe address, Voting Token and minimum holding token amount
    * @dev Callable by RootZDAOChef, only available for active zDAO
    * @param _gnosisSafe Address to Gnosis Safe wallet
-   */
-  function setGnosisSafe(address _gnosisSafe)
-    external
-    override
-    isActiveDAO
-    onlyZDAOChef
-  {
-    zDAOInfo.gnosisSafe = _gnosisSafe;
-  }
-
-  /**
-   * @notice Set Voting Token and minimum holding token amount
-   * @dev Callable by RootZDAOChef, only available for active zDAO
    * @param _token Address to Voting Token
    * @param _amount Minimum number of tokens required to become proposal creator
    */
-  function setVotingToken(address _token, uint256 _amount)
-    external
-    override
-    isActiveDAO
-    onlyZDAOChef
-  {
+  function modifyZDAO(
+    address _gnosisSafe,
+    address _token,
+    uint256 _amount
+  ) external override isActiveDAO onlyZDAOChef {
+    zDAOInfo.gnosisSafe = _gnosisSafe;
     zDAOInfo.token = _token;
     zDAOInfo.amount = _amount;
   }

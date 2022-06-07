@@ -61,7 +61,6 @@ export const znsHubConfig: ZNSHubConfig[] = [
   },
 ];
 
-
 const snapshotConfig = {
   rinkeby: {
     znsHub: "0x90098737eB7C3e73854daF1Da20dFf90d521929a",
@@ -71,4 +70,8 @@ const snapshotConfig = {
   },
 };
 
-export const config = { ...snapshotConfig, ...ethereumConfig, ...polygonConfig };
+export const config = {
+  ...snapshotConfig,
+  ...ethereumConfig,
+  ...polygonConfig,
+};

@@ -5,7 +5,10 @@ import { IChildZDAO, ChildZDAO } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
-const checkChildZDAO = async (deployer: SignerWithAddress, contract: string) => {
+const checkChildZDAO = async (
+  deployer: SignerWithAddress,
+  contract: string
+) => {
   // const polyZDAO = (await ethers.getContractAt(
   //   "ChildZDAO",
   //   contract,
@@ -49,7 +52,10 @@ const main = async () => {
 
     console.log("\nWelcome");
   } else if (network.name === "polygonMumbai" || network.name === "polygon") {
-    await checkChildZDAO(deployer, "0xcB67646d7cE288ff91ED26BefaA04c305884a26c");
+    await checkChildZDAO(
+      deployer,
+      "0xcB67646d7cE288ff91ED26BefaA04c305884a26c"
+    );
   }
 };
 
