@@ -2,8 +2,6 @@
 
 pragma solidity ^0.8.11;
 
-import {console} from "hardhat/console.sol";
-
 import {ERC20Upgradeable} from "../../oz-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import {IERC721Upgradeable} from "../../oz-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import {ERC721HolderUpgradeable} from "../../oz-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";

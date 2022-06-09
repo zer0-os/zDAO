@@ -7,10 +7,6 @@ import {IRootZDAO} from "./IRootZDAO.sol";
 
 interface IRootZDAOChef {
   struct ZDAOConfig {
-    /// @notice Title of the zDAO
-    string title;
-    /// @notice Gnosis safe address where collected treasuries are stored
-    address gnosisSafe;
     /// @notice Voting token (ERC20 or ERC721) on Ethereum, only token holders
     /// can create a proposal
     address token;

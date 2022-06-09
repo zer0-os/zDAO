@@ -1,6 +1,4 @@
 export interface ZDAOConfig {
-  title: string;
-  gnosisSafe: string;
   token: string;
   amount: number;
   duration: number;

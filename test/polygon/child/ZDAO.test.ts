@@ -1,5 +1,4 @@
 import {
-  FakeContract,
   MockContract,
   MockContractFactory,
   smock,
@@ -9,7 +8,6 @@ import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import {
-  IERC20Upgradeable,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
   ChildZDAO,

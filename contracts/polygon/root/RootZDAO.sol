@@ -6,7 +6,6 @@ import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../../ab
 import {ITunnel} from "../../interfaces/ITunnel.sol";
 import {IRootZDAO} from "./interfaces/IRootZDAO.sol";
 import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
-import {console} from "hardhat/console.sol";
 
 contract RootZDAO is ZeroUpgradeable, IRootZDAO {
   using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -54,12 +53,17 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
    * @notice Initializer function
    * @param _zDAOChef Address to RootZDAOChef contract
    * @param _zDAOId Unique id for current zDAO
+   * @param _gnosisSafe Address to Gnosis Safe
    * @param _createdBy Address to zDAO owner
+   * @param _title Title of the zDAO
+   * @param _zDAOConfig Structure of zDAO configuration
    */
   function __ZDAO_init(
     address _zDAOChef,
     uint256 _zDAOId,
+    address _gnosisSafe,
     address _createdBy,
+    string calldata _title,
     IRootZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
@@ -68,9 +72,9 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
 
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      title: _zDAOConfig.title,
+      title: _title,
       createdBy: _createdBy,
-      gnosisSafe: _zDAOConfig.gnosisSafe,
+      gnosisSafe: _gnosisSafe,
       token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
       duration: _zDAOConfig.duration,
@@ -304,6 +308,7 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
     } else if (!proposal.calculated) {
       return ProposalState.Pending;
     }
+
     // Check quorum
     if (
       proposal.voters < zDAOInfo.minimumVotingParticipants ||

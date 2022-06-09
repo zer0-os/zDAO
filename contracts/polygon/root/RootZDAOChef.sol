@@ -9,7 +9,6 @@ import {IRootStateSender, IRootStateReceiver, ITunnel} from "../../interfaces/IT
 import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
 import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
 import {IRootZDAO} from "./interfaces/IRootZDAO.sol";
-import {console} from "hardhat/console.sol";
 
 contract RootZDAOChef is
   ZeroUpgradeable,
@@ -27,8 +26,6 @@ contract RootZDAOChef is
 
   mapping(uint256 => IRootZDAO) public zDAOs;
 
-  uint256 public lastZDAOId;
-
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
@@ -39,10 +36,7 @@ contract RootZDAOChef is
   }
 
   modifier onlyValidZDAO(uint256 _zDAOId) {
-    require(
-      _zDAOId > 0 && _zDAOId <= lastZDAOId && !_isZDAODestroyed(_zDAOId),
-      "Invalid zDAO"
-    );
+    require(_zDAOId > 0 && !_isZDAODestroyed(_zDAOId), "Invalid zDAO");
     _;
   }
 
@@ -87,9 +81,12 @@ contract RootZDAOChef is
     address _gnosisSafe,
     bytes calldata _options
   ) external override onlyRegistry returns (address) {
-    
-    (ZDAOConfig memory config) = abi.decode(_options, (ZDAOConfig));
-    config.gnosisSafe = _gnosisSafe;
+    assert(address(zDAOs[_zDAOId]) == address(0));
+
+    (string memory title, ZDAOConfig memory config) = abi.decode(
+      _options,
+      (string, ZDAOConfig)
+    );
 
     IRootZDAO zDAO = IRootZDAO(
       createProxy(
@@ -98,19 +95,24 @@ contract RootZDAOChef is
           IRootZDAO.__ZDAO_init.selector,
           address(this),
           _zDAOId,
+          _gnosisSafe,
           msg.sender, // zDAO createdBy
+          title,
           config
         )
       )
     );
 
-    // IRootZDAO zDAO = IRootZDAO(address(0));
-
     zDAOs[_zDAOId] = zDAO;
 
     // send zDAO info to L2
     rootStateSender.sendMessageToChild(
-      abi.encode(uint256(MessageType.CreateZDAO), _zDAOId, config.duration, config.token)
+      abi.encode(
+        uint256(MessageType.CreateZDAO),
+        _zDAOId,
+        config.duration,
+        config.token
+      )
     );
 
     return address(zDAO);
@@ -264,10 +266,7 @@ contract RootZDAOChef is
         _message,
         (uint256, uint256, uint256, uint256, uint256, uint256)
       );
-    require(
-      zDAOId > 0 && zDAOId <= lastZDAOId && !_isZDAODestroyed(lastZDAOId),
-      "Invalid zDAO"
-    );
+    require(zDAOId > 0 && !_isZDAODestroyed(zDAOId), "Invalid zDAO");
 
     // let zDAO decode
     zDAOs[zDAOId].calculateProposal(proposalId, voters, yes, no);

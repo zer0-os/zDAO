@@ -2,7 +2,6 @@
 
 pragma solidity ^0.8.11;
 
-import {console} from "hardhat/console.sol";
 import {ZeroUpgradeable} from "./abstracts/ZeroUpgradeable.sol";
 import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
 import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";

@@ -81,7 +81,9 @@ interface IRootZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     uint256 _zDAOId,
+    address _gnosisSafe,
     address _createdBy,
+    string calldata _title,
     IRootZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external;
 

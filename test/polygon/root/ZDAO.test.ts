@@ -27,7 +27,10 @@ describe("ZDAO", async function () {
     vToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
-  let zDAOConfig: ZDAOConfig, proposalConfig: ProposalConfig;
+  let gnosisSafe: string,
+    title: string,
+    zDAOConfig: ZDAOConfig,
+    proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
     [owner, zDAOChef, zNAOwner, userA, userB] = await ethers.getSigners();
@@ -45,11 +48,10 @@ describe("ZDAO", async function () {
     const minAmount = BigNumber.from("10000");
     const minDuration = 30; // unit in seconds
     const minimumTotalVotingTokens = 5000;
-    const gnosisSafe = await ethers.Wallet.createRandom().getAddress();
+    gnosisSafe = await ethers.Wallet.createRandom().getAddress();
+    title = `${zNA}.dao`;
 
     zDAOConfig = {
-      title: `${zNA}.dao`,
-      gnosisSafe,
       token: vToken.address,
       amount: minAmount.toNumber(),
       duration: minDuration,
@@ -62,7 +64,9 @@ describe("ZDAO", async function () {
     await zDAO.__ZDAO_init(
       zDAOChef.address, // instead of zDAOChef
       zDAOId,
+      gnosisSafe,
       zNAOwner.address,
+      title,
       zDAOConfig
     );
 
@@ -75,9 +79,9 @@ describe("ZDAO", async function () {
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(1);
-    expect(zDAOInfo.title).to.be.equal(zDAOConfig.title);
+    expect(zDAOInfo.title).to.be.equal(title);
     expect(zDAOInfo.createdBy).to.be.equal(zNAOwner.address);
-    expect(zDAOInfo.gnosisSafe).to.be.equal(zDAOConfig.gnosisSafe);
+    expect(zDAOInfo.gnosisSafe).to.be.equal(gnosisSafe);
     expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
     expect(zDAOInfo.amount.toNumber()).to.be.equal(zDAOConfig.amount);
     expect(zDAOInfo.duration.toNumber()).to.be.equal(zDAOConfig.duration);
@@ -128,10 +132,14 @@ describe("ZDAO", async function () {
 
   it("Should be callable by zDAOChef", async function () {
     await expect(
-      zDAO.connect(userB).setVotingToken(vToken.address, zDAOConfig.amount)
+      zDAO
+        .connect(userB)
+        .modifyZDAO(gnosisSafe, vToken.address, zDAOConfig.amount)
     ).to.be.revertedWith("Not a ZDAOChef");
     await expect(
-      zDAO.connect(zDAOChef).setVotingToken(vToken.address, zDAOConfig.amount)
+      zDAO
+        .connect(zDAOChef)
+        .modifyZDAO(gnosisSafe, vToken.address, zDAOConfig.amount)
     ).to.be.not.reverted;
   });
 
