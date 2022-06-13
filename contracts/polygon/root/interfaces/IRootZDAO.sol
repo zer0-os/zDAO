@@ -52,6 +52,8 @@ interface IRootZDAO {
     uint256 proposalId;
     /// @notice Address who created proposal
     address createdBy;
+    /// @notice Timestamp when the proposal was created
+    uint256 created;
     /// @notice The number of all the casted votes in favor of this proposal
     uint256 yes;
     /// @notice The number of all the casted vote in opposition to this proposal

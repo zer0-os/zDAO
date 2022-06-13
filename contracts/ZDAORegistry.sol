@@ -287,16 +287,16 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     returns (ZDAORecord memory)
   {
     uint256 zDAOId = zNATozDAOId[_zNA];
-    require(zDAOId > 0 && zDAOId <= lastZDAOId, "No zDAO associated with zNA");
+    // require(zDAOId > 0 && zDAOId <= lastZDAOId, "No zDAO associated with zNA");
     return zDAORecords[zDAOId];
   }
 
-  function getZDAOZNAs(uint256 _zDAOId)
+  function getZDAOById(uint256 _zDAOId)
     external
     view
-    returns (uint256[] memory)
+    returns (ZDAORecord memory)
   {
-    return zDAORecords[_zDAOId].associatedzNAs;
+    return zDAORecords[_zDAOId];
   }
 
   function doesZNAExistForZNA(uint256 _zNA)

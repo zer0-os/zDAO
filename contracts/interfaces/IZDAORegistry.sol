@@ -73,10 +73,10 @@ interface IZDAORegistry {
 
   function getZDAOByZNA(uint256 _zNA) external view returns (ZDAORecord memory);
 
-  function getZDAOZNAs(uint256 _zDAOId)
+  function getZDAOById(uint256 _zDAOId)
     external
     view
-    returns (uint256[] memory);
+    returns (ZDAORecord memory);
 
   function doesZNAExistForZNA(uint256 _zNA) external view returns (bool);
 }

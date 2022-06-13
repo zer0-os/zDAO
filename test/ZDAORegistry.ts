@@ -50,7 +50,8 @@ describe("ZDAORegistry", function () {
     expect(zDAO.id.toNumber()).to.be.equal(daoId);
     expect(zDAO.gnosisSafe).to.be.equal(gnosisSafe);
 
-    const zDAOZNAs = await zDAORegistry.getZDAOZNAs(daoId);
+    const zDAORecord = await zDAORegistry.getZDAOById(daoId);
+    const zDAOZNAs = zDAORecord.associatedzNAs;
     const zDAOZNAsAs = zDAOZNAs.map((zNA) => zNA.toNumber());
     expect(zDAOZNAsAs).to.eql(zNAs);
 

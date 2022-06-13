@@ -230,6 +230,7 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
     proposals[lastProposalId] = Proposal({
       proposalId: lastProposalId,
       createdBy: _createdBy,
+      created: block.timestamp,
       yes: 0,
       no: 0,
       voters: 0,
