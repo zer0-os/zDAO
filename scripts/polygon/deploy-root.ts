@@ -1,8 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { RootZDAOChef, FxStateRootTunnel } from "../types";
-import { config } from "./shared/config";
-import { verifyContract } from "./shared/helpers";
+import { RootZDAOChef, FxStateRootTunnel, ZDAORegistry } from "../../types";
+import { config, PlatformType } from "../shared/config";
+import { verifyContract } from "../shared/helpers";
 
 // mainnet hub: 0x6141d5cb3517215a03519a464bf9c39814df7479
 // rinkeby hub: 0x90098737eB7C3e73854daF1Da20dFf90d521929a
@@ -50,7 +50,7 @@ const main = async () => {
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
       [
-        config[network.name].znsHub,
+        config[network.name].zNSHub,
         fxStateRootTunnel.address,
         zDAOBase.address,
       ],
@@ -70,6 +70,17 @@ const main = async () => {
     // configuring root tunnel contract
     console.log("Setting RootStateReceiver in FxStateRootTunnel");
     await fxStateRootTunnel.setRootStateReceiver(zDAOChef.address);
+
+    const zDAORegistry = (await ethers.getContractAt(
+      "ZDAORegistry",
+      config[network.name].zDAORegistry,
+      deployer
+    )) as ZDAORegistry;
+    console.log("Adding SnapshotZDAOChef factory to ZDAORegistry");
+    await zDAORegistry.addZDAOFactory(
+      PlatformType.Polygon, // Snapshot platform
+      zDAOChef.address
+    );
 
     console.table([
       {

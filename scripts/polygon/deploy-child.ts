@@ -1,8 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { FxStateChildTunnel, ChildZDAOChef, Staking } from "../types";
-import { config } from "./shared/config";
-import { verifyContract } from "./shared/helpers";
+import { FxStateChildTunnel, ChildZDAOChef, Staking } from "../../types";
+import { config } from "../shared/config";
+import { verifyContract } from "../shared/helpers";
 
 const main = async () => {
   const signers = await ethers.getSigners();

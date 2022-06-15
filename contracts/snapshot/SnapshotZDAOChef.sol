@@ -34,7 +34,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __SnapshotZDAOChef_init(address _zDAORegistry) public initializer {
+  function __ZDAOChef_init(address _zDAORegistry) public initializer {
     zDAORegistry = _zDAORegistry;
   }
 

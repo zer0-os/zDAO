@@ -7,10 +7,9 @@
     "clean": "hardhat clean",
     "compile": "hardhat compile",
     "prepare:goerli": "hardhat run scripts/mock.ts --network goerli",
-    "deploy:ethereum": "hardhat run scripts/deploy-mainnet.ts --network mainnet",
-    "deploy:goerli": "hardhat run scripts/deploy-mainnet.ts --network goerli",
-    "deploy:polygon": "hardhat run scripts/deploy-polygon.ts --network polygon",
-    "deploy:mumbai": "hardhat run scripts/deploy-polygon.ts --network polygonMumbai",
+    "deploy-polygon:root": "hardhat run scripts/polygon/deploy-root.ts --network",
+    "deploy-polygon:child": "hardhat run scripts/polygon/deploy-child.ts --network",
+    "deploy-registry": "hardhat run scripts/deploy-registry.ts --network",
     "deploy-snapshot": "hardhat run scripts/deploy-snapshot.ts --network",
     "prettier": "prettier --write 'contracts/**/*.sol' 'scripts/**/*.ts' 'test/**/*.ts'"
   },
