@@ -24,7 +24,7 @@ const main = async () => {
       [config[network.name].zDAORegistry],
       {
         kind: "uups",
-        initializer: "__SnapshotZDAOChef_init",
+        initializer: "__ZDAOChef_init",
       }
     )) as SnapshotZDAOChef;
     await snapshotZDAOChef.deployed();

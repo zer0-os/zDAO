@@ -67,10 +67,10 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     IZDAOFactory _factory
   ) external onlyOwner {
     uint256 platformType = uint256(_platformType);
-    require(
-      address(zDAOFactories[platformType]) == address(0),
-      "Already has factory address"
-    );
+    // require(
+    //   address(zDAOFactories[platformType]) == address(0),
+    //   "Already has factory address"
+    // );
     zDAOFactories[platformType] = _factory;
   }
 
@@ -146,7 +146,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
   function removeZNAAssociation(uint256 _zDAOId, uint256 _zNA)
     external
     override
-    onlyValidZDAO(_zDAOId)
     onlyZNAOwner(_zNA)
   {
     require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
@@ -183,12 +182,12 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     onlyValidZDAO(_zDAOId)
     onlyOwner
   {
+    require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
     _associatezNA(_zDAOId, _zNA);
   }
 
   function adminDisassociateZNA(uint256 _zDAOId, uint256 _zNA)
     external
-    onlyValidZDAO(_zDAOId)
     onlyOwner
   {
     require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");

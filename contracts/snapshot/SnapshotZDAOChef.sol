@@ -42,7 +42,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setRegistry(address _zDAORegistry) external onlyOwner {
+  function setZDAORegistry(address _zDAORegistry) external onlyOwner {
     zDAORegistry = _zDAORegistry;
   }
 
@@ -52,7 +52,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
     address _gnosisSafe,
     bytes calldata _options
   ) external onlyRegistry returns (address) {
-    string memory ensSpace = string(_options);
+    string memory ensSpace = abi.decode(_options, (string));
     uint256 ensId = _ensId(ensSpace);
 
     require(ensToZDAOId[ensId] == 0, "ENS already has zDAO");

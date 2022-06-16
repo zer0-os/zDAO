@@ -160,7 +160,6 @@ describe("ZDAORegistry", function () {
   });
 
   describe("#addNewDAO for polygon", () => {
-
     let rootStateSender: FakeContract<IRootStateSender>,
       rootZDAOChef: MockContract<RootZDAOChef>,
       vToken: FakeContract<IERC20Upgradeable>;
@@ -179,18 +178,20 @@ describe("ZDAORegistry", function () {
       expect(zDAORecord.platformType.toNumber()).to.be.equal(platformType);
       expect(zDAORecord.id.toNumber()).to.be.equal(daoId);
       expect(zDAORecord.gnosisSafe).to.be.equal(gnosisSafe);
-  
+
       const zDAORecord2 = await zDAORegistry.getZDAOById(daoId);
       expect(zDAORecord2.platformType.toNumber()).to.be.equal(platformType);
       expect(zDAORecord2.id.toNumber()).to.be.equal(daoId);
-      const zDAOZNAsAs = zDAORecord2.associatedzNAs.map((zNA) => zNA.toNumber());
+      const zDAOZNAsAs = zDAORecord2.associatedzNAs.map((zNA) =>
+        zNA.toNumber()
+      );
       expect(zDAORecord.zDAO).to.be.equal(zDAORecord2.zDAO);
       zDAOZNAsAs.forEach((zNA, index) => expect(zNA).to.be.equal(zNAs[index]));
 
       const zDAOAddr = await rootZDAOChef.zDAOs(daoId);
       expect(zDAORecord.zDAO).to.be.equal(zDAOAddr);
       const zDAO = await ethers.getContractAt("RootZDAO", zDAOAddr, deployer);
-  
+
       const zDAOInfo = await zDAO.zDAOInfo();
       expect(zDAOInfo.zDAOId.toNumber()).to.be.equal(daoId);
       expect(zDAOInfo.title).to.be.equal(title);
@@ -199,10 +200,18 @@ describe("ZDAORegistry", function () {
       expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
       expect(zDAOInfo.amount).to.be.equal(BigNumber.from(zDAOConfig.amount));
       expect(zDAOInfo.duration.toNumber()).to.be.equal(zDAOConfig.duration);
-      expect(zDAOInfo.votingThreshold.toNumber()).to.be.equal(zDAOConfig.votingThreshold);
-      expect(zDAOInfo.minimumVotingParticipants.toNumber()).to.be.equal(zDAOConfig.minimumVotingParticipants);
-      expect(zDAOInfo.minimumTotalVotingTokens.toNumber()).to.be.equal(zDAOConfig.minimumTotalVotingTokens);
-      expect(zDAOInfo.isRelativeMajority).to.be.equal(zDAOConfig.isRelativeMajority);
+      expect(zDAOInfo.votingThreshold.toNumber()).to.be.equal(
+        zDAOConfig.votingThreshold
+      );
+      expect(zDAOInfo.minimumVotingParticipants.toNumber()).to.be.equal(
+        zDAOConfig.minimumVotingParticipants
+      );
+      expect(zDAOInfo.minimumTotalVotingTokens.toNumber()).to.be.equal(
+        zDAOConfig.minimumTotalVotingTokens
+      );
+      expect(zDAOInfo.isRelativeMajority).to.be.equal(
+        zDAOConfig.isRelativeMajority
+      );
       expect(zDAOInfo.destroyed).to.be.equal(false);
     };
 
@@ -216,12 +225,13 @@ describe("ZDAORegistry", function () {
       )) as MockContractFactory<RootZDAOChef__factory>;
       const ZDAOFactory = await ethers.getContractFactory("RootZDAO");
       const zDAOBase = await ZDAOFactory.deploy();
-  
+
       rootStateSender = (await smock.fake(
         "IRootStateSender"
       )) as FakeContract<IRootStateSender>;
-  
-      rootZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<RootZDAOChef>;
+
+      rootZDAOChef =
+        (await ZDAOChefFactory.deploy()) as MockContract<RootZDAOChef>;
       await rootZDAOChef.__ZDAOChef_init(
         zDAORegistry.address,
         rootStateSender.address,
@@ -244,21 +254,21 @@ describe("ZDAORegistry", function () {
         isRelativeMajority: true,
       };
     });
-    
+
     it("adds new dao record", async function () {
       znsHub.ownerOf.whenCalledWith(zNAPairs[0].zNA).returns(deployer.address);
       znsHub.ownerOf.whenCalledWith(zNAPairs[1].zNA).returns(deployer.address);
 
       const options = ethers.utils.defaultAbiCoder.encode(
         [
-          'string',
-          'address',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'bool',
+          "string",
+          "address",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "bool",
         ],
         [
           title,
@@ -308,14 +318,14 @@ describe("ZDAORegistry", function () {
 
       const options = ethers.utils.defaultAbiCoder.encode(
         [
-          'string',
-          'address',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'uint256',
-          'bool',
+          "string",
+          "address",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "uint256",
+          "bool",
         ],
         [
           title,
@@ -334,12 +344,14 @@ describe("ZDAORegistry", function () {
         zNAPairs[0].gnosisSafe,
         options
       );
-      await expect(zDAORegistry.addNewZDAO(
-        PlatformType.Polygon, // platformType
-        zNAPairs[0].zNA, // zNA
-        zNAPairs[0].gnosisSafe,
-        options
-      )).to.be.revertedWith("Already added DAO with same zNA");
+      await expect(
+        zDAORegistry.addNewZDAO(
+          PlatformType.Polygon, // platformType
+          zNAPairs[0].zNA, // zNA
+          zNAPairs[0].gnosisSafe,
+          options
+        )
+      ).to.be.revertedWith("Already added DAO with same zNA");
     });
   });
 

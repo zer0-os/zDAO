@@ -1,8 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as zns from "@zero-tech/zns-sdk";
 import { ethers, network, upgrades } from "hardhat";
-import { MockTokenUpgradeable, MockZNSHub, VotingToken } from "../types";
-import { config, znsHubConfig } from "./shared/config";
+import { MockTokenUpgradeable, MockZNSHub } from "../types";
+import { zNSHubConfig } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
 const deployZNSHub = async (deployer: SignerWithAddress) => {
@@ -28,7 +28,7 @@ const deployZNSHub = async (deployer: SignerWithAddress) => {
 
   console.log("\nInitializing contracts");
   console.log("Initializing MockZNSHub contract...");
-  for (const item of znsHubConfig) {
+  for (const item of zNSHubConfig) {
     console.log(`> owning ${item.domain} to ${item.owner}`);
     const domainId = zns.domains.domainNameToId(item.domain);
     await mockZNSHub.addZNAOwner(domainId, item.owner);
@@ -81,8 +81,8 @@ const main = async () => {
 
   const deployer: SignerWithAddress = signers[0];
 
-  if (network.name === "goerli") {
-    // await deployZNSHub(deployer);
+  if (network.name === "goerli" || network.name === "rinkeby") {
+    await deployZNSHub(deployer);
 
     console.log("\n\nWelcome Mockup!");
   }

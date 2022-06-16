@@ -50,7 +50,7 @@ const main = async () => {
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
       [
-        config[network.name].zNSHub,
+        config[network.name].zDAORegistry,
         fxStateRootTunnel.address,
         zDAOBase.address,
       ],

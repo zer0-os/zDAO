@@ -60,6 +60,10 @@ contract RootZDAOChef is
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setZDAORegistry(address _zDAORgistry) external onlyOwner {
+    zDAORegistry = _zDAORgistry;
+  }
+
   function setZDAOBase(address _zDAOBase) external onlyOwner {
     zDAOBase = _zDAOBase;
   }
