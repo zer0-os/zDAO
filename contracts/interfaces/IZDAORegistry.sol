@@ -67,7 +67,10 @@ interface IZDAORegistry {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOFactories(uint256 _platformType) external view returns (IZDAOFactory);
+  function zDAOFactories(uint256 _platformType)
+    external
+    view
+    returns (IZDAOFactory);
 
   function numberOfzDAOs() external view returns (uint256);
 

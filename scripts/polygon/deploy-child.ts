@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { FxStateChildTunnel, ChildZDAOChef, Staking } from "../../types";
+import { FxStateChildTunnel, PolygonZDAOChef, Staking } from "../../types";
 import { config } from "../shared/config";
 import { verifyContract } from "../shared/helpers";
 
@@ -49,16 +49,16 @@ const main = async () => {
     );
     await verifyContract(stakingImpl);
 
-    console.log("Deploying ChildZDAO implementation contract...");
-    const ZDAOFactory = await ethers.getContractFactory("ChildZDAO");
+    console.log("Deploying PolygonZDAO implementation contract...");
+    const ZDAOFactory = await ethers.getContractFactory("PolygonZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
     await zDAOBase.deployed();
     console.log(`\ndeployed: ${zDAOBase.address}`);
 
     await verifyContract(zDAOBase.address);
 
-    console.log("Deploying ChildZDAOChef proxy contract...");
-    const ZDAOChefFactory = await ethers.getContractFactory("ChildZDAOChef");
+    console.log("Deploying PolygonZDAOChef proxy contract...");
+    const ZDAOChefFactory = await ethers.getContractFactory("PolygonZDAOChef");
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
       [
@@ -71,7 +71,7 @@ const main = async () => {
         kind: "uups",
         initializer: "__ZDAOChef_init",
       }
-    )) as ChildZDAOChef;
+    )) as PolygonZDAOChef;
     await zDAOChef.deployed();
     console.log(`\ndeployed: ${zDAOChef.address}`);
 
@@ -110,15 +110,15 @@ const main = async () => {
         Info: stakingImpl,
       },
       {
-        Label: "ChildZDAOChef proxy address",
+        Label: "PolygonZDAOChef proxy address",
         Info: zDAOChef.address,
       },
       {
-        Label: "ChildZDAOChef implementation address",
+        Label: "PolygonZDAOChef implementation address",
         Info: zDAOChefImpl,
       },
       {
-        Label: "ChildZDAO base address",
+        Label: "PolygonZDAO base address",
         Info: zDAOBase.address,
       },
     ]);

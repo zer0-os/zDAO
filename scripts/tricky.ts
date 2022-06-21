@@ -1,19 +1,19 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
 import { encodeCreateZDAO } from "../test/shared/messagePack";
-import { IChildZDAO, ChildZDAO } from "../types";
+import { IPolygonZDAO, PolygonZDAO } from "../types";
 import { config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
-const checkChildZDAO = async (
+const checkPolygonZDAO = async (
   deployer: SignerWithAddress,
   contract: string
 ) => {
   // const polyZDAO = (await ethers.getContractAt(
-  //   "ChildZDAO",
+  //   "PolygonZDAO",
   //   contract,
   //   deployer
-  // )) as ChildZDAO;
+  // )) as PolygonZDAO;
   // const childTunnel = await polyZDAO.childTunnel();
   // console.log("childTunnel", childTunnel);
   // const staking = await polyZDAO.staking();
@@ -25,7 +25,7 @@ const checkChildZDAO = async (
   // const proposals = await polyZDAO.listProposals(1, numberOfProposals);
   // console.log("proposals", proposals);
   // console.log(">> now", new Date().getTime());
-  // proposals.forEach((proposal: IChildZDAO.ProposalStruct, index: number) => {
+  // proposals.forEach((proposal: IPolygonZDAO.ProposalStruct, index: number) => {
   //   const now = new Date();
   //   if (Number(proposal.endTimestamp) < now.getTime()) {
   //     console.log(`> ${index + 1}th proposal closed`);
@@ -52,7 +52,7 @@ const main = async () => {
 
     console.log("\nWelcome");
   } else if (network.name === "polygonMumbai" || network.name === "polygon") {
-    await checkChildZDAO(
+    await checkPolygonZDAO(
       deployer,
       "0xcB67646d7cE288ff91ED26BefaA04c305884a26c"
     );

@@ -4,7 +4,7 @@ pragma solidity ^0.8.11;
 
 import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
-interface IChildZDAO {
+interface IPolygonZDAO {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 zDAOId;

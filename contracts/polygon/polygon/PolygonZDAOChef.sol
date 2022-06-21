@@ -6,11 +6,15 @@ import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../../helpers/Proxy.sol";
 import {IChildStateSender, IChildStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
 import {IChildChainManager} from "./interfaces/IChildChainManager.sol";
-import {IChildZDAOChef} from "./interfaces/IChildZDAOChef.sol";
-import {IChildZDAO} from "./interfaces/IChildZDAO.sol";
+import {IPolygonZDAOChef} from "./interfaces/IPolygonZDAOChef.sol";
+import {IPolygonZDAO} from "./interfaces/IPolygonZDAO.sol";
 import {Staking} from "./Staking.sol";
 
-contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
+contract PolygonZDAOChef is
+  ZeroUpgradeable,
+  IChildStateReceiver,
+  IPolygonZDAOChef
+{
   /**
    * Address to Staking contract, which returns staking power as voting power
    * based on staked amount
@@ -23,7 +27,7 @@ contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
   IChildStateSender public childStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => IChildZDAO) public zDAOs;
+  mapping(uint256 => IPolygonZDAO) public zDAOs;
   uint256[] public zDAOIds;
 
   /**
@@ -101,7 +105,7 @@ contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
 
   /**
    * @notice Calculate proposal, check the comment of calculateProposal function
-   *     in the ChildZDAO contract.
+   *     in the PolygonZDAO contract.
    *     Once calculate proposal, it should be sent to Ethereum.
    * @dev Only for valid zDAO
    * @param _daoId zDAO unique id
@@ -165,7 +169,7 @@ contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
   function _createZDAO(bytes memory _message)
     internal
     virtual
-    returns (IChildZDAO)
+    returns (IPolygonZDAO)
   {
     (
       uint256 messageType,
@@ -178,11 +182,11 @@ contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
 
     address childToken = childChainManager.rootToChildToken(rootToken);
 
-    IChildZDAO zDAO = IChildZDAO(
+    IPolygonZDAO zDAO = IPolygonZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          IChildZDAO.__ZDAO_init.selector,
+          IPolygonZDAO.__ZDAO_init.selector,
           address(this),
           staking,
           zDAOId,
@@ -277,21 +281,21 @@ contract ChildZDAOChef is ZeroUpgradeable, IChildStateReceiver, IChildZDAOChef {
     return zDAOIds.length;
   }
 
-  function getzDAOById(uint256 _daoId) external view returns (IChildZDAO) {
+  function getzDAOById(uint256 _daoId) external view returns (IPolygonZDAO) {
     return zDAOs[_daoId];
   }
 
   function listzDAOs(uint256 _startIndex, uint256 _count)
     external
     view
-    returns (IChildZDAO[] memory records)
+    returns (IPolygonZDAO[] memory records)
   {
     uint256 numRecords = _count;
     if (numRecords > (zDAOIds.length - _startIndex)) {
       numRecords = zDAOIds.length - _startIndex;
     }
 
-    records = new IChildZDAO[](numRecords);
+    records = new IPolygonZDAO[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
       records[i] = zDAOs[zDAOIds[_startIndex + i]];

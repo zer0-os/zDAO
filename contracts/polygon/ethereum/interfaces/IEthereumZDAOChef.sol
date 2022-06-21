@@ -3,9 +3,9 @@
 pragma solidity ^0.8.11;
 
 import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {IRootZDAO} from "./IRootZDAO.sol";
+import {IEthereumZDAO} from "./IEthereumZDAO.sol";
 
-interface IRootZDAOChef {
+interface IEthereumZDAOChef {
   struct ZDAOConfig {
     /// @notice Voting token (ERC20 or ERC721) on Ethereum, only token holders
     /// can create a proposal
@@ -71,5 +71,5 @@ interface IRootZDAOChef {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOs(uint256 _zDAOId) external view returns (IRootZDAO);
+  function zDAOs(uint256 _zDAOId) external view returns (IEthereumZDAO);
 }
