@@ -9,8 +9,6 @@ interface IRootZDAO {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 zDAOId; // zDAO id
-    /// @notice Title of the zDAO
-    string title;
     /// @notice Address who created zDAO, is the first zDAO owner
     address createdBy;
     /// @notice Gnosis safe address where collected treasuries are stored
@@ -85,7 +83,6 @@ interface IRootZDAO {
     uint256 _zDAOId,
     address _gnosisSafe,
     address _createdBy,
-    string calldata _title,
     IRootZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external;
 
@@ -115,6 +112,8 @@ interface IRootZDAO {
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
+
+  function zDAOInfo() external view returns (ZDAOInfo memory);
 
   function zDAOOwner() external view returns (address);
 

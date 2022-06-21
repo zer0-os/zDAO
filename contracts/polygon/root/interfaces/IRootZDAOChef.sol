@@ -70,4 +70,6 @@ interface IRootZDAOChef {
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
+
+  function zDAOs(uint256 _zDAOId) external view returns (IRootZDAO);
 }

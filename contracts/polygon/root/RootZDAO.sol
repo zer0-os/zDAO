@@ -10,7 +10,9 @@ import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
 contract RootZDAO is ZeroUpgradeable, IRootZDAO {
   using SafeERC20Upgradeable for IERC20Upgradeable;
 
-  ZDAOInfo public zDAOInfo;
+  uint256 public constant divisionConstant = 10000;
+
+  ZDAOInfo private daoInfo;
 
   uint256 public lastProposalId;
   mapping(uint256 => Proposal) public proposals;
@@ -29,14 +31,14 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
 
   modifier onlyValidTokenHolder(address _holder) {
     require(
-      IERC20Upgradeable(zDAOInfo.token).balanceOf(_holder) >= zDAOInfo.amount,
+      IERC20Upgradeable(daoInfo.token).balanceOf(_holder) >= daoInfo.amount,
       "Not a valid token holder"
     );
     _;
   }
 
   modifier isActiveDAO() {
-    require(!zDAOInfo.destroyed, "Already destroyed");
+    require(!daoInfo.destroyed, "Already destroyed");
     _;
   }
 
@@ -55,7 +57,6 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
    * @param _zDAOId Unique id for current zDAO
    * @param _gnosisSafe Address to Gnosis Safe
    * @param _createdBy Address to zDAO owner
-   * @param _title Title of the zDAO
    * @param _zDAOConfig Structure of zDAO configuration
    */
   function __ZDAO_init(
@@ -63,16 +64,14 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
     uint256 _zDAOId,
     address _gnosisSafe,
     address _createdBy,
-    string calldata _title,
     IRootZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     zDAOChef = _zDAOChef;
 
-    zDAOInfo = ZDAOInfo({
+    daoInfo = ZDAOInfo({
       zDAOId: _zDAOId,
-      title: _title,
       createdBy: _createdBy,
       gnosisSafe: _gnosisSafe,
       token: _zDAOConfig.token,
@@ -97,7 +96,7 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
    * @param _destroyed Flag marking whether zDAO has been destroyed
    */
   function setDestroyed(bool _destroyed) external override onlyZDAOChef {
-    zDAOInfo.destroyed = _destroyed;
+    daoInfo.destroyed = _destroyed;
   }
 
   /**
@@ -112,9 +111,9 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
     address _token,
     uint256 _amount
   ) external override isActiveDAO onlyZDAOChef {
-    zDAOInfo.gnosisSafe = _gnosisSafe;
-    zDAOInfo.token = _token;
-    zDAOInfo.amount = _amount;
+    daoInfo.gnosisSafe = _gnosisSafe;
+    daoInfo.token = _token;
+    daoInfo.amount = _amount;
   }
 
   /**
@@ -249,12 +248,16 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
+  function zDAOInfo() external view override returns (ZDAOInfo memory) {
+    return daoInfo;
+  }
+
   function zDAOOwner() external view returns (address) {
-    return zDAOInfo.createdBy;
+    return daoInfo.createdBy;
   }
 
   function destroyed() external view returns (bool) {
-    return zDAOInfo.destroyed;
+    return daoInfo.destroyed;
   }
 
   function numberOfProposals() external view override returns (uint256) {
@@ -312,26 +315,26 @@ contract RootZDAO is ZeroUpgradeable, IRootZDAO {
 
     // Check quorum
     if (
-      proposal.voters < zDAOInfo.minimumVotingParticipants ||
-      proposal.yes + proposal.no < zDAOInfo.minimumTotalVotingTokens
+      proposal.voters < daoInfo.minimumVotingParticipants ||
+      proposal.yes + proposal.no < daoInfo.minimumTotalVotingTokens
     ) {
       return ProposalState.Failed;
     }
     // If relative majority, the denominator should be sum of yes and no votes
     if (
-      zDAOInfo.isRelativeMajority &&
+      daoInfo.isRelativeMajority &&
       (proposal.yes + proposal.no > 0) &&
-      ((proposal.yes * 10000) / (proposal.yes + proposal.no) >=
-        zDAOInfo.votingThreshold)
+      ((proposal.yes * divisionConstant) / (proposal.yes + proposal.no) >=
+        daoInfo.votingThreshold)
     ) {
       return ProposalState.Succeeded;
     }
     // If absolute majority, the denominator should be total supply
-    uint256 totalSupply = IERC20Upgradeable(zDAOInfo.token).totalSupply();
+    uint256 totalSupply = IERC20Upgradeable(daoInfo.token).totalSupply();
     if (
-      !zDAOInfo.isRelativeMajority &&
+      !daoInfo.isRelativeMajority &&
       totalSupply > 0 &&
-      (proposal.yes * 10000) / totalSupply >= zDAOInfo.votingThreshold
+      (proposal.yes * divisionConstant) / totalSupply >= daoInfo.votingThreshold
     ) {
       return ProposalState.Succeeded;
     }

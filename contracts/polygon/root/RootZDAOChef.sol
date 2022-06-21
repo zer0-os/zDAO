@@ -24,7 +24,7 @@ contract RootZDAOChef is
   IRootStateSender public rootStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => IRootZDAO) public zDAOs;
+  mapping(uint256 => IRootZDAO) public override zDAOs;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -87,9 +87,9 @@ contract RootZDAOChef is
   ) external override onlyRegistry returns (address) {
     assert(address(zDAOs[_zDAOId]) == address(0));
 
-    (string memory title, ZDAOConfig memory config) = abi.decode(
+    (ZDAOConfig memory config) = abi.decode(
       _options,
-      (string, ZDAOConfig)
+      (ZDAOConfig)
     );
 
     IRootZDAO zDAO = IRootZDAO(
@@ -101,7 +101,6 @@ contract RootZDAOChef is
           _zDAOId,
           _gnosisSafe,
           msg.sender, // zDAO createdBy
-          title,
           config
         )
       )
@@ -227,14 +226,6 @@ contract RootZDAOChef is
     zDAOs[_zDAOId].executeProposal(msg.sender, _proposalId);
 
     emit ProposalExecuted(_zDAOId, _proposalId, msg.sender);
-
-    rootStateSender.sendMessageToChild(
-      abi.encode(
-        uint256(ITunnel.MessageType.ExecuteProposal),
-        _zDAOId,
-        _proposalId
-      )
-    );
   }
 
   /**
