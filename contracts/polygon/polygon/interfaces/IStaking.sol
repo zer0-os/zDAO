@@ -67,4 +67,15 @@ interface IStaking {
     address _token,
     uint256 _blockNumber
   ) external view returns (uint256);
+
+  function stakedERC20Amount(address _user, address _token)
+    external
+    view
+    returns (uint256);
+
+  function isStakedERC721(
+    address _user,
+    address _token,
+    uint256 _tokenId
+  ) external view returns (bool);
 }
