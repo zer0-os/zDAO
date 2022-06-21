@@ -18,6 +18,9 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   // <user address, <token, Checkpoints.History>>
   mapping(address => mapping(address => Checkpoints.History))
     private _checkpoints;
+  // maping<user address, mapping<token, mapping<token id, boolean>>>
+  mapping(address => mapping(address => mapping(uint256 => bool)))
+    private _erc721Staked;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -106,10 +109,10 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     address _token,
     uint256 _tokenId
   ) internal virtual {
-    require(_checkpoints[_user][_token].latest() == 0, "Already staked ERC721");
     IERC721Upgradeable(_token).safeTransferFrom(_user, address(this), _tokenId);
 
-    _moveStakingPower(_user, address(this), _token, _tokenId);
+    _moveStakingPower(_user, address(this), _token, 1);
+    _erc721Staked[_user][_token][_tokenId] = true;
 
     emit StakedERC721(_user, _token, _tokenId);
   }
@@ -136,12 +139,10 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     address _token,
     uint256 _tokenId
   ) internal virtual {
-    require(
-      _checkpoints[_user][_token].latest() == _tokenId,
-      "Should be staked ERC721"
-    );
+    require(_erc721Staked[_user][_token][_tokenId], "Should be staked ERC721");
 
-    _moveStakingPower(address(this), _user, _token, _tokenId);
+    _moveStakingPower(address(this), _user, _token, 1);
+    _erc721Staked[_user][_token][_tokenId] = false;
 
     IERC721Upgradeable(_token).safeTransferFrom(address(this), _user, _tokenId);
 
@@ -196,7 +197,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     returns (uint256)
   {
     if (_isERC721(_token)) {
-      return _checkpoints[_user][_token].latest() > 0 ? 1 : 0;
+      return _checkpoints[_user][_token].latest();
     }
     uint256 decimals = ERC20Upgradeable(_token).decimals();
     return _checkpoints[_user][_token].latest() / 10**decimals;
@@ -215,9 +216,26 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   ) external view returns (uint256) {
     uint256 sp = _checkpoints[_user][_token].getAtBlock(_blockNumber);
     if (_isERC721(_token)) {
-      return sp > 0 ? 1 : 0;
+      return sp;
     }
     uint256 decimals = ERC20Upgradeable(_token).decimals();
     return sp / 10**decimals;
+  }
+
+  function stakedERC20Amount(address _user, address _token)
+    external
+    view
+    override
+    returns (uint256)
+  {
+    return _isERC721(_token) ? 0 : _checkpoints[_user][_token].latest();
+  }
+
+  function isStakedERC721(
+    address _user,
+    address _token,
+    uint256 _tokenId
+  ) external view override returns (bool) {
+    return _isERC721(_token) ? _erc721Staked[_user][_token][_tokenId] : false;
   }
 }

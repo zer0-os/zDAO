@@ -2,31 +2,31 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import * as zns from "@zero-tech/zns-sdk";
 import { BigNumber } from "ethers";
 import { ethers, network } from "hardhat";
-import RootZDAOAbi from "../artifacts/contracts/polygon/root/RootZDAO.sol/RootZDAO.json";
-import ChildZDAOAbi from "../artifacts/contracts/polygon/child/ChildZDAO.sol/ChildZDAO.json";
-import { RootZDAO, RootZDAOChef } from "../types";
+import EthereumZDAOAbi from "../artifacts/contracts/polygon/ethereum/EthereumZDAO.sol/EthereumZDAO.json";
+import PolygonZDAOAbi from "../artifacts/contracts/polygon/polygon/PolygonZDAO.sol/PolygonZDAO.json";
+import { EthereumZDAO, EthereumZDAOChef } from "../types";
 import { sleep, verifyContract } from "./shared/helpers";
 
 const contracts = {
   goerli: {
-    RootZDAOBase: "0x6fea1D18e7974ec1BBe841538f5614Ee4A611751",
-    RootZDAOChef: "0x47571199a86fC9e15577770A7979a2e5E7C2b81D",
+    EthereumZDAOBase: "0x6fea1D18e7974ec1BBe841538f5614Ee4A611751",
+    EthereumZDAOChef: "0x47571199a86fC9e15577770A7979a2e5E7C2b81D",
     VotingToken: "0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe",
   },
   mainnet: {
-    RootZDAOChef: "", // todo
-    RootZDAOBase: "", // todo
+    EthereumZDAOChef: "", // todo
+    EthereumZDAOBase: "", // todo
     VotingToken: "", // todo
   },
 };
 
-// verify RootZDAO Proxy and Implementation
-const verifyRootZDAO = async () => {
+// verify EthereumZDAO Proxy and Implementation
+const verifyEthereumZDAO = async () => {
   const proxyAddress = "0x8EFb9E61e437A05D20d605dBBEE47d5d478a1f73";
 
-  const zDAOInterface = new ethers.utils.Interface(RootZDAOAbi.abi);
+  const zDAOInterface = new ethers.utils.Interface(EthereumZDAOAbi.abi);
   const proxyData = zDAOInterface.encodeFunctionData("__ZDAO_init", [
-    "0x47571199a86fC9e15577770A7979a2e5E7C2b81D", // RootZDAOChef
+    "0x47571199a86fC9e15577770A7979a2e5E7C2b81D", // EthereumZDAOChef
     1, // lastZDAOId
     "0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C", // msg.sender
     [
@@ -39,7 +39,7 @@ const verifyRootZDAO = async () => {
     ],
   ]);
   await verifyContract(proxyAddress, [
-    contracts.goerli.RootZDAOBase, // zDAOBase
+    contracts.goerli.EthereumZDAOBase, // zDAOBase
     proxyData,
   ]);
 
@@ -51,10 +51,10 @@ const verifyRootZDAO = async () => {
 //   deployer: SignerWithAddress
 // ) => {
 //   const zDAOChef = (await ethers.getContractAt(
-//     "RootZDAOChef",
-//     contracts[network].RootZDAOChef,
+//     "EthereumZDAOChef",
+//     contracts[network].EthereumZDAOChef,
 //     deployer
-//   )) as RootZDAOChef;
+//   )) as EthereumZDAOChef;
 
 //   // const zNA = "wilder.kicks";
 //   // const zNA = "wilder.wheels";
@@ -83,7 +83,7 @@ const verifyRootZDAO = async () => {
 //   const zDAOId = zDAORecord[0];
 //   const zDAO = zDAORecord[1];
 
-//   const zDAOInterface = new ethers.utils.Interface(RootZDAOAbi.abi);
+//   const zDAOInterface = new ethers.utils.Interface(EthereumZDAOAbi.abi);
 //   const proxyData = zDAOInterface.encodeFunctionData("__ZDAO_init", [
 //     zDAOChef.address,
 //     zDAOId,
@@ -103,10 +103,10 @@ const verifyRootZDAO = async () => {
 //   contract: string
 // ) => {
 //   const zDAO = (await ethers.getContractAt(
-//     "RootZDAO",
+//     "EthereumZDAO",
 //     contract,
 //     deployer
-//   )) as RootZDAO;
+//   )) as EthereumZDAO;
 
 //   const proposal = {
 //     startTimestamp: Math.floor(new Date().getTime() / 1000),
@@ -142,14 +142,14 @@ const main = async () => {
     //   "0xB21e1e84eC9453c13dA7B9027E3ea77D85e992e5"
     // );
 
-    await verifyRootZDAO();
+    await verifyEthereumZDAO();
 
     console.log("\nWelcome");
   } else if (network.name === "polygonMumbai" || network.name === "polygon") {
     // the below codes are used only for verifying contract
-    const zDAOInterface = new ethers.utils.Interface(ChildZDAOAbi.abi);
+    const zDAOInterface = new ethers.utils.Interface(PolygonZDAOAbi.abi);
     const proxyData = zDAOInterface.encodeFunctionData("__ZDAO_init", [
-      "0x3196b6604f12C3d3E457b2a71aB1358F16A0fcf0", // ChildZDAOChef
+      "0x3196b6604f12C3d3E457b2a71aB1358F16A0fcf0", // PolygonZDAOChef
       "0x36F7559E3fEF104a87cD23BC1603b3ca406A9867", // staking
       1, // zDAOId
       "0xbe38561e7fb3d9dd5244bd51ea7440738f10bb46", // mapped token

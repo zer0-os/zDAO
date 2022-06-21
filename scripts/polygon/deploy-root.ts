@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { RootZDAOChef, FxStateRootTunnel, ZDAORegistry } from "../../types";
+import { EthereumZDAOChef, FxStateRootTunnel, ZDAORegistry } from "../../types";
 import { config, PlatformType } from "../shared/config";
 import { verifyContract } from "../shared/helpers";
 
@@ -37,16 +37,16 @@ const main = async () => {
       );
     await verifyContract(fxStateRootTunnelImpl);
 
-    console.log("Deploying RootZDAO implementation contract...");
-    const ZDAOFactory = await ethers.getContractFactory("RootZDAO");
+    console.log("Deploying EthereumZDAO implementation contract...");
+    const ZDAOFactory = await ethers.getContractFactory("EthereumZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
     await zDAOBase.deployed();
     console.log(`\ndeployed: ${zDAOBase.address}`);
 
     await verifyContract(zDAOBase.address);
 
-    console.log("Deploying RootZDAOChef proxy contract...");
-    const ZDAOChefFactory = await ethers.getContractFactory("RootZDAOChef");
+    console.log("Deploying EthereumZDAOChef proxy contract...");
+    const ZDAOChefFactory = await ethers.getContractFactory("EthereumZDAOChef");
     const zDAOChef = (await upgrades.deployProxy(
       ZDAOChefFactory,
       [
@@ -58,7 +58,7 @@ const main = async () => {
         kind: "uups",
         initializer: "__ZDAOChef_init",
       }
-    )) as RootZDAOChef;
+    )) as EthereumZDAOChef;
     await zDAOChef.deployed();
     console.log(`\ndeployed: ${zDAOChef.address}`);
 
@@ -96,15 +96,15 @@ const main = async () => {
         Info: fxStateRootTunnelImpl,
       },
       {
-        Label: "RootZDAOChef proxy address",
+        Label: "EthereumZDAOChef proxy address",
         Info: zDAOChef.address,
       },
       {
-        Label: "RootZDAOChef implementation address",
+        Label: "EthereumZDAOChef implementation address",
         Info: zDAOChefImpl,
       },
       {
-        Label: "RootZDAO base address",
+        Label: "EthereumZDAO base address",
         Info: zDAOBase.address,
       },
     ]);

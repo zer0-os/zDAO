@@ -3,10 +3,10 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {IChildZDAO} from "./interfaces/IChildZDAO.sol";
+import {IPolygonZDAO} from "./interfaces/IPolygonZDAO.sol";
 import {Staking} from "./Staking.sol";
 
-contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
+contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
   address public zDAOChef;
   Staking public staking;
 
@@ -82,8 +82,8 @@ contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
   /**
    * @notice Create a proposal on Polygon with the information which was
    *     received from the Ethereum.
-   *     RootZDAOChef only sends the proposal id created on Ethereum.
-   * @dev Callable by ChildZDAOChef, only available for active zDAO
+   *     EthereumZDAOChef only sends the proposal id created on Ethereum.
+   * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
    * @param _startTimestamp Current block timestamp
    */
@@ -108,7 +108,7 @@ contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
    * @notice Mark a proposal as canceled state.
    *     Once the proposal is canceled on Ethereum, that is synchronized to
    *     Polygon. The proposal should be active prior to cancel.
-   * @dev Callable by ChildZDAOChef, only available for active zDAO
+   * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
    */
   function cancelProposal(uint256 _proposalId)
@@ -127,7 +127,7 @@ contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
   /**
    * @notice Mark a proposal as executed state, executing a proposal is
    *     executed on Ethereum and synchronized to Polygon to update the state.
-   * @dev Callable by ChildZDAOChef, only available for active zDAO
+   * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
    */
   function executeProposal(uint256 _proposalId)
@@ -147,7 +147,7 @@ contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
    * @notice Calculate a proposal, the proposal should be ended and not canceled
    *     Anyone can calculate a proposal if it ends, and the transaction of
    *     proposal calculation will be sent to Ethereum.
-   * @dev Callable by ChildZDAOChef, only available for active zDAO
+   * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
    */
   function calculateProposal(uint256 _proposalId)
@@ -179,7 +179,7 @@ contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
   /**
    * @notice Cast a vote with user's choice. Anyone who have voting power can
    *     participate a voting.
-   * @dev Callable by ChildZDAOChef, only available for active zDAO and valid
+   * @dev Callable by PolygonZDAOChef, only available for active zDAO and valid
    *     proposal
    * @param _proposalId Proposal unique id
    * @param _voter Voter address
@@ -191,8 +191,8 @@ contract ChildZDAO is ZeroUpgradeable, IChildZDAO {
     uint256 _choice
   ) external onlyZDAOChef isActiveDAO onlyValidProposal(_proposalId) {
     require(
-      _choice == uint256(IChildZDAO.VoterChoice.Yes) ||
-        _choice == uint256(IChildZDAO.VoterChoice.No),
+      _choice == uint256(IPolygonZDAO.VoterChoice.Yes) ||
+        _choice == uint256(IPolygonZDAO.VoterChoice.No),
       "Invalid choice"
     );
     require(

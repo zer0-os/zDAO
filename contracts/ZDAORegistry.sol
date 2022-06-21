@@ -15,7 +15,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
   // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
   // PlatformType => IZDAOFactory
-  mapping(uint256 => IZDAOFactory) public zDAOFactories;
+  mapping(uint256 => IZDAOFactory) public override zDAOFactories;
 
   uint256 public lastZDAOId;
 
@@ -32,14 +32,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     require(
       _zDAOId > 0 && _zDAOId <= lastZDAOId && !_isZDAODestroyed(_zDAOId),
       "Invalid zDAO"
-    );
-    _;
-  }
-
-  modifier onlyDAOOwner(uint256 _zDAOId) {
-    require(
-      msg.sender == zDAORecords[_zDAOId].zDAOOwnedBy,
-      "Invalid zDAO Owner"
     );
     _;
   }
@@ -76,19 +68,21 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
 
   /**
    * @notice Add new zDAO associating with given zNA.
-   *     Create new RootZDAO contract and associate new zDAO with given zNA.
+   *     Create new EthereumZDAO contract and associate new zDAO with given zNA.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
    * @dev Only zNA owner can create zDAO
    * @param _platformType PlatformType enum value
    * @param _zNA zNA unique Id
    * @param _gnosisSafe Gnosis Safe address per zDAO
+   * @param _name zDAO name
    * @param _options Abi encoded the structure of zDAO information
    */
   function addNewZDAO(
     uint256 _platformType,
     uint256 _zNA,
     address _gnosisSafe,
+    string calldata _name,
     bytes calldata _options
   ) external override onlyZNAOwner(_zNA) {
     uint256 zDAOId = zNATozDAOId[_zNA];
@@ -103,9 +97,9 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     zDAORecords[lastZDAOId] = ZDAORecord({
       platformType: _platformType,
       id: lastZDAOId,
-      zDAO: zDAO,
       zDAOOwnedBy: msg.sender,
       gnosisSafe: _gnosisSafe,
+      name: _name,
       destroyed: false,
       associatedzNAs: new uint256[](0)
     });

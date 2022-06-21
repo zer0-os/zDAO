@@ -7,13 +7,13 @@ import {createProxy} from "../../helpers/Proxy.sol";
 import {IZNSHub} from "../../interfaces/IZNSHub.sol";
 import {IRootStateSender, IRootStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
 import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
-import {IRootZDAOChef} from "./interfaces/IRootZDAOChef.sol";
-import {IRootZDAO} from "./interfaces/IRootZDAO.sol";
+import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
+import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 
-contract RootZDAOChef is
+contract EthereumZDAOChef is
   ZeroUpgradeable,
   IRootStateReceiver,
-  IRootZDAOChef,
+  IEthereumZDAOChef,
   IZDAOFactory
 {
   address public zDAORegistry;
@@ -24,7 +24,7 @@ contract RootZDAOChef is
   IRootStateSender public rootStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => IRootZDAO) public zDAOs;
+  mapping(uint256 => IEthereumZDAO) public override zDAOs;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -70,7 +70,7 @@ contract RootZDAOChef is
 
   /**
    * @notice Add new zDAO associating with given zNA.
-   *     Create new RootZDAO contract and associate new zDAO with given zNA.
+   *     Create new EthereumZDAO contract and associate new zDAO with given zNA.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
    * @dev Only zNA owner can create zDAO
@@ -87,21 +87,17 @@ contract RootZDAOChef is
   ) external override onlyRegistry returns (address) {
     assert(address(zDAOs[_zDAOId]) == address(0));
 
-    (string memory title, ZDAOConfig memory config) = abi.decode(
-      _options,
-      (string, ZDAOConfig)
-    );
+    ZDAOConfig memory config = abi.decode(_options, (ZDAOConfig));
 
-    IRootZDAO zDAO = IRootZDAO(
+    IEthereumZDAO zDAO = IEthereumZDAO(
       createProxy(
         zDAOBase,
         abi.encodeWithSelector(
-          IRootZDAO.__ZDAO_init.selector,
+          IEthereumZDAO.__ZDAO_init.selector,
           address(this),
           _zDAOId,
           _gnosisSafe,
           msg.sender, // zDAO createdBy
-          title,
           config
         )
       )
@@ -154,7 +150,7 @@ contract RootZDAOChef is
 
   /**
    * @notice Create a proposal, check the comment of createProposal function
-   *     in the RootZDAO contract.
+   *     in the EthereumZDAO contract.
    *     Once create a new proposal, it should be synchronized to Polygon.
    * @dev Only for valid zDAO
    * @param _zDAOId zDAO unique id
@@ -189,7 +185,7 @@ contract RootZDAOChef is
 
   /**
    * @notice Cancel proposal, check the comment of cancelProposal function
-   *     in the RootZDAO contract.
+   *     in the EthereumZDAO contract.
    * @dev Only for valid zDAO
    * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
@@ -214,7 +210,7 @@ contract RootZDAOChef is
 
   /**
    * @notice Execute proposal, check the comment of executeProposal function
-   *     in the RootZDAO contract.
+   *     in the EthereumZDAO contract.
    * @dev Only for valid zDAO
    * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
@@ -227,14 +223,6 @@ contract RootZDAOChef is
     zDAOs[_zDAOId].executeProposal(msg.sender, _proposalId);
 
     emit ProposalExecuted(_zDAOId, _proposalId, msg.sender);
-
-    rootStateSender.sendMessageToChild(
-      abi.encode(
-        uint256(ITunnel.MessageType.ExecuteProposal),
-        _zDAOId,
-        _proposalId
-      )
-    );
   }
 
   /**

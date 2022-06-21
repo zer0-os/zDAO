@@ -79,7 +79,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
     address _gnosisSafe,
     bytes calldata _options
   ) external onlyRegistry {
-    string memory ensSpace = string(_options);
+    string memory ensSpace = abi.decode(_options, (string));
     ZDAOInfo storage zDAO = zDAOInfos[_zDAOId];
 
     uint256 newEnsId = _ensId(ensSpace);
