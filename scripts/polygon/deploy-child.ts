@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { FxStateChildTunnel, PolygonZDAOChef, Staking } from "../../types";
+import { FxStatePolygonTunnel, PolygonZDAOChef, Staking } from "../../types";
 import { config } from "../shared/config";
 import { verifyContract } from "../shared/helpers";
 
@@ -13,26 +13,26 @@ const main = async () => {
   const deployer: SignerWithAddress = signers[0];
 
   if (network.name === "polygonMumbai" || network.name === "polygon") {
-    console.log("Deploying FxStateChildTunnel proxy contract...");
-    const FxStateChildTunnelFactory = await ethers.getContractFactory(
-      "FxStateChildTunnel"
+    console.log("Deploying FxStatePolygonTunnel proxy contract...");
+    const FxStatePolygonTunnelFactory = await ethers.getContractFactory(
+      "FxStatePolygonTunnel"
     );
-    const fxStateChildTunnel = (await upgrades.deployProxy(
-      FxStateChildTunnelFactory,
+    const fxStatePolygonTunnel = (await upgrades.deployProxy(
+      FxStatePolygonTunnelFactory,
       [config[network.name].fxChild],
       {
         kind: "uups",
-        initializer: "__FxStateChildTunnel_init",
+        initializer: "__FxStatePolygonTunnel_init",
       }
-    )) as FxStateChildTunnel;
-    await fxStateChildTunnel.deployed();
-    console.log(`\ndeployed: ${fxStateChildTunnel.address}`);
+    )) as FxStatePolygonTunnel;
+    await fxStatePolygonTunnel.deployed();
+    console.log(`\ndeployed: ${fxStatePolygonTunnel.address}`);
 
-    const fxStateChildTunnelImpl =
+    const fxStatePolygonTunnelImpl =
       await upgrades.erc1967.getImplementationAddress(
-        fxStateChildTunnel.address
+        fxStatePolygonTunnel.address
       );
-    await verifyContract(fxStateChildTunnelImpl);
+    await verifyContract(fxStatePolygonTunnelImpl);
 
     // Staking
     console.log("Deploying Staking proxy contract...");
@@ -63,7 +63,7 @@ const main = async () => {
       ZDAOChefFactory,
       [
         staking.address,
-        fxStateChildTunnel.address,
+        fxStatePolygonTunnel.address,
         zDAOBase.address,
         config[network.name].childChainManager,
       ],
@@ -81,8 +81,8 @@ const main = async () => {
     await verifyContract(zDAOChefImpl);
 
     // configuring root tunnel contract
-    console.log("Setting ChildStateReceiver in FxStateChildTunnel");
-    await fxStateChildTunnel.setChildStateReceiver(zDAOChef.address);
+    console.log("Setting ChildStateReceiver in FxStatePolygonTunnel");
+    await fxStatePolygonTunnel.setChildStateReceiver(zDAOChef.address);
 
     console.table([
       {
@@ -90,12 +90,12 @@ const main = async () => {
         Info: deployer.address,
       },
       {
-        Label: "FxStateChildTunnel proxy address",
-        Info: fxStateChildTunnel.address,
+        Label: "FxStatePolygonTunnel proxy address",
+        Info: fxStatePolygonTunnel.address,
       },
       {
-        Label: "FxStateChildTunnel implementation address",
-        Info: fxStateChildTunnelImpl,
+        Label: "FxStatePolygonTunnel implementation address",
+        Info: fxStatePolygonTunnelImpl,
       },
       {
         Label: "ChildChainManager proxy address",

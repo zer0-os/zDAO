@@ -18,7 +18,7 @@ contract EthereumZDAOChef is
 {
   address public zDAORegistry;
   /**
-   * Address to FxStateRootTunnel which is responsible for sending message
+   * Address to FxStateEthereumTunnel which is responsible for sending message
    * from Ethereum to Polygon
    */
   IRootStateSender public rootStateSender;

@@ -21,7 +21,7 @@ contract PolygonZDAOChef is
    */
   Staking public staking;
   /**
-   * Address to FxStateChildTunnel which is responsible for sending message
+   * Address to FxStatePolygonTunnel which is responsible for sending message
    * from Ethereum to Polygon
    */
   IChildStateSender public childStateSender;

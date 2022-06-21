@@ -4,11 +4,11 @@ pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {IChildStateSender, IChildStateReceiver} from "../../interfaces/ITunnel.sol";
-import {FxBaseChildTunnel} from "../../tunnel/FxBaseChildTunnel.sol";
+import {FxBasePolygonTunnel} from "../../tunnel/FxBasePolygonTunnel.sol";
 
-contract FxStateChildTunnel is
+contract FxStatePolygonTunnel is
   ZeroUpgradeable,
-  FxBaseChildTunnel,
+  FxBasePolygonTunnel,
   IChildStateSender
 {
   /**
@@ -29,7 +29,7 @@ contract FxStateChildTunnel is
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __FxStateChildTunnel_init(address _fxChild) public initializer {
+  function __FxStatePolygonTunnel_init(address _fxChild) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     fxChild = _fxChild;

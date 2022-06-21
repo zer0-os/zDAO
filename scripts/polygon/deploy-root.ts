@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { EthereumZDAOChef, FxStateRootTunnel, ZDAORegistry } from "../../types";
+import { EthereumZDAOChef, FxStateEthereumTunnel, ZDAORegistry } from "../../types";
 import { config, PlatformType } from "../shared/config";
 import { verifyContract } from "../shared/helpers";
 
@@ -16,18 +16,18 @@ const main = async () => {
   const deployer: SignerWithAddress = signers[0];
 
   if (network.name === "goerli" || network.name === "mainnet") {
-    console.log("Deploying FxStateRootTunnel proxy contract...");
-    const FxStateRootTunnelFactory = await ethers.getContractFactory(
-      "FxStateRootTunnel"
+    console.log("Deploying FxStateEthereumTunnel proxy contract...");
+    const FxStateEthereumTunnelFactory = await ethers.getContractFactory(
+      "FxStateEthereumTunnel"
     );
     const fxStateRootTunnel = (await upgrades.deployProxy(
-      FxStateRootTunnelFactory,
+      FxStateEthereumTunnelFactory,
       [config[network.name].checkpointManager, config[network.name].fxRoot],
       {
         kind: "uups",
-        initializer: "__FxStateRootTunnel_init",
+        initializer: "__FxStateEthereumTunnel_init",
       }
-    )) as FxStateRootTunnel;
+    )) as FxStateEthereumTunnel;
     await fxStateRootTunnel.deployed();
     console.log(`\ndeployed: ${fxStateRootTunnel.address}`);
 
@@ -68,7 +68,7 @@ const main = async () => {
     await verifyContract(zDAOChefImpl);
 
     // configuring root tunnel contract
-    console.log("Setting RootStateReceiver in FxStateRootTunnel");
+    console.log("Setting RootStateReceiver in FxStateEthereumTunnel");
     await fxStateRootTunnel.setRootStateReceiver(zDAOChef.address);
 
     const zDAORegistry = (await ethers.getContractAt(
@@ -88,11 +88,11 @@ const main = async () => {
         Info: deployer.address,
       },
       {
-        Label: "FxStateRootTunnel proxy address",
+        Label: "FxStateEthereumTunnel proxy address",
         Info: fxStateRootTunnel.address,
       },
       {
-        Label: "FxStateRootTunnel implementation address",
+        Label: "FxStateEthereumTunnel implementation address",
         Info: fxStateRootTunnelImpl,
       },
       {

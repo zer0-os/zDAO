@@ -100,7 +100,7 @@ describe("ZDAORegistry", function () {
       zNAPairs.push({
         zNA: i + 1,
         gnosisSafe: ethers.Wallet.createRandom().address,
-        name:`ens${i + 1}-name`, 
+        name: `ens${i + 1}-name`,
         ens: `ens${i + 1}`,
       });
     }

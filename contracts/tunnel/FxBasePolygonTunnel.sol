@@ -13,7 +13,7 @@ interface IFxMessageProcessor {
 /**
  * @notice Mock child tunnel contract to receive and send message from L2
  */
-abstract contract FxBaseChildTunnel is IFxMessageProcessor {
+abstract contract FxBasePolygonTunnel is IFxMessageProcessor {
   // MessageTunnel on L1 will get data from this event
   event MessageSent(bytes message);
 
@@ -27,7 +27,7 @@ abstract contract FxBaseChildTunnel is IFxMessageProcessor {
   modifier validateSender(address sender) {
     require(
       sender == fxRootTunnel,
-      "FxBaseChildTunnel: INVALID_SENDER_FROM_ROOT"
+      "FxBasePolygonTunnel: INVALID_SENDER_FROM_ROOT"
     );
     _;
   }
@@ -36,7 +36,7 @@ abstract contract FxBaseChildTunnel is IFxMessageProcessor {
   // function setFxRootTunnel(address _fxRootTunnel) external {
   //   require(
   //     fxRootTunnel == address(0x0),
-  //     "FxBaseChildTunnel: ROOT_TUNNEL_ALREADY_SET"
+  //     "FxBasePolygonTunnel: ROOT_TUNNEL_ALREADY_SET"
   //   );
   //   fxRootTunnel = _fxRootTunnel;
   // }
@@ -46,7 +46,7 @@ abstract contract FxBaseChildTunnel is IFxMessageProcessor {
     address rootMessageSender,
     bytes calldata data
   ) external override {
-    require(msg.sender == fxChild, "FxBaseChildTunnel: INVALID_SENDER");
+    require(msg.sender == fxChild, "FxBasePolygonTunnel: INVALID_SENDER");
     _processMessageFromRoot(stateId, rootMessageSender, data);
   }
 

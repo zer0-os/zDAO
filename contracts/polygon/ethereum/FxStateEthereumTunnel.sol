@@ -4,11 +4,11 @@ pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {IRootStateSender, IRootStateReceiver} from "../../interfaces/ITunnel.sol";
-import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../../tunnel/FxBaseRootTunnel.sol";
+import {FxBaseEthereumTunnel, ICheckpointManager, IFxStateSender} from "../../tunnel/FxBaseEthereumTunnel.sol";
 
-contract FxStateRootTunnel is
+contract FxStateEthereumTunnel is
   ZeroUpgradeable,
-  FxBaseRootTunnel,
+  FxBaseEthereumTunnel,
   IRootStateSender
 {
   /**
@@ -29,7 +29,7 @@ contract FxStateRootTunnel is
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __FxStateRootTunnel_init(address _checkpointManager, address _fxRoot)
+  function __FxStateEthereumTunnel_init(address _checkpointManager, address _fxRoot)
     public
     initializer
   {
