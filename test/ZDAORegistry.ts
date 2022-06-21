@@ -12,8 +12,8 @@ import {
   IERC20Upgradeable,
   IRootStateSender,
   IZNSHub,
-  RootZDAOChef,
-  RootZDAOChef__factory,
+  EthereumZDAOChef,
+  EthereumZDAOChef__factory,
   SnapshotZDAOChef,
   SnapshotZDAOChef__factory,
   ZDAORegistry,
@@ -28,6 +28,7 @@ chai.use(smock.matchers);
 interface zNAPair {
   zNA: number;
   gnosisSafe: string;
+  name: string;
   ens: string;
 }
 
@@ -47,19 +48,19 @@ describe("ZDAORegistry", function () {
     platformType: number,
     daoId: number,
     gnosisSafe: string,
+    name: string,
     ens: string,
     zNAs: number[]
   ) => {
     const zDAORecord = await zDAORegistry.zDAORecords(daoId);
     expect(zDAORecord.platformType.toNumber()).to.be.equal(platformType);
     expect(zDAORecord.id.toNumber()).to.be.equal(daoId);
-    expect(zDAORecord.zDAO).to.be.equal(ethers.constants.AddressZero);
     expect(zDAORecord.gnosisSafe).to.be.equal(gnosisSafe);
+    expect(zDAORecord.name).to.be.equal(name);
 
     const zDAORecord2 = await zDAORegistry.getZDAOById(daoId);
     expect(zDAORecord2.platformType.toNumber()).to.be.equal(platformType);
     expect(zDAORecord2.id.toNumber()).to.be.equal(daoId);
-    expect(zDAORecord2.zDAO).to.be.equal(ethers.constants.AddressZero);
     const zDAOZNAsAs = zDAORecord2.associatedzNAs.map((zNA) => zNA.toNumber());
     zDAOZNAsAs.forEach((zNA, index) => expect(zNA).to.be.equal(zNAs[index]));
 
@@ -99,6 +100,7 @@ describe("ZDAORegistry", function () {
       zNAPairs.push({
         zNA: i + 1,
         gnosisSafe: ethers.Wallet.createRandom().address,
+        name:`ens${i + 1}-name`, 
         ens: `ens${i + 1}`,
       });
     }
@@ -113,12 +115,14 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
+        zNAPairs[0].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
       );
       await zDAORegistry.addNewZDAO(
         PlatformType.Snapshot, // platformType
         zNAPairs[1].zNA, // zNA
         zNAPairs[1].gnosisSafe,
+        zNAPairs[1].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[1].ens])
       );
 
@@ -126,6 +130,7 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot,
         1,
         zNAPairs[0].gnosisSafe,
+        zNAPairs[0].name,
         zNAPairs[0].ens,
         [1]
       );
@@ -133,6 +138,7 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot,
         2,
         zNAPairs[1].gnosisSafe,
+        zNAPairs[1].name,
         zNAPairs[1].ens,
         [2]
       );
@@ -145,7 +151,8 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[0].ens])
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
       );
 
       await expect(
@@ -153,7 +160,8 @@ describe("ZDAORegistry", function () {
           PlatformType.Snapshot, // platformType
           zNAPairs[0].zNA, // zNA
           zNAPairs[0].gnosisSafe,
-          ethers.utils.solidityPack(["string"], [zNAPairs[0].ens])
+          zNAPairs[0].name,
+          ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
         )
       ).to.revertedWith("Already added DAO with same zNA");
     });
@@ -161,23 +169,24 @@ describe("ZDAORegistry", function () {
 
   describe("#addNewDAO for polygon", () => {
     let rootStateSender: FakeContract<IRootStateSender>,
-      rootZDAOChef: MockContract<RootZDAOChef>,
+      rootZDAOChef: MockContract<EthereumZDAOChef>,
       vToken: FakeContract<IERC20Upgradeable>;
 
-    let title: string, zDAOConfig: ZDAOConfig;
+    let name: string, zDAOConfig: ZDAOConfig;
 
     const validatePolygonDAOInformation = async (
       platformType: number,
       daoId: number,
       gnosisSafe: string,
       zNAs: number[],
-      title: string,
+      name: string,
       zDAOConfig: ZDAOConfig
     ) => {
       const zDAORecord = await zDAORegistry.zDAORecords(daoId);
       expect(zDAORecord.platformType.toNumber()).to.be.equal(platformType);
       expect(zDAORecord.id.toNumber()).to.be.equal(daoId);
       expect(zDAORecord.gnosisSafe).to.be.equal(gnosisSafe);
+      expect(zDAORecord.name).to.be.equal(name);
 
       const zDAORecord2 = await zDAORegistry.getZDAOById(daoId);
       expect(zDAORecord2.platformType.toNumber()).to.be.equal(platformType);
@@ -185,16 +194,18 @@ describe("ZDAORegistry", function () {
       const zDAOZNAsAs = zDAORecord2.associatedzNAs.map((zNA) =>
         zNA.toNumber()
       );
-      expect(zDAORecord.zDAO).to.be.equal(zDAORecord2.zDAO);
+      expect(zDAORecord.name).to.be.equal(zDAORecord2.name);
       zDAOZNAsAs.forEach((zNA, index) => expect(zNA).to.be.equal(zNAs[index]));
 
       const zDAOAddr = await rootZDAOChef.zDAOs(daoId);
-      expect(zDAORecord.zDAO).to.be.equal(zDAOAddr);
-      const zDAO = await ethers.getContractAt("RootZDAO", zDAOAddr, deployer);
+      const zDAO = await ethers.getContractAt(
+        "EthereumZDAO",
+        zDAOAddr,
+        deployer
+      );
 
       const zDAOInfo = await zDAO.zDAOInfo();
       expect(zDAOInfo.zDAOId.toNumber()).to.be.equal(daoId);
-      expect(zDAOInfo.title).to.be.equal(title);
       expect(zDAOInfo.createdBy).to.be.equal(deployer.address);
       expect(zDAOInfo.gnosisSafe).to.be.equal(gnosisSafe);
       expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
@@ -220,10 +231,10 @@ describe("ZDAORegistry", function () {
         "IERC20Upgradeable"
       )) as FakeContract<IERC20Upgradeable>;
 
-      const ZDAOChefFactory = (await smock.mock<RootZDAOChef__factory>(
-        "RootZDAOChef"
-      )) as MockContractFactory<RootZDAOChef__factory>;
-      const ZDAOFactory = await ethers.getContractFactory("RootZDAO");
+      const ZDAOChefFactory = (await smock.mock<EthereumZDAOChef__factory>(
+        "EthereumZDAOChef"
+      )) as MockContractFactory<EthereumZDAOChef__factory>;
+      const ZDAOFactory = await ethers.getContractFactory("EthereumZDAO");
       const zDAOBase = await ZDAOFactory.deploy();
 
       rootStateSender = (await smock.fake(
@@ -231,7 +242,7 @@ describe("ZDAORegistry", function () {
       )) as FakeContract<IRootStateSender>;
 
       rootZDAOChef =
-        (await ZDAOChefFactory.deploy()) as MockContract<RootZDAOChef>;
+        (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
       await rootZDAOChef.__ZDAOChef_init(
         zDAORegistry.address,
         rootStateSender.address,
@@ -243,7 +254,7 @@ describe("ZDAORegistry", function () {
         rootZDAOChef.address
       );
 
-      title = `${zNAPairs[0].zNA}.dao`;
+      name = `${zNAPairs[0].zNA}.dao`;
       zDAOConfig = {
         token: vToken.address,
         amount: BigNumber.from("10000").toNumber(),
@@ -261,7 +272,6 @@ describe("ZDAORegistry", function () {
 
       const options = ethers.utils.defaultAbiCoder.encode(
         [
-          "string",
           "address",
           "uint256",
           "uint256",
@@ -271,7 +281,6 @@ describe("ZDAORegistry", function () {
           "bool",
         ],
         [
-          title,
           zDAOConfig.token,
           zDAOConfig.amount,
           zDAOConfig.duration,
@@ -285,12 +294,14 @@ describe("ZDAORegistry", function () {
         PlatformType.Polygon, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
+        name,
         options
       );
       await zDAORegistry.addNewZDAO(
         PlatformType.Polygon, // platformType
         zNAPairs[1].zNA, // zNA
         zNAPairs[1].gnosisSafe,
+        name,
         options
       );
 
@@ -299,7 +310,7 @@ describe("ZDAORegistry", function () {
         1,
         zNAPairs[0].gnosisSafe,
         [1],
-        title,
+        name,
         zDAOConfig
       );
       validatePolygonDAOInformation(
@@ -307,7 +318,7 @@ describe("ZDAORegistry", function () {
         2,
         zNAPairs[1].gnosisSafe,
         [2],
-        title,
+        name,
         zDAOConfig
       );
     });
@@ -318,7 +329,6 @@ describe("ZDAORegistry", function () {
 
       const options = ethers.utils.defaultAbiCoder.encode(
         [
-          "string",
           "address",
           "uint256",
           "uint256",
@@ -328,7 +338,6 @@ describe("ZDAORegistry", function () {
           "bool",
         ],
         [
-          title,
           zDAOConfig.token,
           zDAOConfig.amount,
           zDAOConfig.duration,
@@ -342,6 +351,7 @@ describe("ZDAORegistry", function () {
         PlatformType.Polygon, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
+        name,
         options
       );
       await expect(
@@ -349,6 +359,7 @@ describe("ZDAORegistry", function () {
           PlatformType.Polygon, // platformType
           zNAPairs[0].zNA, // zNA
           zNAPairs[0].gnosisSafe,
+          name,
           options
         )
       ).to.be.revertedWith("Already added DAO with same zNA");
@@ -365,13 +376,15 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[0].ens])
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
       );
       await zDAORegistry.connect(user2).addNewZDAO(
         PlatformType.Snapshot, // platformType
         zNAPairs[1].zNA, // zNA
         zNAPairs[1].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[1].ens])
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[1].ens])
       );
 
       await zDAORegistry.connect(user3).addZNAAssociation(1, zNAPairs[2].zNA);
@@ -391,6 +404,7 @@ describe("ZDAORegistry", function () {
         1,
         zNAPairs[0].gnosisSafe,
         zNAPairs[0].ens,
+        zNAPairs[0].name,
         [zNAPairs[0].zNA, zNAPairs[2].zNA]
       );
       validateSnapshotDAOInformation(
@@ -398,6 +412,7 @@ describe("ZDAORegistry", function () {
         2,
         zNAPairs[1].gnosisSafe,
         zNAPairs[1].ens,
+        zNAPairs[1].name,
         [zNAPairs[1].zNA]
       );
     });
@@ -410,13 +425,15 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[0].ens])
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
       );
       await zDAORegistry.connect(user2).addNewZDAO(
         PlatformType.Snapshot, // platformType
         zNAPairs[1].zNA, // zNA
         zNAPairs[1].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[1].ens])
+        zNAPairs[1].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[1].ens])
       );
 
       await zDAORegistry.connect(user2).addZNAAssociation(1, zNAPairs[1].zNA);
@@ -433,6 +450,7 @@ describe("ZDAORegistry", function () {
         1,
         zNAPairs[0].gnosisSafe,
         zNAPairs[0].ens,
+        zNAPairs[0].name,
         [zNAPairs[0].zNA, zNAPairs[1].zNA]
       );
     });
@@ -447,7 +465,8 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[0].ens])
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
       );
       await zDAORegistry.connect(user2).addZNAAssociation(1, zNAPairs[1].zNA);
       await zDAORegistry
@@ -459,6 +478,7 @@ describe("ZDAORegistry", function () {
         1,
         zNAPairs[0].gnosisSafe,
         zNAPairs[0].ens,
+        zNAPairs[0].name,
         [zNAPairs[1].zNA]
       );
       expect(
@@ -473,7 +493,8 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        ethers.utils.solidityPack(["string"], [zNAPairs[0].ens])
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
       );
       await zDAORegistry
         .connect(user1)

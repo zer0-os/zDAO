@@ -10,9 +10,9 @@ import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
 import {
-  RootZDAO,
-  RootZDAOChef,
-  RootZDAOChef__factory,
+  EthereumZDAO,
+  EthereumZDAOChef,
+  EthereumZDAOChef__factory,
   IERC20Upgradeable,
   IZNSHub,
   MockTokenUpgradeable,
@@ -39,21 +39,20 @@ describe("ZDAOChef", async function () {
 
   let ZNSHub: FakeContract<IZNSHub>,
     rootStateSender: FakeContract<IRootStateSender>,
-    ZDAOChef: MockContract<RootZDAOChef>,
+    ZDAOChef: MockContract<EthereumZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
 
   let gnosisSafe: string,
-    title: string,
     zDAOConfig: ZDAOConfig,
     proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
     [owner, zNAOwner, zNAOwner2, userA, userB] = await ethers.getSigners();
 
-    const ZDAOChefFactory = (await smock.mock<RootZDAOChef__factory>(
-      "RootZDAOChef"
-    )) as MockContractFactory<RootZDAOChef__factory>;
-    const ZDAOFactory = await ethers.getContractFactory("RootZDAO");
+    const ZDAOChefFactory = (await smock.mock<EthereumZDAOChef__factory>(
+      "EthereumZDAOChef"
+    )) as MockContractFactory<EthereumZDAOChef__factory>;
+    const ZDAOFactory = await ethers.getContractFactory("EthereumZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
     rootStateSender = (await smock.fake(
@@ -61,7 +60,8 @@ describe("ZDAOChef", async function () {
     )) as FakeContract<IRootStateSender>;
 
     const zDAORegistry = await ethers.Wallet.createRandom().getAddress();
-    ZDAOChef = (await ZDAOChefFactory.deploy()) as MockContract<RootZDAOChef>;
+    ZDAOChef =
+      (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       zDAORegistry,
       rootStateSender.address,
@@ -85,7 +85,6 @@ describe("ZDAOChef", async function () {
     const minDuration = 30; // unit in seconds
     const minimumTotalVotingTokens = 5000;
 
-    title = `${zNA}.dao`;
     zDAOConfig = {
       token: vToken.address,
       amount: minAmount.toNumber(),
@@ -112,7 +111,6 @@ describe("ZDAOChef", async function () {
       gnosisSafe,
       ethers.utils.defaultAbiCoder.encode(
         [
-          "string",
           "address",
           "uint256",
           "uint256",
@@ -122,7 +120,6 @@ describe("ZDAOChef", async function () {
           "bool",
         ],
         [
-          title,
           zDAOConfig.token,
           zDAOConfig.amount,
           zDAOConfig.duration,
@@ -201,10 +198,10 @@ describe("ZDAOChef", async function () {
 
     const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "RootZDAO",
+      "EthereumZDAO",
       rootZDAO,
       userA
-    )) as RootZDAO;
+    )) as EthereumZDAO;
 
     const proposal = await zDAO.proposals(proposalId);
     expect(proposal.yes).to.be.equal(70);
@@ -222,10 +219,10 @@ describe("ZDAOChef", async function () {
 
     const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "RootZDAO",
+      "EthereumZDAO",
       rootZDAO,
       userA
-    )) as RootZDAO;
+    )) as EthereumZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
@@ -261,10 +258,10 @@ describe("ZDAOChef", async function () {
 
     const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "RootZDAO",
+      "EthereumZDAO",
       rootZDAO,
       userA
-    )) as RootZDAO;
+    )) as EthereumZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
@@ -313,10 +310,10 @@ describe("ZDAOChef", async function () {
 
     const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
-      "RootZDAO",
+      "EthereumZDAO",
       rootZDAO,
       userA
-    )) as RootZDAO;
+    )) as EthereumZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
 
     const rootStateSender = await ZDAOChef.rootStateSender();

@@ -131,9 +131,11 @@ describe("Staking", async function () {
 
   it("Should stake/unstake ERC721", async function () {
     const tokenIdA = 1000,
-      tokenIdB = 2000;
+      tokenIdB = 2000,
+      tokenIdC = 3000;
     await vCollectible.mintFor(userA.address, tokenIdA);
     await vCollectible.mintFor(userB.address, tokenIdB);
+    await vCollectible.mintFor(userB.address, tokenIdC);
 
     childChainManager.childToRootToken
       .whenCalledWith(vCollectible.address)
@@ -142,6 +144,7 @@ describe("Staking", async function () {
     // approve
     await vCollectible.connect(userA).approve(staking.address, tokenIdA);
     await vCollectible.connect(userB).approve(staking.address, tokenIdB);
+    await vCollectible.connect(userB).approve(staking.address, tokenIdC);
 
     // stake
     await staking.connect(userA).stakeERC721(vCollectible.address, tokenIdA);
@@ -170,6 +173,12 @@ describe("Staking", async function () {
         await staking.stakingPower(userB.address, vCollectible.address)
       ).toNumber()
     ).to.be.equal(1);
+    await staking.connect(userB).stakeERC721(vCollectible.address, tokenIdC);
+    expect(
+      (
+        await staking.stakingPower(userB.address, vCollectible.address)
+      ).toNumber()
+    ).to.be.equal(2);
 
     await mineToBlock(1);
 
@@ -188,7 +197,7 @@ describe("Staking", async function () {
       (
         await staking.stakingPower(userB.address, vCollectible.address)
       ).toNumber()
-    ).to.be.equal(1);
+    ).to.be.equal(2);
   });
 
   it("Should get staking power according to block number", async function () {

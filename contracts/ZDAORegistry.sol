@@ -68,7 +68,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
 
   /**
    * @notice Add new zDAO associating with given zNA.
-   *     Create new RootZDAO contract and associate new zDAO with given zNA.
+   *     Create new EthereumZDAO contract and associate new zDAO with given zNA.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
    * @dev Only zNA owner can create zDAO

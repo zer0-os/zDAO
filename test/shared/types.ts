@@ -12,7 +12,7 @@ export interface ProposalConfig {
   ipfs: string;
 }
 
-export interface ChildZDAOConfig {
+export interface PolygonZDAOConfig {
   zDAOId: number;
   duration: number;
 }

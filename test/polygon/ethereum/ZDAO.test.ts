@@ -8,7 +8,11 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import { IERC20Upgradeable, RootZDAO, RootZDAO__factory } from "../../../types";
+import {
+  IERC20Upgradeable,
+  EthereumZDAO,
+  EthereumZDAO__factory,
+} from "../../../types";
 import { ProposalConfig, ZDAOConfig } from "../../shared/types";
 import { mineToBlock, now } from "../../shared/utilities";
 
@@ -23,22 +27,21 @@ describe("ZDAO", async function () {
 
   const zNA = "wilder.wheels";
 
-  let zDAO: MockContract<RootZDAO>,
+  let zDAO: MockContract<EthereumZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
     zDAOInfo: any;
 
   let gnosisSafe: string,
-    title: string,
     zDAOConfig: ZDAOConfig,
     proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
     [owner, zDAOChef, zNAOwner, userA, userB] = await ethers.getSigners();
 
-    const ZDAOFactory = (await smock.mock<RootZDAO__factory>(
-      "RootZDAO"
-    )) as MockContractFactory<RootZDAO__factory>;
-    zDAO = (await ZDAOFactory.deploy()) as MockContract<RootZDAO>;
+    const ZDAOFactory = (await smock.mock<EthereumZDAO__factory>(
+      "EthereumZDAO"
+    )) as MockContractFactory<EthereumZDAO__factory>;
+    zDAO = (await ZDAOFactory.deploy()) as MockContract<EthereumZDAO>;
 
     vToken = (await smock.fake(
       "IERC20Upgradeable"
@@ -49,7 +52,6 @@ describe("ZDAO", async function () {
     const minDuration = 30; // unit in seconds
     const minimumTotalVotingTokens = 5000;
     gnosisSafe = await ethers.Wallet.createRandom().getAddress();
-    title = `${zNA}.dao`;
 
     zDAOConfig = {
       token: vToken.address,
@@ -66,7 +68,6 @@ describe("ZDAO", async function () {
       zDAOId,
       gnosisSafe,
       zNAOwner.address,
-      title,
       zDAOConfig
     );
 
@@ -79,7 +80,6 @@ describe("ZDAO", async function () {
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(1);
-    expect(zDAOInfo.title).to.be.equal(title);
     expect(zDAOInfo.createdBy).to.be.equal(zNAOwner.address);
     expect(zDAOInfo.gnosisSafe).to.be.equal(gnosisSafe);
     expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);

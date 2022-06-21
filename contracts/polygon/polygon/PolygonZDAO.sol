@@ -82,7 +82,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
   /**
    * @notice Create a proposal on Polygon with the information which was
    *     received from the Ethereum.
-   *     RootZDAOChef only sends the proposal id created on Ethereum.
+   *     EthereumZDAOChef only sends the proposal id created on Ethereum.
    * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
    * @param _startTimestamp Current block timestamp

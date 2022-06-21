@@ -12,7 +12,7 @@ contract FxStateRootTunnel is
   IRootStateSender
 {
   /**
-   * Address to RootZDAOChef contract which is responsible for processing
+   * Address to EthereumZDAOChef contract which is responsible for processing
    * the messages from the Polygon network
    */
   IRootStateReceiver public rootStateReceiver;
@@ -56,7 +56,7 @@ contract FxStateRootTunnel is
 
   /**
    * @notice Send message to Polygon
-   * @dev Callable only by RootZDAOChef contract
+   * @dev Callable only by EthereumZDAOChef contract
    */
   function sendMessageToChild(bytes calldata message)
     external
