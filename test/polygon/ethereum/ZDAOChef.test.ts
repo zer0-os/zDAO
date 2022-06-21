@@ -18,7 +18,7 @@ import {
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
 } from "../../../types";
-import { IRootStateSender } from "../../../types/IRootStateSender";
+import { IEthereumStateSender } from "../../../types/IEthereumStateSender";
 import { encodeCalculateProposal } from "../../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../../shared/types";
 import { increaseTime, mineToBlock, now } from "../../shared/utilities";
@@ -38,7 +38,7 @@ describe("ZDAOChef", async function () {
   const zNAAsNumber2 = zns.domains.domainNameToId(zNA2);
 
   let ZNSHub: FakeContract<IZNSHub>,
-    rootStateSender: FakeContract<IRootStateSender>,
+    ethereumStateSender: FakeContract<IEthereumStateSender>,
     ZDAOChef: MockContract<EthereumZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
 
@@ -55,16 +55,16 @@ describe("ZDAOChef", async function () {
     const ZDAOFactory = await ethers.getContractFactory("EthereumZDAO");
     const zDAOBase = await ZDAOFactory.deploy();
 
-    rootStateSender = (await smock.fake(
-      "IRootStateSender"
-    )) as FakeContract<IRootStateSender>;
+    ethereumStateSender = (await smock.fake(
+      "IEthereumStateSender"
+    )) as FakeContract<IEthereumStateSender>;
 
     const zDAORegistry = await ethers.Wallet.createRandom().getAddress();
     ZDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       zDAORegistry,
-      rootStateSender.address,
+      ethereumStateSender.address,
       zDAOBase.address
     );
 
@@ -192,7 +192,7 @@ describe("ZDAOChef", async function () {
       no: 30,
     });
 
-    await ZDAOChef.setVariable("rootStateSender", userA.address);
+    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
     await expect(ZDAOChef.connect(userA).processMessageFromChild(message)).to.be
       .not.reverted;
 
@@ -226,7 +226,7 @@ describe("ZDAOChef", async function () {
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
-    await ZDAOChef.setVariable("rootStateSender", userA.address);
+    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
 
     // should not execute proposal if proposal state is failed
     await expect(
@@ -265,7 +265,7 @@ describe("ZDAOChef", async function () {
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
-    await ZDAOChef.setVariable("rootStateSender", userA.address);
+    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
 
     // should execute proposal if proposal state is succeeded
     await expect(
@@ -280,7 +280,7 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    await ZDAOChef.setVariable("rootStateSender", rootStateSender.address);
+    await ZDAOChef.setVariable("ethereumStateSender", ethereumStateSender.address);
     // should reverted because of invalid target, value and data
     await expect(ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)).to
       .be.not.reverted;
@@ -316,8 +316,8 @@ describe("ZDAOChef", async function () {
     )) as EthereumZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
 
-    const rootStateSender = await ZDAOChef.rootStateSender();
-    await ZDAOChef.setVariable("rootStateSender", userA.address);
+    const ethereumStateSender = await ZDAOChef.ethereumStateSender();
+    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
 
     // should execute proposal if proposal state is succeeded
     await expect(
@@ -332,7 +332,7 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    await ZDAOChef.setVariable("rootStateSender", rootStateSender);
+    await ZDAOChef.setVariable("ethereumStateSender", ethereumStateSender);
     await ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId);
   });
 });

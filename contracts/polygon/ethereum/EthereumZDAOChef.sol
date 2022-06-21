@@ -5,14 +5,14 @@ pragma solidity ^0.8.11;
 import {ZeroUpgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../../helpers/Proxy.sol";
 import {IZNSHub} from "../../interfaces/IZNSHub.sol";
-import {IRootStateSender, IRootStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
+import {IEthereumStateSender, IEthereumStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
 import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 
 contract EthereumZDAOChef is
   ZeroUpgradeable,
-  IRootStateReceiver,
+  IEthereumStateReceiver,
   IEthereumZDAOChef,
   IZDAOFactory
 {
@@ -21,7 +21,7 @@ contract EthereumZDAOChef is
    * Address to FxStateEthereumTunnel which is responsible for sending message
    * from Ethereum to Polygon
    */
-  IRootStateSender public rootStateSender;
+  IEthereumStateSender public ethereumStateSender;
   address public zDAOBase;
 
   mapping(uint256 => IEthereumZDAO) public override zDAOs;
@@ -46,13 +46,13 @@ contract EthereumZDAOChef is
 
   function __ZDAOChef_init(
     address _zDAORegistry,
-    IRootStateSender _rootStateSender,
+    IEthereumStateSender _ethereumStateSender,
     address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     zDAORegistry = _zDAORegistry;
-    rootStateSender = _rootStateSender;
+    ethereumStateSender = _ethereumStateSender;
     zDAOBase = _zDAOBase;
   }
 
@@ -106,7 +106,7 @@ contract EthereumZDAOChef is
     zDAOs[_zDAOId] = zDAO;
 
     // send zDAO info to L2
-    rootStateSender.sendMessageToChild(
+    ethereumStateSender.sendMessageToChild(
       abi.encode(
         uint256(MessageType.CreateZDAO),
         _zDAOId,
@@ -129,7 +129,7 @@ contract EthereumZDAOChef is
     zDAOs[_zDAOId].setDestroyed(true);
 
     // send zDAO info to L2
-    rootStateSender.sendMessageToChild(
+    ethereumStateSender.sendMessageToChild(
       abi.encode(uint256(MessageType.DeleteZDAO), _zDAOId)
     );
   }
@@ -143,7 +143,7 @@ contract EthereumZDAOChef is
 
     zDAOs[_zDAOId].modifyZDAO(_gnosisSafe, token, amount);
     // send proposal info to L2
-    rootStateSender.sendMessageToChild(
+    ethereumStateSender.sendMessageToChild(
       abi.encode(uint256(ITunnel.MessageType.UpdateToken), _zDAOId, token)
     );
   }
@@ -174,7 +174,7 @@ contract EthereumZDAOChef is
     );
 
     // send proposal info to L2
-    rootStateSender.sendMessageToChild(
+    ethereumStateSender.sendMessageToChild(
       abi.encode(
         uint256(ITunnel.MessageType.CreateProposal),
         _zDAOId,
@@ -199,7 +199,7 @@ contract EthereumZDAOChef is
 
     emit ProposalCanceled(_zDAOId, _proposalId, msg.sender);
 
-    rootStateSender.sendMessageToChild(
+    ethereumStateSender.sendMessageToChild(
       abi.encode(
         uint256(ITunnel.MessageType.CancelProposal),
         _zDAOId,
@@ -231,7 +231,7 @@ contract EthereumZDAOChef is
    * @dev Callable by root state sender
    */
   function processMessageFromChild(bytes calldata _message) external override {
-    require(msg.sender == address(rootStateSender), "Not a state sender");
+    require(msg.sender == address(ethereumStateSender), "Not a state sender");
     _processMessageFromChild(_message);
   }
 
@@ -273,4 +273,12 @@ contract EthereumZDAOChef is
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
+
+  function zDAOInfo(uint256 _zDAOId)
+    external
+    view
+    returns (IEthereumZDAO.ZDAOInfo memory)
+  {
+    return zDAOs[_zDAOId].zDAOInfo();
+  }
 }

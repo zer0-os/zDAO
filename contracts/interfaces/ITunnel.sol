@@ -15,18 +15,18 @@ interface ITunnel {
   }
 }
 
-interface IRootStateSender is ITunnel {
+interface IEthereumStateSender is ITunnel {
   function sendMessageToChild(bytes calldata message) external;
 }
 
-interface IRootStateReceiver is ITunnel {
+interface IEthereumStateReceiver is ITunnel {
   function processMessageFromChild(bytes calldata message) external;
 }
 
-interface IChildStateSender is ITunnel {
+interface IPolygonStateSender is ITunnel {
   function sendMessageToRoot(bytes calldata message) external;
 }
 
-interface IChildStateReceiver is ITunnel {
+interface IPolygonStateReceiver is ITunnel {
   function processMessageFromRoot(bytes calldata data) external;
 }

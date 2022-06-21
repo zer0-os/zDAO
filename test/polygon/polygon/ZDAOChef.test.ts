@@ -12,12 +12,12 @@ import {
   PolygonZDAO,
   PolygonZDAOChef,
   PolygonZDAOChef__factory,
-  IChildStateSender,
   MockTokenUpgradeable__factory,
   MockTokenUpgradeable,
   IChildChainManager,
 } from "../../../types";
 import { Staking__factory } from "../../../types/factories/Staking__factory";
+import { IPolygonStateSender } from "../../../types/IPolygonStateSender";
 import { Staking } from "../../../types/Staking";
 import {
   CreateProposalPack,
@@ -36,7 +36,7 @@ describe("ZDAOChef", async function () {
 
   let staking: MockContract<Staking>,
     ZDAOChef: MockContract<PolygonZDAOChef>,
-    childStateSender: FakeContract<IChildStateSender>,
+    polygonStateSender: FakeContract<IPolygonStateSender>,
     childChainManager: FakeContract<IChildChainManager>,
     vToken: MockContract<MockTokenUpgradeable>;
 
@@ -61,15 +61,15 @@ describe("ZDAOChef", async function () {
     staking = (await StakingFactory.deploy()) as MockContract<Staking>;
     await staking.__Staking_init();
 
-    childStateSender = (await smock.fake(
-      "IChildStateSender"
-    )) as FakeContract<IChildStateSender>;
+    polygonStateSender = (await smock.fake(
+      "IPolygonStateSender"
+    )) as FakeContract<IPolygonStateSender>;
 
     ZDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<PolygonZDAOChef>;
     await ZDAOChef.__ZDAOChef_init(
       staking.address,
-      childStateSender.address,
+      polygonStateSender.address,
       zDAOBase.address,
       childChainManager.address
     );
@@ -96,14 +96,14 @@ describe("ZDAOChef", async function () {
   });
 
   const createZDAO = async (user: SignerWithAddress) => {
-    await ZDAOChef.setVariable("childStateSender", user.address);
+    await ZDAOChef.setVariable("polygonStateSender", user.address);
     const message = encodeCreateZDAO(zDAOPack);
 
     return ZDAOChef.connect(user).processMessageFromRoot(message);
   };
 
   const deleteZDAO = async (user: SignerWithAddress) => {
-    await ZDAOChef.setVariable("childStateSender", user.address);
+    await ZDAOChef.setVariable("polygonStateSender", user.address);
     const message = encodeDeleteZDAO({
       zDAOId: zDAOPack.lastZDAOId,
     });
@@ -112,7 +112,7 @@ describe("ZDAOChef", async function () {
   };
 
   const createProposal = async (user: SignerWithAddress) => {
-    await ZDAOChef.setVariable("childStateSender", user.address);
+    await ZDAOChef.setVariable("polygonStateSender", user.address);
     const messageProposal = encodeCreateProposal(proposalPack);
 
     return ZDAOChef.connect(user).processMessageFromRoot(messageProposal);

@@ -91,6 +91,8 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     IZDAOFactory factory = zDAOFactories[_platformType];
     assert(address(factory) != address(0));
 
+    // todo, compare if zDAO name is unique
+
     lastZDAOId++;
     address zDAO = factory.addNewZDAO(lastZDAOId, _zNA, _gnosisSafe, _options);
 

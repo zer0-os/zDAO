@@ -1,6 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
-import { EthereumZDAOChef, FxStateEthereumTunnel, ZDAORegistry } from "../../types";
+import {
+  EthereumZDAOChef,
+  FxStateEthereumTunnel,
+  ZDAORegistry,
+} from "../../types";
 import { config, PlatformType } from "../shared/config";
 import { verifyContract } from "../shared/helpers";
 

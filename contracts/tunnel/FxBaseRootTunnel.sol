@@ -26,7 +26,7 @@ contract ICheckpointManager {
   mapping(uint256 => HeaderBlock) public headerBlocks;
 }
 
-abstract contract FxBaseEthereumTunnel {
+abstract contract FxBaseRootTunnel {
   using RLPReader for RLPReader.RLPItem;
   using Merkle for bytes32;
   using ExitPayloadReader for bytes;
@@ -53,7 +53,7 @@ abstract contract FxBaseEthereumTunnel {
   // function setFxChildTunnel(address _fxChildTunnel) public {
   //   require(
   //     fxChildTunnel == address(0x0),
-  //     "FxBaseEthereumTunnel: CHILD_TUNNEL_ALREADY_SET"
+  //     "FxBaseRootTunnel: CHILD_TUNNEL_ALREADY_SET"
   //   );
   //   fxChildTunnel = _fxChildTunnel;
   // }

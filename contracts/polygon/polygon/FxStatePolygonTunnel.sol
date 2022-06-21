@@ -3,19 +3,19 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {IChildStateSender, IChildStateReceiver} from "../../interfaces/ITunnel.sol";
-import {FxBasePolygonTunnel} from "../../tunnel/FxBasePolygonTunnel.sol";
+import {IPolygonStateSender, IPolygonStateReceiver} from "../../interfaces/ITunnel.sol";
+import {FxBaseChildTunnel} from "../../tunnel/FxBaseChildTunnel.sol";
 
 contract FxStatePolygonTunnel is
   ZeroUpgradeable,
-  FxBasePolygonTunnel,
-  IChildStateSender
+  FxBaseChildTunnel,
+  IPolygonStateSender
 {
   /**
    * Address to PolygonZDAOChef contract which is responsible for processing
    * the messages from the Ethereum network
    */
-  IChildStateReceiver public childStateReceiver;
+  IPolygonStateReceiver public childStateReceiver;
 
   modifier onlyStateReceiver() {
     require(
@@ -39,7 +39,7 @@ contract FxStatePolygonTunnel is
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setChildStateReceiver(IChildStateReceiver _childStateReceiver)
+  function setChildStateReceiver(IPolygonStateReceiver _childStateReceiver)
     external
     onlyOwner
   {

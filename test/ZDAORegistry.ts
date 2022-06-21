@@ -10,7 +10,7 @@ import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   IERC20Upgradeable,
-  IRootStateSender,
+  IEthereumStateSender,
   IZNSHub,
   EthereumZDAOChef,
   EthereumZDAOChef__factory,
@@ -168,7 +168,7 @@ describe("ZDAORegistry", function () {
   });
 
   describe("#addNewDAO for polygon", () => {
-    let rootStateSender: FakeContract<IRootStateSender>,
+    let ethereumStateSender: FakeContract<IEthereumStateSender>,
       rootZDAOChef: MockContract<EthereumZDAOChef>,
       vToken: FakeContract<IERC20Upgradeable>;
 
@@ -237,15 +237,15 @@ describe("ZDAORegistry", function () {
       const ZDAOFactory = await ethers.getContractFactory("EthereumZDAO");
       const zDAOBase = await ZDAOFactory.deploy();
 
-      rootStateSender = (await smock.fake(
-        "IRootStateSender"
-      )) as FakeContract<IRootStateSender>;
+      ethereumStateSender = (await smock.fake(
+        "IEthereumStateSender"
+      )) as FakeContract<IEthereumStateSender>;
 
       rootZDAOChef =
         (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
       await rootZDAOChef.__ZDAOChef_init(
         zDAORegistry.address,
-        rootStateSender.address,
+        ethereumStateSender.address,
         zDAOBase.address
       );
 

@@ -3,23 +3,23 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {IRootStateSender, IRootStateReceiver} from "../../interfaces/ITunnel.sol";
-import {FxBaseEthereumTunnel, ICheckpointManager, IFxStateSender} from "../../tunnel/FxBaseEthereumTunnel.sol";
+import {IEthereumStateSender, IEthereumStateReceiver} from "../../interfaces/ITunnel.sol";
+import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../../tunnel/FxBaseRootTunnel.sol";
 
 contract FxStateEthereumTunnel is
   ZeroUpgradeable,
-  FxBaseEthereumTunnel,
-  IRootStateSender
+  FxBaseRootTunnel,
+  IEthereumStateSender
 {
   /**
    * Address to EthereumZDAOChef contract which is responsible for processing
    * the messages from the Polygon network
    */
-  IRootStateReceiver public rootStateReceiver;
+  IEthereumStateReceiver public ethereumStateReceiver;
 
   modifier onlyStateReceiver() {
     require(
-      msg.sender == address(rootStateReceiver),
+      msg.sender == address(ethereumStateReceiver),
       "Only for state receiver"
     );
     _;
@@ -29,25 +29,25 @@ contract FxStateEthereumTunnel is
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __FxStateEthereumTunnel_init(address _checkpointManager, address _fxRoot)
-    public
-    initializer
-  {
+  function __FxStateEthereumTunnel_init(
+    address _checkpointManager,
+    address _fxEthereum
+  ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     checkpointManager = ICheckpointManager(_checkpointManager);
-    fxRoot = IFxStateSender(_fxRoot);
+    fxRoot = IFxStateSender(_fxEthereum);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setRootStateReceiver(IRootStateReceiver _rootStateReceiver)
+  function setEthereumStateReceiver(IEthereumStateReceiver _ethereumStateReceiver)
     external
     onlyOwner
   {
-    rootStateReceiver = _rootStateReceiver;
+    ethereumStateReceiver = _ethereumStateReceiver;
   }
 
   function setFxChildTunnel(address _fxChildTunnel) external onlyOwner {
@@ -70,8 +70,8 @@ contract FxStateEthereumTunnel is
   /* -------------------------------------------------------------------------- */
 
   function _processMessageFromChild(bytes memory _data) internal override {
-    if (address(rootStateReceiver) != address(0)) {
-      rootStateReceiver.processMessageFromChild(_data);
+    if (address(ethereumStateReceiver) != address(0)) {
+      ethereumStateReceiver.processMessageFromChild(_data);
     }
   }
 }

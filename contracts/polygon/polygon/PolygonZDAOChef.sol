@@ -4,7 +4,7 @@ pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../../helpers/Proxy.sol";
-import {IChildStateSender, IChildStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
+import {IPolygonStateSender, IPolygonStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
 import {IChildChainManager} from "./interfaces/IChildChainManager.sol";
 import {IPolygonZDAOChef} from "./interfaces/IPolygonZDAOChef.sol";
 import {IPolygonZDAO} from "./interfaces/IPolygonZDAO.sol";
@@ -12,7 +12,7 @@ import {Staking} from "./Staking.sol";
 
 contract PolygonZDAOChef is
   ZeroUpgradeable,
-  IChildStateReceiver,
+  IPolygonStateReceiver,
   IPolygonZDAOChef
 {
   /**
@@ -24,7 +24,7 @@ contract PolygonZDAOChef is
    * Address to FxStatePolygonTunnel which is responsible for sending message
    * from Ethereum to Polygon
    */
-  IChildStateSender public childStateSender;
+  IPolygonStateSender public polygonStateSender;
   address public zDAOBase;
 
   mapping(uint256 => IPolygonZDAO) public zDAOs;
@@ -55,14 +55,14 @@ contract PolygonZDAOChef is
 
   function __ZDAOChef_init(
     Staking _stakingBase,
-    IChildStateSender _childStateSender,
+    IPolygonStateSender _polygonStateSender,
     address _zDAOBase,
     IChildChainManager _childChainManager
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     staking = _stakingBase;
-    childStateSender = _childStateSender;
+    polygonStateSender = _polygonStateSender;
     zDAOBase = _zDAOBase;
     childChainManager = _childChainManager;
   }
@@ -123,7 +123,7 @@ contract PolygonZDAOChef is
     emit ProposalCalculated(_daoId, _proposalId, voters, yes, no);
 
     // send calculated result to L1
-    childStateSender.sendMessageToRoot(
+    polygonStateSender.sendMessageToRoot(
       abi.encode(
         uint256(ITunnel.MessageType.CalculateProposal),
         _daoId,
@@ -141,7 +141,7 @@ contract PolygonZDAOChef is
    * @dev Callable by root state sender
    */
   function processMessageFromRoot(bytes calldata _message) external {
-    require(msg.sender == address(childStateSender), "Not a state sender");
+    require(msg.sender == address(polygonStateSender), "Not a state sender");
     _processMessageFromRoot(_message);
   }
 
