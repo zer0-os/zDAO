@@ -15,11 +15,11 @@ contract FxStatePolygonTunnel is
    * Address to PolygonZDAOChef contract which is responsible for processing
    * the messages from the Ethereum network
    */
-  IPolygonStateReceiver public childStateReceiver;
+  IPolygonStateReceiver public polygonStateReceiver;
 
   modifier onlyStateReceiver() {
     require(
-      msg.sender == address(childStateReceiver),
+      msg.sender == address(polygonStateReceiver),
       "Only for state receiver"
     );
     _;
@@ -39,15 +39,15 @@ contract FxStatePolygonTunnel is
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setChildStateReceiver(IPolygonStateReceiver _childStateReceiver)
+  function setPolygonStateReceiver(IPolygonStateReceiver _polygonStateReceiver)
     external
     onlyOwner
   {
-    childStateReceiver = _childStateReceiver;
+    polygonStateReceiver = _polygonStateReceiver;
   }
 
-  function setFxRootTunnel(address _fxRootTunnel) external onlyOwner {
-    fxRootTunnel = _fxRootTunnel;
+  function setEthereumStateTunnel(address _ethereumTunnel) external onlyOwner {
+    fxRootTunnel = _ethereumTunnel;
   }
 
   /**
@@ -70,8 +70,8 @@ contract FxStatePolygonTunnel is
     address sender,
     bytes memory message
   ) internal override validateSender(sender) {
-    if (address(childStateReceiver) != address(0)) {
-      childStateReceiver.processMessageFromRoot(message);
+    if (address(polygonStateReceiver) != address(0)) {
+      polygonStateReceiver.processMessageFromRoot(message);
     }
   }
 }

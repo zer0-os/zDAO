@@ -50,8 +50,8 @@ contract FxStateEthereumTunnel is
     ethereumStateReceiver = _ethereumStateReceiver;
   }
 
-  function setFxChildTunnel(address _fxChildTunnel) external onlyOwner {
-    fxChildTunnel = _fxChildTunnel;
+  function setPolygonStateTunnel(address _polygonTunnel) external onlyOwner {
+    fxChildTunnel = _polygonTunnel;
   }
 
   /**

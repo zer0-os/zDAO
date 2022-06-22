@@ -24,7 +24,7 @@ interface PolygonConfig {
 const ethereumConfig: { [key in ethereumNetwork]: EthereumConfig } = {
   goerli: {
     zNSHub: "0x9a35367c5e8C01cd009885e497a33a9761938832", // todo
-    zDAORegistry: "0x24E6a9ED618472049391587f131752202331bDAB", // todo
+    zDAORegistry: "0xFbC9ECeB87d011c03187d14E737c1C163D1427a8", // todo
     checkpointManager: "0x2890bA17EfE978480615e330ecB65333b880928e",
     fxRoot: "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA",
   },
@@ -67,7 +67,7 @@ export const zNSHubConfig: zNSHubConfig[] = [
 const snapshotConfig = {
   rinkeby: {
     zNSHub: "0x7F918CbbBf37e4358ad5f060F15110151d14E59e", // "0x90098737eB7C3e73854daF1Da20dFf90d521929a",
-    zDAORegistry: "0x96FB1736ef3D28584bDCb15c5B3405345D77C752",
+    zDAORegistry: "",
   },
   mainnet: {
     zNSHub: "0x6141d5cb3517215a03519a464bf9c39814df7479",

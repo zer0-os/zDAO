@@ -86,5 +86,5 @@ interface IZDAORegistry {
     view
     returns (ZDAORecord memory);
 
-  function doesZNAExistForZNA(uint256 _zNA) external view returns (bool);
+  function doesZDAOExistForZNA(uint256 _zNA) external view returns (bool);
 }

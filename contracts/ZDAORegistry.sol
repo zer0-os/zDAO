@@ -14,6 +14,8 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
   mapping(uint256 => uint256) public zNATozDAOId;
   // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
+  // zDAO name => bool
+  mapping(uint256 => bool) public zDAONames;
   // PlatformType => IZDAOFactory
   mapping(uint256 => IZDAOFactory) public override zDAOFactories;
 
@@ -88,14 +90,16 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     uint256 zDAOId = zNATozDAOId[_zNA];
     require(zDAOId == 0, "Already added DAO with same zNA");
 
+    uint256 namePacked = uint256(keccak256(abi.encodePacked(_name)));
+    require(!zDAONames[namePacked], "Already added zDAO with same name");
+
     IZDAOFactory factory = zDAOFactories[_platformType];
     assert(address(factory) != address(0));
-
-    // todo, compare if zDAO name is unique
-
+    
     lastZDAOId++;
     address zDAO = factory.addNewZDAO(lastZDAOId, _zNA, _gnosisSafe, _options);
 
+    zDAONames[namePacked] = true;
     zDAORecords[lastZDAOId] = ZDAORecord({
       platformType: _platformType,
       id: lastZDAOId,
@@ -294,7 +298,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     return zDAORecords[_zDAOId];
   }
 
-  function doesZNAExistForZNA(uint256 _zNA)
+  function doesZDAOExistForZNA(uint256 _zNA)
     external
     view
     override

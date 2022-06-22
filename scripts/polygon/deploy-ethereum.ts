@@ -24,7 +24,7 @@ const main = async () => {
     const FxStateEthereumTunnelFactory = await ethers.getContractFactory(
       "FxStateEthereumTunnel"
     );
-    const fxStateRootTunnel = (await upgrades.deployProxy(
+    const fxStateEthereumTunnel = (await upgrades.deployProxy(
       FxStateEthereumTunnelFactory,
       [config[network.name].checkpointManager, config[network.name].fxRoot],
       {
@@ -32,14 +32,14 @@ const main = async () => {
         initializer: "__FxStateEthereumTunnel_init",
       }
     )) as FxStateEthereumTunnel;
-    await fxStateRootTunnel.deployed();
-    console.log(`\ndeployed: ${fxStateRootTunnel.address}`);
+    await fxStateEthereumTunnel.deployed();
+    console.log(`\ndeployed: ${fxStateEthereumTunnel.address}`);
 
-    const fxStateRootTunnelImpl =
+    const fxStateEthereumTunnelImpl =
       await upgrades.erc1967.getImplementationAddress(
-        fxStateRootTunnel.address
+        fxStateEthereumTunnel.address
       );
-    await verifyContract(fxStateRootTunnelImpl);
+    await verifyContract(fxStateEthereumTunnelImpl);
 
     console.log("Deploying EthereumZDAO implementation contract...");
     const ZDAOFactory = await ethers.getContractFactory("EthereumZDAO");
@@ -55,7 +55,7 @@ const main = async () => {
       ZDAOChefFactory,
       [
         config[network.name].zDAORegistry,
-        fxStateRootTunnel.address,
+        fxStateEthereumTunnel.address,
         zDAOBase.address,
       ],
       {
@@ -73,7 +73,7 @@ const main = async () => {
 
     // configuring root tunnel contract
     console.log("Setting RootStateReceiver in FxStateEthereumTunnel");
-    await fxStateRootTunnel.setRootStateReceiver(zDAOChef.address);
+    await fxStateEthereumTunnel.setEthereumStateReceiver(zDAOChef.address);
 
     const zDAORegistry = (await ethers.getContractAt(
       "ZDAORegistry",
@@ -93,11 +93,11 @@ const main = async () => {
       },
       {
         Label: "FxStateEthereumTunnel proxy address",
-        Info: fxStateRootTunnel.address,
+        Info: fxStateEthereumTunnel.address,
       },
       {
         Label: "FxStateEthereumTunnel implementation address",
-        Info: fxStateRootTunnelImpl,
+        Info: fxStateEthereumTunnelImpl,
       },
       {
         Label: "EthereumZDAOChef proxy address",

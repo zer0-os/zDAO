@@ -82,7 +82,7 @@ const main = async () => {
 
     // configuring root tunnel contract
     console.log("Setting ChildStateReceiver in FxStatePolygonTunnel");
-    await fxStatePolygonTunnel.setChildStateReceiver(zDAOChef.address);
+    await fxStatePolygonTunnel.setPolygonStateReceiver(zDAOChef.address);
 
     console.table([
       {
