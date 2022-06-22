@@ -31,12 +31,12 @@ contract FxStateEthereumTunnel is
 
   function __FxStateEthereumTunnel_init(
     address _checkpointManager,
-    address _fxEthereum
+    address _fxRoot
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     checkpointManager = ICheckpointManager(_checkpointManager);
-    fxRoot = IFxStateSender(_fxEthereum);
+    fxRoot = IFxStateSender(_fxRoot);
   }
 
   /* -------------------------------------------------------------------------- */
