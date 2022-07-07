@@ -43,10 +43,9 @@ contract FxStateEthereumTunnel is
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setEthereumStateReceiver(IEthereumStateReceiver _ethereumStateReceiver)
-    external
-    onlyOwner
-  {
+  function setEthereumStateReceiver(
+    IEthereumStateReceiver _ethereumStateReceiver
+  ) external onlyOwner {
     ethereumStateReceiver = _ethereumStateReceiver;
   }
 

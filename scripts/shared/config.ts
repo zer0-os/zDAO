@@ -67,7 +67,7 @@ export const zNSHubConfig: zNSHubConfig[] = [
 const snapshotConfig = {
   rinkeby: {
     zNSHub: "0x7F918CbbBf37e4358ad5f060F15110151d14E59e", // "0x90098737eB7C3e73854daF1Da20dFf90d521929a",
-    zDAORegistry: "",
+    zDAORegistry: "0x2ae829089678d90027279ab36AE99928F53D8b9e",
   },
   mainnet: {
     zNSHub: "0x6141d5cb3517215a03519a464bf9c39814df7479",

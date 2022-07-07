@@ -294,14 +294,14 @@ describe("ZDAORegistry", function () {
         PlatformType.Polygon, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        name,
+        zNAPairs[0].name,
         options
       );
       await zDAORegistry.addNewZDAO(
         PlatformType.Polygon, // platformType
         zNAPairs[1].zNA, // zNA
         zNAPairs[1].gnosisSafe,
-        name,
+        zNAPairs[1].name,
         options
       );
 
@@ -310,7 +310,7 @@ describe("ZDAORegistry", function () {
         1,
         zNAPairs[0].gnosisSafe,
         [1],
-        name,
+        zNAPairs[0].name,
         zDAOConfig
       );
       validatePolygonDAOInformation(
@@ -318,7 +318,7 @@ describe("ZDAORegistry", function () {
         2,
         zNAPairs[1].gnosisSafe,
         [2],
-        name,
+        zNAPairs[1].name,
         zDAOConfig
       );
     });
@@ -351,7 +351,7 @@ describe("ZDAORegistry", function () {
         PlatformType.Polygon, // platformType
         zNAPairs[0].zNA, // zNA
         zNAPairs[0].gnosisSafe,
-        name,
+        zNAPairs[0].name,
         options
       );
       await expect(
@@ -359,7 +359,7 @@ describe("ZDAORegistry", function () {
           PlatformType.Polygon, // platformType
           zNAPairs[0].zNA, // zNA
           zNAPairs[0].gnosisSafe,
-          name,
+          zNAPairs[1].name,
           options
         )
       ).to.be.revertedWith("Already added DAO with same zNA");
@@ -383,7 +383,7 @@ describe("ZDAORegistry", function () {
         PlatformType.Snapshot, // platformType
         zNAPairs[1].zNA, // zNA
         zNAPairs[1].gnosisSafe,
-        zNAPairs[0].name,
+        zNAPairs[1].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[1].ens])
       );
 

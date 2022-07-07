@@ -280,7 +280,10 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    await ZDAOChef.setVariable("ethereumStateSender", ethereumStateSender.address);
+    await ZDAOChef.setVariable(
+      "ethereumStateSender",
+      ethereumStateSender.address
+    );
     // should reverted because of invalid target, value and data
     await expect(ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)).to
       .be.not.reverted;
