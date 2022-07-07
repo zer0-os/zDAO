@@ -73,6 +73,14 @@ contract PolygonZDAOChef is
 
   function setStaking(Staking _staking) external onlyOwner {
     staking = _staking;
+
+    emit StakingUpdated(address(_staking));
+  }
+
+  function setZDAOStaking(uint256 _daoId, Staking _staking) external onlyOwner {
+    zDAOs[_daoId].setStaking(address(_staking));
+
+    emit DAOStakingUpdated(_daoId, address(_staking));
   }
 
   function setZDAOBase(address _zDAOBase) external onlyOwner {

@@ -86,6 +86,8 @@ interface IPolygonZDAO {
 
   function setDestroyed(bool _destroyed) external;
 
+  function setStaking(address _staking) external;
+
   function updateToken(address _token) external;
 
   function createProposal(uint256 _proposalId, uint256 _startTimestamp)

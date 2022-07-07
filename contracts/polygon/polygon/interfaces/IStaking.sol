@@ -10,7 +10,8 @@ interface IStaking {
   event StakedERC20(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _amount
+    uint256 indexed _decimals,
+    uint256 _amount
   );
 
   event StakedERC721(
@@ -22,7 +23,8 @@ interface IStaking {
   event UnstakedERC20(
     address indexed _user,
     address indexed _token,
-    uint256 indexed _amount
+    uint256 indexed _decimals,
+    uint256 _amount
   );
 
   event UnstakedERC721(

@@ -200,6 +200,28 @@ describe("Staking", async function () {
     ).to.be.equal(2);
   });
 
+  it("Should revert stake ERC20 with ERC721 address", async function () {
+    const tokenIdA = 1000;
+    await vCollectible.mintFor(userA.address, tokenIdA);
+
+    childChainManager.childToRootToken
+      .whenCalledWith(vCollectible.address)
+      .returns(vCollectible.address);
+
+    // approve
+    await vCollectible.connect(userA).approve(staking.address, tokenIdA);
+
+    await expect(
+      staking.connect(userA).stakeERC20(vCollectible.address, BigNumber.from(1))
+    ).to.be.reverted;
+
+    expect(
+      (
+        await staking.stakingPower(userA.address, vCollectible.address)
+      ).toNumber()
+    ).to.be.equal(0);
+  });
+
   it("Should get staking power according to block number", async function () {
     // approve
     await vToken

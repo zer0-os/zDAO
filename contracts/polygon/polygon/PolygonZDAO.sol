@@ -75,6 +75,10 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     zDAOInfo.destroyed = _destroyed;
   }
 
+  function setStaking(address _staking) external override onlyZDAOChef {
+    staking = Staking(_staking);
+  }
+
   function updateToken(address _token) external override onlyZDAOChef {
     zDAOInfo.token = _token;
   }

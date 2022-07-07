@@ -19,6 +19,10 @@ interface IPolygonZDAOChef {
 
   event DAOTokenUpdated(uint256 indexed _daoId, address indexed _token);
 
+  event StakingUpdated(address indexed _staking);
+
+  event DAOStakingUpdated(uint256 indexed _daoId, address indexed _staking);
+
   event ProposalCreated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,

@@ -24,7 +24,7 @@ interface PolygonConfig {
 const ethereumConfig: { [key in ethereumNetwork]: EthereumConfig } = {
   goerli: {
     zNSHub: "0x9a35367c5e8C01cd009885e497a33a9761938832", // todo
-    zDAORegistry: "0xFbC9ECeB87d011c03187d14E737c1C163D1427a8", // todo
+    zDAORegistry: "", // todo
     checkpointManager: "0x2890bA17EfE978480615e330ecB65333b880928e",
     fxRoot: "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA",
   },
