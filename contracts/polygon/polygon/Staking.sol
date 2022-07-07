@@ -21,6 +21,8 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   // maping<user address, mapping<token, mapping<token id, boolean>>>
   mapping(address => mapping(address => mapping(uint256 => bool)))
     private _erc721Staked;
+  // mapping<token, decimals>
+  mapping(address => uint256) private _decimals;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -46,7 +48,6 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
    * @param _amount Token amount to stake
    */
   function stakeERC20(address _token, uint256 _amount) external {
-    require(!_isERC721(_token), "Should ERC20 token address");
     _stakeERC20(msg.sender, _token, _amount);
   }
 
@@ -77,6 +78,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
    * @param _tokenId Token id
    */
   function unstakeERC721(address _token, uint256 _tokenId) external {
+    require(_isERC721(_token), "Should ERC721 token address");
     _unstakeERC721(msg.sender, _token, _tokenId);
   }
 
@@ -97,11 +99,14 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     address _token,
     uint256 _amount
   ) internal virtual {
+    uint256 decimals = ERC20Upgradeable(_token).decimals();
+    _decimals[_token] = decimals;
+
     IERC20Upgradeable(_token).safeTransferFrom(_user, address(this), _amount);
 
     _moveStakingPower(_user, address(this), _token, _amount);
 
-    emit StakedERC20(_user, _token, _amount);
+    emit StakedERC20(_user, _token, decimals, _amount);
   }
 
   function _stakeERC721(
@@ -109,6 +114,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     address _token,
     uint256 _tokenId
   ) internal virtual {
+    _decimals[_token] = 0;
     IERC721Upgradeable(_token).safeTransferFrom(_user, address(this), _tokenId);
 
     _moveStakingPower(_user, address(this), _token, 1);
@@ -123,6 +129,10 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     uint256 _amount
   ) internal virtual {
     require(
+      ERC20Upgradeable(_token).decimals() == _decimals[_token],
+      "Should ERC20 token address"
+    );
+    require(
       _checkpoints[_user][_token].latest() >= _amount,
       "Should not exceed staked amount"
     );
@@ -131,7 +141,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
 
     IERC20Upgradeable(_token).safeTransfer(_user, _amount);
 
-    emit UnstakedERC20(_user, _token, _amount);
+    emit UnstakedERC20(_user, _token, _decimals[_token], _amount);
   }
 
   function _unstakeERC721(
@@ -196,10 +206,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     view
     returns (uint256)
   {
-    if (_isERC721(_token)) {
-      return _checkpoints[_user][_token].latest();
-    }
-    uint256 decimals = ERC20Upgradeable(_token).decimals();
+    uint256 decimals = _decimals[_token];
     return _checkpoints[_user][_token].latest() / 10**decimals;
   }
 
@@ -215,10 +222,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     uint256 _blockNumber
   ) external view returns (uint256) {
     uint256 sp = _checkpoints[_user][_token].getAtBlock(_blockNumber);
-    if (_isERC721(_token)) {
-      return sp;
-    }
-    uint256 decimals = ERC20Upgradeable(_token).decimals();
+    uint256 decimals = _decimals[_token];
     return sp / 10**decimals;
   }
 
@@ -228,7 +232,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     override
     returns (uint256)
   {
-    return _isERC721(_token) ? 0 : _checkpoints[_user][_token].latest();
+    return _checkpoints[_user][_token].latest();
   }
 
   function isStakedERC721(
@@ -236,6 +240,6 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     address _token,
     uint256 _tokenId
   ) external view override returns (bool) {
-    return _isERC721(_token) ? _erc721Staked[_user][_token][_tokenId] : false;
+    return _erc721Staked[_user][_token][_tokenId];
   }
 }
