@@ -7,10 +7,15 @@ import {IZDAOFactory} from "../interfaces/IZDAOFactory.sol";
 
 contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   struct ZDAOInfo {
+    /// @notice Unique id for looking up zDAO
     uint256 id;
+    /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
+    /// @notice ENS name associated in snapshot
     string ensSpace;
+    /// @notice Gnosis safe address where collected treasuries are stored
     address gnosisSafe;
+    /// @notice Flag marking whether the zDAO has been destroyed
     bool destroyed;
   }
 
