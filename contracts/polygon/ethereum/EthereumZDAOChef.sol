@@ -5,7 +5,7 @@ pragma solidity ^0.8.11;
 import {ZeroUpgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../../helpers/Proxy.sol";
 import {IZNSHub} from "../../interfaces/IZNSHub.sol";
-import {IEthereumStateSender, IEthereumStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
+import {IEthereumStateSender, IEthereumStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";

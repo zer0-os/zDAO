@@ -3,8 +3,8 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {IEthereumStateSender, IEthereumStateReceiver} from "../../interfaces/ITunnel.sol";
-import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../../tunnel/FxBaseRootTunnel.sol";
+import {IEthereumStateSender, IEthereumStateReceiver} from "../interfaces/ITunnel.sol";
+import {FxBaseRootTunnel, ICheckpointManager, IFxStateSender} from "../tunnel/FxBaseRootTunnel.sol";
 
 contract FxStateEthereumTunnel is
   ZeroUpgradeable,

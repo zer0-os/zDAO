@@ -4,7 +4,7 @@ pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
 import {createProxy} from "../../helpers/Proxy.sol";
-import {IPolygonStateSender, IPolygonStateReceiver, ITunnel} from "../../interfaces/ITunnel.sol";
+import {IPolygonStateSender, IPolygonStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IChildChainManager} from "./interfaces/IChildChainManager.sol";
 import {IPolygonZDAOChef} from "./interfaces/IPolygonZDAOChef.sol";
 import {IPolygonZDAO} from "./interfaces/IPolygonZDAO.sol";

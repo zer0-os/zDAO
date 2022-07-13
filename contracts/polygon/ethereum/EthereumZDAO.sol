@@ -3,7 +3,7 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {ITunnel} from "../../interfaces/ITunnel.sol";
+import {ITunnel} from "../interfaces/ITunnel.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
 

@@ -3,8 +3,8 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {IPolygonStateSender, IPolygonStateReceiver} from "../../interfaces/ITunnel.sol";
-import {FxBaseChildTunnel} from "../../tunnel/FxBaseChildTunnel.sol";
+import {IPolygonStateSender, IPolygonStateReceiver} from "../interfaces/ITunnel.sol";
+import {FxBaseChildTunnel} from "../tunnel/FxBaseChildTunnel.sol";
 
 contract FxStatePolygonTunnel is
   ZeroUpgradeable,
