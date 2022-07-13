@@ -1,5 +1,5 @@
 node_modules
-#types
+types
 
 #Hardhat files
 cache
@@ -9,3 +9,10 @@ artifacts
 
 #remix files
 contracts/.deps
+
+# OpenZeppelin
+.openzeppelin/dev-*.json
+.openzeppelin/unknown-*.json
+.openzeppelin/.session
+coverage/
+coverage.json

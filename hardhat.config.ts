@@ -7,6 +7,7 @@ import "@openzeppelin/hardhat-upgrades";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
+import "solidity-coverage";
 import { removeConsoleLog } from "hardhat-preprocessor";
 
 dotenv.config();
@@ -39,7 +40,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 2000
+            runs: 200
           },
           outputSelection: {
             "*": {
@@ -75,6 +76,8 @@ const config: HardhatUserConfig = {
     hardhat: {
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
+      initialBaseFeePerGas: 0,
+      gasPrice: 0x01,
     },
   },
   etherscan: {

@@ -3,6 +3,7 @@
   "scripts": {
     "typechain": "hardhat typechain",
     "test": "hardhat test --show-stack-traces",
+    "coverage": "yarn build && hardhat coverage --temp artifacts --network hardhat --solcoverjs ./.solcover.js",
     "build": "yarn run clean && yarn run compile",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
