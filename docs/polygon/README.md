@@ -33,28 +33,9 @@ The created `zDAO`s and proposals are automatically synchronized to Polygon, use
 
 ### Collaboration
 
-![Collaboration](./Collaboration.png)
+[<img src="./Collaboration.png" width="600px"/>](./Collaboration.png)
 
 Polygon supports transfer states using [PoS](https://docs.polygon.technology/docs/develop/l1-l2-communication/state-transfer) between Ethereum and Polygon.
-
-### Voting Timeline
-
-![VotingTimeline](./VotingTimeline.png)
-
-### Proposal State Changes
-
-![ProposalStateChanges](./ProposalStateChanges.png)
-
-The proposal has the following proposal states:
-
-- `pending`: The proposal was created and waiting to be synchronized to Polygon.
-- `active`: The proposal was successfully created and synchronized to Polygon, voters can participate in voting.
-- `awaiting calculation`: The proposal was ended and ready to calculate the voting result on Polygon and send it to Ethereum.
-- `bridging`: The proposal triggered the calculation of the voting result on Polygon and sent it to Ethereum.
-- `awaiting finalization`: The calculated voting result arrived on Ethereum and is ready to finalize the result.
-- `failed`: The proposal failed on voting.
-- `awaiting execution`: The proposal is succeeded in voting and is ready to execute the proposal.
-- `executed`: The proposal is successfully executed.
 
 ## Deploying
 
