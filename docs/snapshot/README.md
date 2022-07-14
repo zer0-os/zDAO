@@ -16,7 +16,7 @@ Once created space in [Snapshot](https://snapshot.org), we should register it in
 
 ### Pre-requisite
 
-`ZDAORegistry` should be deployed in the working network and configured in [config.ts](../../../scripts/shared/config.ts#L33).
+`ZDAORegistry` should be deployed in the working network and configured in [config.ts](../../scripts/shared/config.ts#L33).
 
 ### Deploy
 

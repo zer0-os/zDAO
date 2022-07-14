@@ -60,7 +60,7 @@ The proposal has the following proposal states:
 
 ### Pre-requisite
 
-`ZDAORegistry` should be deployed in the working network and be configured in [config.ts](../../../scripts/shared/config.ts#L33).
+`ZDAORegistry` should be deployed in the working network and be configured in [config.ts](../../scripts/shared/config.ts#L33).
 
 ### Deploy
 

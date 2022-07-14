@@ -13,7 +13,7 @@ Every `zDAO` registered in `ZDAORegistry` has a unique id across all the platfor
 
 Every platform should have one `IZDAOFactory` and be registered in `ZDAORegistry`.
 
-![Class Diagrams](docs/ClassDiagram.png)
+![Class Diagram](docs/ClassDiagram.png)
 
 ### Functionalities of `ZDAORegistry`
 
@@ -58,8 +58,8 @@ yarn coverage
 
 ## Snapshot
 
-Check out the [docs](contracts/snapshot/docs/) folder for more documents.
+Check out the [docs](docs/snapshot/) folder for more documents.
 
 ## Polygon
 
-Check out the [docs](contracts/polygon/docs/) folder for more documents.
+Check out the [docs](docs/polygon/) folder for more documents.
