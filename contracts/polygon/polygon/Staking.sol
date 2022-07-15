@@ -206,8 +206,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     view
     returns (uint256)
   {
-    uint256 decimals = _decimals[_token];
-    return _checkpoints[_user][_token].latest() / 10**decimals;
+    return _checkpoints[_user][_token].latest();
   }
 
   /**
@@ -221,9 +220,7 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
     address _token,
     uint256 _blockNumber
   ) external view returns (uint256) {
-    uint256 sp = _checkpoints[_user][_token].getAtBlock(_blockNumber);
-    uint256 decimals = _decimals[_token];
-    return sp / 10**decimals;
+    return _checkpoints[_user][_token].getAtBlock(_blockNumber);
   }
 
   function stakedERC20Amount(address _user, address _token)
