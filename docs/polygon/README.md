@@ -67,6 +67,46 @@ yarn deploy-polygon:polygon polygonMumbai
 
 This command deploys `FxStatePolygonTunnel`, `Staking` and `PolygonZDAOChef`.
 
+## How to use Smart Contracts
+
+1. Create a `zDAO` on Ethereum
+
+   `addNewZDAO` in `EthereumZDAOChef` is called by `ZDAORegistry` contract with `zNA` and specific parameters for `zDAO`.
+
+2. Remove a `zDAO` on Ethereum
+
+   `removeZDAO` in `EthereumZDAOChef` is called by `ZDAORegistry` contract by Admin with `zDAOId`.
+
+3. Create a proposal on Ethereum
+
+   Call `createProposal` in `EthereumZDAOChef` with `zDAOId` and `ipfs` which contains proposal information.
+
+4. Cancel a proposal on Ethereum
+
+   Call `cancelProposal` in `EthereumZDAOChef` with `proposalId` and `zDAOId`.
+
+5. Cast a vote on Polygon
+
+   Call `vote` in `PolygonZDAOChef` with `zDAOId`, `proposalId` and user's `choice`.
+
+6. Calculate a proposal result on Polygon
+
+   Call `calculateProposal` in `PolygonZDAOChef` with `zDAOId` and `proposalId`.
+   This will create a transaction and transfer state from Polygon to Ethereum.
+
+7. Finalize a proposal result on Ethereum
+
+   Once the transaction hash of calculating proposal is checkpointed, `PoS` mechanism generates bytes of payload.
+   Call `receiveMessage` in `FxStateEthereumTunnel` with this payload.
+
+8. Execute a proposal on Ethereum
+
+   Call `executeProposal` in `EthereumZDAOChef` with `proposalId` and `zDAOId`.
+
+9. Stake voting token on Polygon
+
+   Call `stakeERC20` in `Staking` to stake ERC20 or call `stakeERC721` in `Staking` to stake ERC721.
+
 ## State transfer
 
 [Polygon [docs](https://docs.polygon.technology/docs/develop/l1-l2-communication/state-transfer#overview) explain how State transfer works.

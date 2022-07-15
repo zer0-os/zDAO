@@ -24,6 +24,26 @@ Every platform should have one `IZDAOFactory` and be registered in `ZDAORegistry
 - [x] Force to add/remove `zNA` association by admin
 - [x] Modify `zDAO` by admin
 
+## How to use Smart Contracts
+
+1. Create a `zDAO`
+
+   Call `addNewZDAO` in `ZDAORegistry`, only callable by `zNA` owner.
+
+2. Remove a `zDAO`
+
+   Call `adminRemoveZDAO` in `ZDAORegistry`, only callable by Admin.
+
+3. Add a `zNA` association
+
+- Call `addZNAAssociation` in `ZDAORegistry`, only callable by `zNA` owner.
+- Call `adminAssociateZNA` in `ZDAORegistry`, only callable by Admin.
+
+4. Remove a `zNA` association
+
+- Call `removeZNAAssociation` in `ZDAORegistry`, only callable by `zNA` owner.
+- Call `adminDisassociateZNA` in `ZDAORegistry`, only callable by Admin.
+
 ## Development
 
 ### Compile
@@ -52,6 +72,14 @@ You can check test coverage by running
 
 ```
 yarn coverage
+```
+
+### Deploy
+
+In the command line terminal, run the following:
+
+```
+yarn deploy-registry goerli
 ```
 
 > You may get a warning about contract code size exceeding 24576 bytes, you can ignore this.
