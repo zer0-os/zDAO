@@ -299,7 +299,7 @@ describe("Staking", async function () {
 
     for (const pair of powerB) {
       expect(
-          await staking.pastStakingPower(userB.address, vToken.address, pair[0])
+        await staking.pastStakingPower(userB.address, vToken.address, pair[0])
       ).to.be.equal(pair[1]);
     }
   });

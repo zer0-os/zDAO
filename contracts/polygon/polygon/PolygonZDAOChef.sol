@@ -77,7 +77,10 @@ contract PolygonZDAOChef is
     emit StakingUpdated(address(_staking));
   }
 
-  function setZDAOStaking(uint256 _zDAOId, Staking _staking) external onlyOwner {
+  function setZDAOStaking(uint256 _zDAOId, Staking _staking)
+    external
+    onlyOwner
+  {
     zDAOs[_zDAOId].setStaking(address(_staking));
 
     emit DAOStakingUpdated(_zDAOId, address(_staking));
@@ -124,9 +127,8 @@ contract PolygonZDAOChef is
     override
     onlyValidZDAO(_zDAOId)
   {
-    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_zDAOId].calculateProposal(
-      _proposalId
-    );
+    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_zDAOId]
+      .calculateProposal(_proposalId);
 
     emit ProposalCalculated(_zDAOId, _proposalId, voters, yes, no);
 
@@ -284,11 +286,21 @@ contract PolygonZDAOChef is
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function getZDAOById(uint256 _zDAOId) external override view returns (IPolygonZDAO) {
+  function getZDAOById(uint256 _zDAOId)
+    external
+    view
+    override
+    returns (IPolygonZDAO)
+  {
     return zDAOs[_zDAOId];
   }
 
-  function getZDAOInfoById(uint256 _zDAOId) external override view returns (IPolygonZDAO.ZDAOInfo memory) {
+  function getZDAOInfoById(uint256 _zDAOId)
+    external
+    view
+    override
+    returns (IPolygonZDAO.ZDAOInfo memory)
+  {
     return zDAOs[_zDAOId].getZDAOInfo();
   }
 }

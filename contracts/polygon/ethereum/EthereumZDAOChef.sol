@@ -275,13 +275,19 @@ contract EthereumZDAOChef is
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function getZDAOById(uint256 _zDAOId) external override view returns (IEthereumZDAO) {
+  function getZDAOById(uint256 _zDAOId)
+    external
+    view
+    override
+    returns (IEthereumZDAO)
+  {
     return zDAOs[_zDAOId];
   }
 
   function getZDAOInfoById(uint256 _zDAOId)
-    external override
+    external
     view
+    override
     returns (IEthereumZDAO.ZDAOInfo memory)
   {
     return zDAOs[_zDAOId].getZDAOInfo();
