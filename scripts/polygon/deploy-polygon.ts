@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
 import { FxStatePolygonTunnel, PolygonZDAOChef, Staking } from "../../types";
 import { config } from "../shared/config";
-import { verifyContract } from "../shared/helpers";
+import { calculateGasMargin, verifyContract } from "../shared/helpers";
 
 const main = async () => {
   const signers = await ethers.getSigners();
@@ -82,7 +82,13 @@ const main = async () => {
 
     // configuring root tunnel contract
     console.log("Setting ChildStateReceiver in FxStatePolygonTunnel");
-    await fxStatePolygonTunnel.setPolygonStateReceiver(zDAOChef.address);
+    const gasEstimated =
+      await fxStatePolygonTunnel.estimateGas.setPolygonStateReceiver(
+        zDAOChef.address
+      );
+    await fxStatePolygonTunnel.setPolygonStateReceiver(zDAOChef.address, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
 
     console.table([
       {

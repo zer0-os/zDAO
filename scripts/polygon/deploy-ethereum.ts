@@ -6,7 +6,7 @@ import {
   ZDAORegistry,
 } from "../../types";
 import { config, PlatformType } from "../shared/config";
-import { verifyContract } from "../shared/helpers";
+import { calculateGasMargin, verifyContract } from "../shared/helpers";
 
 // mainnet hub: 0x6141d5cb3517215a03519a464bf9c39814df7479
 // rinkeby hub: 0x90098737eB7C3e73854daF1Da20dFf90d521929a
@@ -73,7 +73,13 @@ const main = async () => {
 
     // configuring root tunnel contract
     console.log("Setting RootStateReceiver in FxStateEthereumTunnel");
-    await fxStateEthereumTunnel.setEthereumStateReceiver(zDAOChef.address);
+    const gasEstimated =
+      await fxStateEthereumTunnel.estimateGas.setEthereumStateReceiver(
+        zDAOChef.address
+      );
+    await fxStateEthereumTunnel.setEthereumStateReceiver(zDAOChef.address, {
+      gasLimit: calculateGasMargin(gasEstimated),
+    });
 
     const zDAORegistry = (await ethers.getContractAt(
       "ZDAORegistry",
@@ -81,9 +87,16 @@ const main = async () => {
       deployer
     )) as ZDAORegistry;
     console.log("Adding SnapshotZDAOChef factory to ZDAORegistry");
-    await zDAORegistry.addZDAOFactory(
+    const gasEstimated2 = await zDAORegistry.estimateGas.addZDAOFactory(
       PlatformType.Polygon, // Snapshot platform
       zDAOChef.address
+    );
+    await zDAORegistry.addZDAOFactory(
+      PlatformType.Polygon, // Snapshot platform
+      zDAOChef.address,
+      {
+        gasLimit: calculateGasMargin(gasEstimated2),
+      }
     );
 
     console.table([
