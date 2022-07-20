@@ -71,9 +71,9 @@ interface IEthereumZDAOChef {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOs(uint256 _zDAOId) external view returns (IEthereumZDAO);
+  function getZDAOById(uint256 _zDAOId) external view returns (IEthereumZDAO);
 
-  function zDAOInfo(uint256 _zDAOId)
+  function getZDAOInfoById(uint256 _zDAOId)
     external
     view
     returns (IEthereumZDAO.ZDAOInfo memory);

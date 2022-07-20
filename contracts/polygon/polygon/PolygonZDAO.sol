@@ -328,8 +328,12 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOId() external view override returns (uint256) {
+  function getZDAOId() external view override returns (uint256) {
     return zDAOInfo.zDAOId;
+  }
+
+  function getZDAOInfo() external view override returns (ZDAOInfo memory) {
+    return zDAOInfo;
   }
 
   function destroyed() external view override returns (bool) {
@@ -347,7 +351,9 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     returns (Proposal[] memory records)
   {
     uint256 numRecords = _count;
-    if (numRecords > (proposalIds.length - _startIndex)) {
+    if (proposalIds.length <= _startIndex) {
+      numRecords = 0;
+    } else if (numRecords > (proposalIds.length - _startIndex)) {
       numRecords = proposalIds.length - _startIndex;
     }
 
@@ -451,7 +457,9 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     ProposalVotes storage singleProposalVotes = proposalVotes[_proposalId];
 
     uint256 numRecords = _count;
-    if (numRecords > (singleProposalVotes.voters.length - _startIndex)) {
+    if (singleProposalVotes.voters.length <= _startIndex) {
+      numRecords = 0;
+    } else if (numRecords > (singleProposalVotes.voters.length - _startIndex)) {
       numRecords = singleProposalVotes.voters.length - _startIndex;
     }
 
