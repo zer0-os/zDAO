@@ -1,6 +1,7 @@
 import { run } from "hardhat";
 import { NomicLabsHardhatPluginError } from "hardhat/plugins";
 import * as zns from "@zero-tech/zns-sdk";
+import { ethers } from "ethers";
 
 export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
 
@@ -32,4 +33,13 @@ export const verifyContract = async (
 
 export const znsHash = (zna: string): string => {
   return zns.domains.domainNameToId(zna);
+};
+
+// add 10%
+export const calculateGasMargin = (
+  value: ethers.BigNumber
+): ethers.BigNumber => {
+  return value
+    .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(1000)))
+    .div(ethers.BigNumber.from(10000));
 };

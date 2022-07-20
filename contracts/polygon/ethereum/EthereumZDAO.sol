@@ -340,7 +340,8 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     if (
       !zDAOInfo.isRelativeMajority &&
       totalSupply > 0 &&
-      (proposal.yes * divisionConstant) / totalSupply >= zDAOInfo.votingThreshold
+      (proposal.yes * divisionConstant) / totalSupply >=
+      zDAOInfo.votingThreshold
     ) {
       return ProposalState.Succeeded;
     }

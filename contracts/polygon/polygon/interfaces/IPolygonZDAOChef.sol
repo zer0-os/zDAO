@@ -66,5 +66,8 @@ interface IPolygonZDAOChef {
 
   function getZDAOById(uint256 _zDAOId) external view returns (IPolygonZDAO);
 
-  function getZDAOInfoById(uint256 _zDAOId) external view returns (IPolygonZDAO.ZDAOInfo memory);
+  function getZDAOInfoById(uint256 _zDAOId)
+    external
+    view
+    returns (IPolygonZDAO.ZDAOInfo memory);
 }
