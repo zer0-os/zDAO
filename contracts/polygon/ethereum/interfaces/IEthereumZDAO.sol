@@ -113,9 +113,11 @@ interface IEthereumZDAO {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOInfo() external view returns (ZDAOInfo memory);
+  function getZDAOId() external view returns (uint256);
 
-  function zDAOOwner() external view returns (address);
+  function getZDAOInfo() external view returns (ZDAOInfo memory);
+
+  function getZDAOOwner() external view returns (address);
 
   function destroyed() external view returns (bool);
 

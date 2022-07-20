@@ -20,15 +20,6 @@ contract PolygonZDAOChef is
    * based on staked amount
    */
   Staking public staking;
-  /**
-   * Address to FxStatePolygonTunnel which is responsible for sending message
-   * from Ethereum to Polygon
-   */
-  IPolygonStateSender public polygonStateSender;
-  address public zDAOBase;
-
-  mapping(uint256 => IPolygonZDAO) public zDAOs;
-  uint256[] public zDAOIds;
 
   /**
    * Address to ChildChainManagerProxy contract
@@ -37,13 +28,22 @@ contract PolygonZDAOChef is
    */
   IChildChainManager public childChainManager;
 
+  /**
+   * Address to FxStatePolygonTunnel which is responsible for sending message
+   * from Ethereum to Polygon
+   */
+  IPolygonStateSender public polygonStateSender;
+  address public zDAOBase;
+
+  mapping(uint256 => IPolygonZDAO) public zDAOs;
+
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyValidZDAO(uint256 _daoId) {
+  modifier onlyValidZDAO(uint256 _zDAOId) {
     require(
-      address(zDAOs[_daoId]) != address(0) && !zDAOs[_daoId].destroyed(),
+      address(zDAOs[_zDAOId]) != address(0) && !zDAOs[_zDAOId].destroyed(),
       "Invalid zDAO"
     );
     _;
@@ -77,10 +77,10 @@ contract PolygonZDAOChef is
     emit StakingUpdated(address(_staking));
   }
 
-  function setZDAOStaking(uint256 _daoId, Staking _staking) external onlyOwner {
-    zDAOs[_daoId].setStaking(address(_staking));
+  function setZDAOStaking(uint256 _zDAOId, Staking _staking) external onlyOwner {
+    zDAOs[_zDAOId].setStaking(address(_staking));
 
-    emit DAOStakingUpdated(_daoId, address(_staking));
+    emit DAOStakingUpdated(_zDAOId, address(_staking));
   }
 
   function setZDAOBase(address _zDAOBase) external onlyOwner {
@@ -97,18 +97,18 @@ contract PolygonZDAOChef is
   /**
    * @notice Cast a vote with user's choice
    * @dev Only for valid zDAO
-   * @param _daoId zDAO unique id
+   * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
    * @param _choice User's choice; yes(1) or no(2)
    */
   function vote(
-    uint256 _daoId,
+    uint256 _zDAOId,
     uint256 _proposalId,
     uint256 _choice
-  ) external override onlyValidZDAO(_daoId) {
-    zDAOs[_daoId].vote(_proposalId, msg.sender, _choice);
+  ) external override onlyValidZDAO(_zDAOId) {
+    zDAOs[_zDAOId].vote(_proposalId, msg.sender, _choice);
 
-    emit CastVote(_daoId, _proposalId, msg.sender, _choice);
+    emit CastVote(_zDAOId, _proposalId, msg.sender, _choice);
   }
 
   /**
@@ -116,25 +116,25 @@ contract PolygonZDAOChef is
    *     in the PolygonZDAO contract.
    *     Once calculate proposal, it should be sent to Ethereum.
    * @dev Only for valid zDAO
-   * @param _daoId zDAO unique id
+   * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
    */
-  function calculateProposal(uint256 _daoId, uint256 _proposalId)
+  function calculateProposal(uint256 _zDAOId, uint256 _proposalId)
     external
     override
-    onlyValidZDAO(_daoId)
+    onlyValidZDAO(_zDAOId)
   {
-    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_daoId].calculateProposal(
+    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_zDAOId].calculateProposal(
       _proposalId
     );
 
-    emit ProposalCalculated(_daoId, _proposalId, voters, yes, no);
+    emit ProposalCalculated(_zDAOId, _proposalId, voters, yes, no);
 
     // send calculated result to L1
     polygonStateSender.sendMessageToRoot(
       abi.encode(
         uint256(ITunnel.MessageType.CalculateProposal),
-        _daoId,
+        _zDAOId,
         _proposalId,
         voters,
         yes,
@@ -205,7 +205,6 @@ contract PolygonZDAOChef is
     );
 
     zDAOs[zDAOId] = zDAO;
-    zDAOIds.push(zDAOId);
 
     emit DAOCreated(address(zDAO), zDAOId, duration);
 
@@ -218,7 +217,7 @@ contract PolygonZDAOChef is
       (uint256, uint256)
     );
 
-    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Invalid zDAO");
+    require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Invalid zDAO");
 
     zDAOs[zDAOId].setDestroyed(true);
 
@@ -232,7 +231,7 @@ contract PolygonZDAOChef is
     );
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
-    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+    require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
 
     zDAOs[zDAOId].createProposal(proposalId, block.timestamp);
 
@@ -246,7 +245,7 @@ contract PolygonZDAOChef is
     );
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
-    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+    require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
 
     zDAOs[zDAOId].cancelProposal(proposalId);
 
@@ -260,7 +259,7 @@ contract PolygonZDAOChef is
     );
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
-    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+    require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
 
     zDAOs[zDAOId].executeProposal(proposalId);
 
@@ -274,7 +273,7 @@ contract PolygonZDAOChef is
     );
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
-    require(zDAOs[zDAOId].zDAOId() == zDAOId, "Sync zDAO info error");
+    require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
 
     zDAOs[zDAOId].updateToken(token);
 
@@ -285,30 +284,11 @@ contract PolygonZDAOChef is
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function numberOfzDAOs() external view override returns (uint256) {
-    return zDAOIds.length;
+  function getZDAOById(uint256 _zDAOId) external override view returns (IPolygonZDAO) {
+    return zDAOs[_zDAOId];
   }
 
-  function getzDAOById(uint256 _daoId) external view returns (IPolygonZDAO) {
-    return zDAOs[_daoId];
-  }
-
-  function listzDAOs(uint256 _startIndex, uint256 _count)
-    external
-    view
-    returns (IPolygonZDAO[] memory records)
-  {
-    uint256 numRecords = _count;
-    if (numRecords > (zDAOIds.length - _startIndex)) {
-      numRecords = zDAOIds.length - _startIndex;
-    }
-
-    records = new IPolygonZDAO[](numRecords);
-
-    for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = zDAOs[zDAOIds[_startIndex + i]];
-    }
-
-    return records;
+  function getZDAOInfoById(uint256 _zDAOId) external override view returns (IPolygonZDAO.ZDAOInfo memory) {
+    return zDAOs[_zDAOId].getZDAOInfo();
   }
 }

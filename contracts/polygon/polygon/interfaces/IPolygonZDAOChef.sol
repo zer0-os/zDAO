@@ -11,17 +11,17 @@ interface IPolygonZDAOChef {
 
   event DAOCreated(
     address indexed _zDAO,
-    uint256 indexed _daoId,
+    uint256 indexed _zDAOId,
     uint256 _duration
   );
 
-  event DAODestroyed(uint256 indexed _daoId);
+  event DAODestroyed(uint256 indexed _zDAOId);
 
-  event DAOTokenUpdated(uint256 indexed _daoId, address indexed _token);
+  event DAOTokenUpdated(uint256 indexed _zDAOId, address indexed _token);
 
   event StakingUpdated(address indexed _staking);
 
-  event DAOStakingUpdated(uint256 indexed _daoId, address indexed _staking);
+  event DAOStakingUpdated(uint256 indexed _zDAOId, address indexed _staking);
 
   event ProposalCreated(
     uint256 indexed _zDAOId,
@@ -53,23 +53,18 @@ interface IPolygonZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   function vote(
-    uint256 _daoId,
+    uint256 _zDAOId,
     uint256 _proposalId,
     uint256 _choice
   ) external;
 
-  function calculateProposal(uint256 _daoId, uint256 _proposalId) external;
+  function calculateProposal(uint256 _zDAOId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function numberOfzDAOs() external view returns (uint256);
+  function getZDAOById(uint256 _zDAOId) external view returns (IPolygonZDAO);
 
-  function getzDAOById(uint256 _daoId) external view returns (IPolygonZDAO);
-
-  function listzDAOs(uint256 _startIndex, uint256 _count)
-    external
-    view
-    returns (IPolygonZDAO[] memory records);
+  function getZDAOInfoById(uint256 _zDAOId) external view returns (IPolygonZDAO.ZDAOInfo memory);
 }

@@ -17,6 +17,7 @@ contract EthereumZDAOChef is
   IZDAOFactory
 {
   address public zDAORegistry;
+
   /**
    * Address to FxStateEthereumTunnel which is responsible for sending message
    * from Ethereum to Polygon
@@ -24,7 +25,7 @@ contract EthereumZDAOChef is
   IEthereumStateSender public ethereumStateSender;
   address public zDAOBase;
 
-  mapping(uint256 => IEthereumZDAO) public override zDAOs;
+  mapping(uint256 => IEthereumZDAO) public zDAOs;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -274,11 +275,15 @@ contract EthereumZDAOChef is
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOInfo(uint256 _zDAOId)
-    external
+  function getZDAOById(uint256 _zDAOId) external override view returns (IEthereumZDAO) {
+    return zDAOs[_zDAOId];
+  }
+
+  function getZDAOInfoById(uint256 _zDAOId)
+    external override
     view
     returns (IEthereumZDAO.ZDAOInfo memory)
   {
-    return zDAOs[_zDAOId].zDAOInfo();
+    return zDAOs[_zDAOId].getZDAOInfo();
   }
 }

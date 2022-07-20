@@ -115,7 +115,9 @@ interface IPolygonZDAO {
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOId() external view returns (uint256);
+  function getZDAOId() external view returns (uint256);
+
+  function getZDAOInfo() external view returns (ZDAOInfo memory);
 
   function destroyed() external view returns (bool);
 
