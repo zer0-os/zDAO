@@ -200,8 +200,8 @@ describe("ZDAO", async function () {
     expect(choices[1].toNumber()).to.be.equal(choice);
     expect(choices[2].toNumber()).to.be.equal(choice + 1);
 
-    expect(votes[0].toNumber()).to.be.equal(1000);
-    expect(votes[1].toNumber()).to.be.equal(2000);
-    expect(votes[2].toNumber()).to.be.equal(3000);
+    expect(votes[0]).to.be.equal(BigNumber.from(1000).mul(BIG_POW));
+    expect(votes[1]).to.be.equal(BigNumber.from(2000).mul(BIG_POW));
+    expect(votes[2]).to.be.equal(BigNumber.from(3000).mul(BIG_POW));
   });
 });

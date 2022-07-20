@@ -121,7 +121,7 @@ describe("ZDAOChef", async function () {
   it("Should be able to create zDAO from the message", async function () {
     await expect(createZDAO(userA)).to.be.not.reverted;
 
-    const zDAOAddr = await ZDAOChef.getzDAOById(1);
+    const zDAOAddr = await ZDAOChef.getZDAOById(1);
     const zDAO = (await ethers.getContractAt(
       ZDAOJson.abi,
       zDAOAddr,
@@ -141,28 +141,13 @@ describe("ZDAOChef", async function () {
     );
   });
 
-  it("Should list zDAOs", async function () {
-    await createZDAO(userA);
-
-    // already created one DAO
-    expect(await ZDAOChef.numberOfzDAOs()).to.be.equal(1);
-
-    const daoId = 1;
-    const zDAOAddr = await ZDAOChef.getzDAOById(daoId);
-
-    // list zDAOs
-    const zDAOAddrs = await ZDAOChef.listzDAOs(0, 1);
-    expect(zDAOAddrs.length).to.be.equal(1);
-    expect(zDAOAddrs[0]).to.be.equal(zDAOAddr);
-  });
-
   it("Should be able to delete zDAO from the message", async function () {
     await createZDAO(userA);
 
     await expect(deleteZDAO(userA)).to.be.not.reverted;
 
     // check if zDAO is destroyed
-    const zDAOAddr = await ZDAOChef.getzDAOById(1);
+    const zDAOAddr = await ZDAOChef.getZDAOById(1);
     const zDAO = (await ethers.getContractAt(
       ZDAOJson.abi,
       zDAOAddr,
@@ -184,7 +169,7 @@ describe("ZDAOChef", async function () {
     // create zDAO first
     await createZDAO(userA);
 
-    const zDAOAddr = await ZDAOChef.getzDAOById(1);
+    const zDAOAddr = await ZDAOChef.getZDAOById(1);
     const zDAO = (await ethers.getContractAt(
       ZDAOJson.abi,
       zDAOAddr,

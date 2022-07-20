@@ -86,8 +86,8 @@ describe("Staking", async function () {
       .connect(userA)
       .stakeERC20(vToken.address, BigNumber.from(1000).mul(BIG_POW));
     expect(
-      (await staking.stakingPower(userA.address, vToken.address)).toNumber()
-    ).to.be.equal(1000);
+      await staking.stakingPower(userA.address, vToken.address)
+    ).to.be.equal(BigNumber.from(1000).mul(BIG_POW));
 
     await mineToBlock(1);
 
@@ -96,8 +96,8 @@ describe("Staking", async function () {
       .connect(userA)
       .unstakeERC20(vToken.address, BigNumber.from(300).mul(BIG_POW));
     expect(
-      (await staking.stakingPower(userA.address, vToken.address)).toNumber()
-    ).to.be.equal(700);
+      await staking.stakingPower(userA.address, vToken.address)
+    ).to.be.equal(BigNumber.from(700).mul(BIG_POW));
 
     await mineToBlock(1);
 
@@ -106,8 +106,8 @@ describe("Staking", async function () {
       .connect(userB)
       .stakeERC20(vToken.address, BigNumber.from(2000).mul(BIG_POW));
     expect(
-      (await staking.stakingPower(userB.address, vToken.address)).toNumber()
-    ).to.be.equal(2000);
+      await staking.stakingPower(userB.address, vToken.address)
+    ).to.be.equal(BigNumber.from(2000).mul(BIG_POW));
 
     await mineToBlock(1);
 
@@ -122,11 +122,11 @@ describe("Staking", async function () {
 
     // check staking power
     expect(
-      (await staking.stakingPower(userA.address, vToken.address)).toNumber()
-    ).to.be.equal(700);
+      await staking.stakingPower(userA.address, vToken.address)
+    ).to.be.equal(BigNumber.from(700).mul(BIG_POW));
     expect(
-      (await staking.stakingPower(userB.address, vToken.address)).toNumber()
-    ).to.be.equal(2000);
+      await staking.stakingPower(userB.address, vToken.address)
+    ).to.be.equal(BigNumber.from(2000).mul(BIG_POW));
   });
 
   it("Should stake/unstake ERC721", async function () {
@@ -272,38 +272,34 @@ describe("Staking", async function () {
     await mineToBlock(1);
 
     const powerA = [
-      [block1, 1000],
-      [block2, 3000],
-      [block3, 6000],
-      [block4, 10000],
+      [block1, BigNumber.from(1000).mul(BIG_POW)],
+      [block2, BigNumber.from(3000).mul(BIG_POW)],
+      [block3, BigNumber.from(6000).mul(BIG_POW)],
+      [block4, BigNumber.from(10000).mul(BIG_POW)],
     ];
     const powerB = [
-      [block1, 2000],
-      [block2, 2000],
-      [block3, 5000],
-      [block4, 9000],
+      [block1, BigNumber.from(2000).mul(BIG_POW)],
+      [block2, BigNumber.from(2000).mul(BIG_POW)],
+      [block3, BigNumber.from(5000).mul(BIG_POW)],
+      [block4, BigNumber.from(9000).mul(BIG_POW)],
     ];
 
     expect(
-      (await staking.stakingPower(userA.address, vToken.address)).toNumber()
-    ).to.be.equal(10000);
+      await staking.stakingPower(userA.address, vToken.address)
+    ).to.be.equal(BigNumber.from(10000).mul(BIG_POW));
     expect(
-      (await staking.stakingPower(userB.address, vToken.address)).toNumber()
-    ).to.be.equal(9000);
+      await staking.stakingPower(userB.address, vToken.address)
+    ).to.be.equal(BigNumber.from(9000).mul(BIG_POW));
 
     for (const pair of powerA) {
       expect(
-        (
-          await staking.pastStakingPower(userA.address, vToken.address, pair[0])
-        ).toNumber()
+        await staking.pastStakingPower(userA.address, vToken.address, pair[0])
       ).to.be.equal(pair[1]);
     }
 
     for (const pair of powerB) {
       expect(
-        (
           await staking.pastStakingPower(userB.address, vToken.address, pair[0])
-        ).toNumber()
       ).to.be.equal(pair[1]);
     }
   });
