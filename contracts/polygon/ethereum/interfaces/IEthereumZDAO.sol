@@ -52,8 +52,6 @@ interface IEthereumZDAO {
     address createdBy;
     /// @notice Timestamp when the proposal was created
     uint256 created;
-    /// @notice Number of choices
-    uint256 numberOfChoices;
     /// @notice The number of voters who votes
     uint256 voters;
     /// @notice IPFS hash which contains meta information of this proposal
@@ -66,6 +64,8 @@ interface IEthereumZDAO {
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
     bool canceled;
+    /// @notice Arrays of choices
+    string[] choices;
     /// @notice The number of all the casted votes with given choice
     uint256[] votes;
   }
@@ -96,7 +96,7 @@ interface IEthereumZDAO {
 
   function createProposal(
     address _createdBy,
-    uint256 _numberOfChoices,
+    string[] calldata _choices,
     string calldata _ipfs
   ) external returns (uint256);
 

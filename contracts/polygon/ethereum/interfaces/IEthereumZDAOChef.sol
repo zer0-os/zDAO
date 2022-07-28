@@ -63,7 +63,7 @@ interface IEthereumZDAOChef {
 
   function createProposal(
     uint256 _zDAOId,
-    uint256 _numberOfChoices,
+    string[] calldata _choices,
     string calldata _ipfs
   ) external;
 

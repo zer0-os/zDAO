@@ -120,12 +120,12 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    * @notice Create a proposal with the IPFS which contains proposal meta data
    * @dev Callable by EthereumZDAOChef, only available for active zDAO
    * @param _createdBy Address to the proposal owner
-   * @param _numberOfChoices Number of choices
+   * @param _choices Number of choices
    * @param _ipfs IPFS hash which contains proposal meta data e.g. body text
    */
   function createProposal(
     address _createdBy,
-    uint256 _numberOfChoices,
+    string[] calldata _choices,
     string calldata _ipfs
   )
     external
@@ -135,7 +135,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     onlyValidTokenHolder(_createdBy)
     returns (uint256)
   {
-    uint256 proposalId = _createProposal(_createdBy, _numberOfChoices, _ipfs);
+    uint256 proposalId = _createProposal(_createdBy, _choices, _ipfs);
 
     return proposalId;
   }
@@ -230,7 +230,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
 
   function _createProposal(
     address _createdBy,
-    uint256 _numberOfChoices,
+    string[] memory _choices,
     string memory _ipfs
   ) internal virtual returns (uint256 proposalId) {
     lastProposalId++;
@@ -239,14 +239,14 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       proposalId: lastProposalId,
       createdBy: _createdBy,
       created: block.timestamp,
-      numberOfChoices: _numberOfChoices,
       voters: 0,
       ipfs: _ipfs,
       snapshot: block.number,
       calculated: false,
       executed: false,
       canceled: false,
-      votes: new uint256[](_numberOfChoices)
+      choices: _choices,
+      votes: new uint256[](_choices.length)
     });
     proposalIds.push(lastProposalId);
 

@@ -74,7 +74,7 @@ describe("ZDAO", async function () {
     zDAOInfo = await zDAO.zDAOInfo();
 
     proposalConfig = {
-      numberOfChoices: 3,
+      choices: ["Approve", "Deny", "Absence"],
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -103,7 +103,7 @@ describe("ZDAO", async function () {
       .connect(zDAOChef)
       .createProposal(
         user.address,
-        proposalConfig.numberOfChoices,
+        proposalConfig.choices,
         proposalConfig.ipfs
       );
   };
@@ -127,8 +127,11 @@ describe("ZDAO", async function () {
     // check proposal informations
     expect(proposals[0].proposalId.toNumber()).to.be.equal(1);
     expect(proposals[0].createdBy).to.be.equal(userA.address);
-    expect(proposals[0].numberOfChoices.toNumber()).to.be.equal(
-      proposalConfig.numberOfChoices
+    expect(proposals[0].choices.length).to.be.equal(
+      proposalConfig.choices.length
+    );
+    proposals[0].choices.forEach((choice, index) =>
+      expect(choice).to.be.equal(proposalConfig.choices[index])
     );
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);

@@ -96,7 +96,7 @@ describe("ZDAOChef", async function () {
     };
 
     proposalConfig = {
-      numberOfChoices: 3,
+      choices: ["Approve", "Deny", "Absence"],
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -139,7 +139,7 @@ describe("ZDAOChef", async function () {
   ): Promise<ContractTransaction> => {
     return ZDAOChef.connect(user).createProposal(
       daoId,
-      proposalConfig.numberOfChoices,
+      proposalConfig.choices,
       proposalConfig.ipfs
     );
   };

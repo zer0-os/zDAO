@@ -155,26 +155,26 @@ contract EthereumZDAOChef is
    *     Once create a new proposal, it should be synchronized to Polygon.
    * @dev Only for valid zDAO
    * @param _zDAOId zDAO unique id
-   * @param _numberOfChoices Number of choices
+   * @param _choices Array of choices
    * @param _ipfs IPFS which contains proposal information
    */
   function createProposal(
     uint256 _zDAOId,
-    uint256 _numberOfChoices,
+    string[] calldata _choices,
     string calldata _ipfs
   ) external override onlyValidZDAO(_zDAOId) {
-    require(_numberOfChoices > 0, "Should have at least one choice");
+    require(_choices.length > 0, "Should have at least one choice");
 
     uint256 proposalId = zDAOs[_zDAOId].createProposal(
       msg.sender, // created by
-      _numberOfChoices,
+      _choices,
       _ipfs
     );
 
     emit ProposalCreated(
       _zDAOId,
       proposalId,
-      _numberOfChoices,
+      _choices.length,
       msg.sender,
       uint256(block.number)
     );
@@ -185,7 +185,7 @@ contract EthereumZDAOChef is
         uint256(ITunnel.MessageType.CreateProposal),
         _zDAOId,
         proposalId,
-        _numberOfChoices
+        _choices.length
       )
     );
   }

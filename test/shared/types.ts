@@ -9,7 +9,7 @@ export interface ZDAOConfig {
 }
 
 export interface ProposalConfig {
-  numberOfChoices: number;
+  choices: string[];
   ipfs: string;
 }
 
