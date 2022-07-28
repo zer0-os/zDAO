@@ -155,21 +155,26 @@ contract EthereumZDAOChef is
    *     Once create a new proposal, it should be synchronized to Polygon.
    * @dev Only for valid zDAO
    * @param _zDAOId zDAO unique id
+   * @param _numberOfChoices Number of choices
    * @param _ipfs IPFS which contains proposal information
    */
-  function createProposal(uint256 _zDAOId, string calldata _ipfs)
-    external
-    override
-    onlyValidZDAO(_zDAOId)
-  {
+  function createProposal(
+    uint256 _zDAOId,
+    uint256 _numberOfChoices,
+    string calldata _ipfs
+  ) external override onlyValidZDAO(_zDAOId) {
+    require(_numberOfChoices > 0, "Should have at least one choice");
+
     uint256 proposalId = zDAOs[_zDAOId].createProposal(
       msg.sender, // created by
+      _numberOfChoices,
       _ipfs
     );
 
     emit ProposalCreated(
       _zDAOId,
       proposalId,
+      _numberOfChoices,
       msg.sender,
       uint256(block.number)
     );
@@ -179,7 +184,8 @@ contract EthereumZDAOChef is
       abi.encode(
         uint256(ITunnel.MessageType.CreateProposal),
         _zDAOId,
-        proposalId
+        proposalId,
+        _numberOfChoices
       )
     );
   }
@@ -253,18 +259,14 @@ contract EthereumZDAOChef is
       uint256 zDAOId,
       uint256 proposalId,
       uint256 voters,
-      uint256 yes,
-      uint256 no
-    ) = abi.decode(
-        _message,
-        (uint256, uint256, uint256, uint256, uint256, uint256)
-      );
+      uint256[] memory votes
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256[]));
     require(zDAOId > 0 && !_isZDAODestroyed(zDAOId), "Invalid zDAO");
 
     // let zDAO decode
-    zDAOs[zDAOId].calculateProposal(proposalId, voters, yes, no);
+    zDAOs[zDAOId].calculateProposal(proposalId, voters, votes);
 
-    emit ProposalCalculated(zDAOId, proposalId, voters, yes, no);
+    emit ProposalCalculated(zDAOId, proposalId, voters, votes);
   }
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {

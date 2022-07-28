@@ -120,9 +120,14 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    * @notice Create a proposal with the IPFS which contains proposal meta data
    * @dev Callable by EthereumZDAOChef, only available for active zDAO
    * @param _createdBy Address to the proposal owner
+   * @param _numberOfChoices Number of choices
    * @param _ipfs IPFS hash which contains proposal meta data e.g. body text
    */
-  function createProposal(address _createdBy, string calldata _ipfs)
+  function createProposal(
+    address _createdBy,
+    uint256 _numberOfChoices,
+    string calldata _ipfs
+  )
     external
     override
     onlyZDAOChef
@@ -130,7 +135,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     onlyValidTokenHolder(_createdBy)
     returns (uint256)
   {
-    uint256 proposalId = _createProposal(_createdBy, _ipfs);
+    uint256 proposalId = _createProposal(_createdBy, _numberOfChoices, _ipfs);
 
     return proposalId;
   }
@@ -193,14 +198,12 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    *     proposal
    * @param _proposalId Proposal unique id to execute
    * @param _voters Number of voters who participated in
-   * @param _yes Number of all the casted votes in favor of this proposal
-   * @param _no Number of all the casted votes in opposition to this proposal
+   * @param _votes Array of number of all the casted votes
    */
   function calculateProposal(
     uint256 _proposalId,
     uint256 _voters,
-    uint256 _yes,
-    uint256 _no
+    uint256[] calldata _votes
   ) external override onlyZDAOChef onlyValidProposal(_proposalId) {
     Proposal storage proposal = proposals[_proposalId];
     require(!proposal.calculated, "Already calculated proposal");
@@ -208,9 +211,15 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     ProposalState state2 = this.state(_proposalId);
     require(state2 == ProposalState.Pending, "Not a pending proposal");
 
+    require(
+      _votes.length == proposal.votes.length,
+      "Not match length of votes"
+    );
+
     proposal.voters = _voters;
-    proposal.yes = _yes;
-    proposal.no = _no;
+    for (uint256 i = 0; i < _votes.length; i++) {
+      proposal.votes[i] = _votes[i];
+    }
 
     proposals[_proposalId].calculated = true;
   }
@@ -219,25 +228,25 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _createProposal(address _createdBy, string memory _ipfs)
-    internal
-    virtual
-    returns (uint256 proposalId)
-  {
+  function _createProposal(
+    address _createdBy,
+    uint256 _numberOfChoices,
+    string memory _ipfs
+  ) internal virtual returns (uint256 proposalId) {
     lastProposalId++;
 
     proposals[lastProposalId] = Proposal({
       proposalId: lastProposalId,
       createdBy: _createdBy,
       created: block.timestamp,
-      yes: 0,
-      no: 0,
+      numberOfChoices: _numberOfChoices,
       voters: 0,
       ipfs: _ipfs,
       snapshot: block.number,
       calculated: false,
       executed: false,
-      canceled: false
+      canceled: false,
+      votes: new uint256[](_numberOfChoices)
     });
     proposalIds.push(lastProposalId);
 
@@ -266,6 +275,14 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
 
   function numberOfProposals() external view override returns (uint256) {
     return lastProposalId;
+  }
+
+  function getProposalById(uint256 _proposalId)
+    external
+    view
+    returns (Proposal memory)
+  {
+    return proposals[_proposalId];
   }
 
   function listProposals(uint256 _startIndex, uint256 _count)
@@ -319,18 +336,23 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       return ProposalState.Pending;
     }
 
+    uint256 sumOfVotes = 0;
+    for (uint256 i = 0; i < proposal.votes.length; i++) {
+      sumOfVotes += proposal.votes[i];
+    }
+
     // Check quorum
     if (
       proposal.voters < zDAOInfo.minimumVotingParticipants ||
-      proposal.yes + proposal.no < zDAOInfo.minimumTotalVotingTokens
+      sumOfVotes < zDAOInfo.minimumTotalVotingTokens
     ) {
       return ProposalState.Failed;
     }
     // If relative majority, the denominator should be sum of yes and no votes
     if (
       zDAOInfo.isRelativeMajority &&
-      (proposal.yes + proposal.no > 0) &&
-      ((proposal.yes * divisionConstant) / (proposal.yes + proposal.no) >=
+      sumOfVotes > 0 &&
+      ((proposal.votes[0] * divisionConstant) / (sumOfVotes) >=
         zDAOInfo.votingThreshold)
     ) {
       return ProposalState.Succeeded;
@@ -340,7 +362,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     if (
       !zDAOInfo.isRelativeMajority &&
       totalSupply > 0 &&
-      (proposal.yes * divisionConstant) / totalSupply >=
+      (proposal.votes[0] * divisionConstant) / totalSupply >=
       zDAOInfo.votingThreshold
     ) {
       return ProposalState.Succeeded;

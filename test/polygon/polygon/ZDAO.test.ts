@@ -80,6 +80,7 @@ describe("ZDAO", async function () {
 
     proposalConfig = {
       proposalId: 1,
+      numberOfChoices: 3,
       startTimestamp: await now(),
     };
 
@@ -110,7 +111,11 @@ describe("ZDAO", async function () {
   ): Promise<ContractTransaction> => {
     return zDAO
       .connect(userA ?? zDAOChef)
-      .createProposal(proposalConfig.proposalId, proposalConfig.startTimestamp);
+      .createProposal(
+        proposalConfig.proposalId,
+        proposalConfig.numberOfChoices,
+        proposalConfig.startTimestamp
+      );
   };
 
   it("Proposal can be created by child tunnel when it receives message from Ethereum", async function () {
@@ -122,6 +127,15 @@ describe("ZDAO", async function () {
 
     const proposals = await zDAO.listProposals(0, 1);
     expect(proposals.length).to.be.equal(1);
+    expect(proposals[0].proposalId.toNumber()).to.be.equal(
+      proposalConfig.proposalId
+    );
+    expect(proposals[0].numberOfChoices.toNumber()).to.be.equal(
+      proposalConfig.numberOfChoices
+    );
+    expect(proposals[0].startTimestamp.toNumber()).to.be.equal(
+      proposalConfig.startTimestamp
+    );
   });
 
   it("Any staker should be able to vote on proposal", async function () {
@@ -182,16 +196,18 @@ describe("ZDAO", async function () {
     await expect(zDAO.connect(zDAOChef).calculateProposal(proposalId)).to.be.not
       .reverted;
 
-    const {
-      voters: numberOfVoters,
-      yes,
-      no,
-    } = await zDAO.votesResultOfProposal(proposalId);
+    const { voters: numberOfVoters, votes: totalVotes } =
+      await zDAO.votesResultOfProposal(proposalId);
     const { voters, choices, votes } = await zDAO.listVoters(
       proposalId,
       0,
       numberOfVoters
     );
+    expect(voters.length).to.be.equal(numberOfVoters.toNumber());
+    expect(choices.length).to.be.equal(numberOfVoters.toNumber());
+    expect(votes.length).to.be.equal(numberOfVoters.toNumber());
+    expect(totalVotes.length).to.be.equal(proposalConfig.numberOfChoices);
+
     expect(voters[0]).to.be.equal(userA.address);
     expect(voters[1]).to.be.equal(userB.address);
     expect(voters[2]).to.be.equal(userC.address);
@@ -203,5 +219,12 @@ describe("ZDAO", async function () {
     expect(votes[0]).to.be.equal(BigNumber.from(1000).mul(BIG_POW));
     expect(votes[1]).to.be.equal(BigNumber.from(2000).mul(BIG_POW));
     expect(votes[2]).to.be.equal(BigNumber.from(3000).mul(BIG_POW));
+
+    // check total votes according to choice
+    expect(totalVotes[choice - 1]).to.be.equal(
+      BigNumber.from(1000 + 2000).mul(BIG_POW)
+    );
+    expect(totalVotes[choice]).to.be.equal(BigNumber.from(3000).mul(BIG_POW));
+    expect(totalVotes[choice + 1]).to.be.equal(BigNumber.from(0).mul(BIG_POW));
   });
 });

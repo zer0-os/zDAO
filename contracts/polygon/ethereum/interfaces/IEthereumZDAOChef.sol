@@ -33,7 +33,8 @@ interface IEthereumZDAOChef {
   event ProposalCreated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
-    address indexed _createdBy,
+    uint256 indexed _numberOfChoices,
+    address _createdBy,
     uint256 _snapshot
   );
 
@@ -53,15 +54,18 @@ interface IEthereumZDAOChef {
     uint256 indexed _zDAOId,
     uint256 indexed _propoalId,
     uint256 _voters,
-    uint256 _yes,
-    uint256 _no
+    uint256[] votes
   );
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function createProposal(uint256 _zDAOId, string calldata _ipfs) external;
+  function createProposal(
+    uint256 _zDAOId,
+    uint256 _numberOfChoices,
+    string calldata _ipfs
+  ) external;
 
   function cancelProposal(uint256 _zDAOId, uint256 _proposalId) external;
 

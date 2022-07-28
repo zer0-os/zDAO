@@ -9,6 +9,7 @@ export interface ZDAOConfig {
 }
 
 export interface ProposalConfig {
+  numberOfChoices: number;
   ipfs: string;
 }
 
@@ -19,5 +20,6 @@ export interface PolygonZDAOConfig {
 
 export interface PolyProposalConfig {
   proposalId: number;
+  numberOfChoices: number;
   startTimestamp: number;
 }

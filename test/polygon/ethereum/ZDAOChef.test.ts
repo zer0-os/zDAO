@@ -96,6 +96,7 @@ describe("ZDAOChef", async function () {
     };
 
     proposalConfig = {
+      numberOfChoices: 3,
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -136,7 +137,11 @@ describe("ZDAOChef", async function () {
     user: SignerWithAddress,
     daoId: number
   ): Promise<ContractTransaction> => {
-    return ZDAOChef.connect(user).createProposal(daoId, proposalConfig.ipfs);
+    return ZDAOChef.connect(user).createProposal(
+      daoId,
+      proposalConfig.numberOfChoices,
+      proposalConfig.ipfs
+    );
   };
 
   it("Should not add same DAO twice", async function () {
@@ -188,8 +193,7 @@ describe("ZDAOChef", async function () {
       zDAOId,
       proposalId,
       voters: 1,
-      yes: 70,
-      no: 30,
+      votes: [70, 20, 10],
     });
 
     await ZDAOChef.setVariable("ethereumStateSender", userA.address);
@@ -203,9 +207,10 @@ describe("ZDAOChef", async function () {
       userA
     )) as EthereumZDAO;
 
-    const proposal = await zDAO.proposals(proposalId);
-    expect(proposal.yes).to.be.equal(70);
-    expect(proposal.no).to.be.equal(30);
+    const proposal = await zDAO.getProposalById(proposalId);
+    expect(proposal.votes[0].toNumber()).to.be.equal(70);
+    expect(proposal.votes[1].toNumber()).to.be.equal(20);
+    expect(proposal.votes[2].toNumber()).to.be.equal(10);
   });
 
   it("Should not execute a failed proposal", async function () {
@@ -235,8 +240,11 @@ describe("ZDAOChef", async function () {
           zDAOId,
           proposalId,
           voters: 1,
-          yes: zDAOInfo.minimumTotalVotingTokens.toNumber(),
-          no: zDAOInfo.minimumTotalVotingTokens.toNumber() + 1,
+          votes: [
+            zDAOInfo.minimumTotalVotingTokens.toNumber(),
+            zDAOInfo.minimumTotalVotingTokens.toNumber() + 1,
+            zDAOInfo.minimumTotalVotingTokens.toNumber() + 2,
+          ],
         })
       )
     ).to.be.not.reverted;
@@ -274,8 +282,7 @@ describe("ZDAOChef", async function () {
           zDAOId,
           proposalId,
           voters: 1,
-          yes: zDAOInfo.minimumTotalVotingTokens.toNumber(),
-          no: 0,
+          votes: [zDAOInfo.minimumTotalVotingTokens.toNumber(), 0, 0],
         })
       )
     ).to.be.not.reverted;
@@ -329,8 +336,7 @@ describe("ZDAOChef", async function () {
           zDAOId,
           proposalId,
           voters: 1,
-          yes: zDAOInfo.minimumTotalVotingTokens.toNumber(),
-          no: 30,
+          votes: [zDAOInfo.minimumTotalVotingTokens.toNumber(), 30, 0],
         })
       )
     ).to.be.not.reverted;

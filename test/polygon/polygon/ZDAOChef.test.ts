@@ -92,6 +92,7 @@ describe("ZDAOChef", async function () {
     proposalPack = {
       zDAOId: 1,
       proposalId: 1,
+      numberOfChoices: 3,
     };
   });
 
@@ -192,8 +193,10 @@ describe("ZDAOChef", async function () {
       proposals[0].endTimestamp.toNumber() -
         proposals[0].startTimestamp.toNumber()
     ).to.be.equal(zDAOPack.duration);
-    expect(proposals[0].yes.toNumber()).to.be.equal(0);
-    expect(proposals[0].no.toNumber()).to.be.equal(0);
+    expect(proposals[0].votes.length).to.be.equal(proposalPack.numberOfChoices);
+    expect(proposals[0].votes[0].toNumber()).to.be.equal(0);
+    expect(proposals[0].votes[1].toNumber()).to.be.equal(0);
+    expect(proposals[0].votes[2].toNumber()).to.be.equal(0);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
     expect(proposals[0].executed).to.be.equal(false);
     expect(proposals[0].canceled).to.be.equal(false);

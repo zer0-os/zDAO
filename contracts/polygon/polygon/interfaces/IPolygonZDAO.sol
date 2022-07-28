@@ -18,12 +18,6 @@ interface IPolygonZDAO {
     bool destroyed;
   }
 
-  enum VoterChoice {
-    None,
-    Yes,
-    No
-  }
-
   enum ProposalState {
     Pending,
     Active,
@@ -36,14 +30,12 @@ interface IPolygonZDAO {
   struct Proposal {
     /// @notice Unique id for looking up proposal
     uint256 proposalId;
+    /// @notice Number of choices
+    uint256 numberOfChoices;
     /// @notice Timestamp when the proposal starts
     uint256 startTimestamp;
     /// @notice Timestamp when the proposal ends
     uint256 endTimestamp;
-    /// @notice The number of calculated voting power in favor of this proposal
-    uint256 yes;
-    /// @notice The number of calculated voting power in opposition to this proposal
-    uint256 no;
     /// @notice The number of voters who votes
     uint256 voters;
     /// @notice Snapshot block number on which proposal has been created
@@ -54,13 +46,15 @@ interface IPolygonZDAO {
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
     bool canceled;
+    /// @notice The number of all the casted votes with given choice
+    uint256[] votes;
   }
 
   struct Vote {
     /// @notice Voter address
     address voter;
     /// @notice The choice the voter chosed, which were cast
-    VoterChoice choice;
+    uint256 choice;
     /// @notice The number of votes the voter had, which were cast
     uint256 votes;
   }
@@ -90,8 +84,11 @@ interface IPolygonZDAO {
 
   function updateToken(address _token) external;
 
-  function createProposal(uint256 _proposalId, uint256 _startTimestamp)
-    external;
+  function createProposal(
+    uint256 _proposalId,
+    uint256 _numberOfChoices,
+    uint256 _startTimestamp
+  ) external;
 
   function cancelProposal(uint256 _proposalId) external;
 
@@ -99,11 +96,7 @@ interface IPolygonZDAO {
 
   function calculateProposal(uint256 _proposalId)
     external
-    returns (
-      uint256 voters,
-      uint256 yes,
-      uint256 no
-    );
+    returns (uint256 voters, uint256[] memory votes);
 
   function vote(
     uint256 _proposalId,
@@ -123,6 +116,11 @@ interface IPolygonZDAO {
 
   function numberOfProposals() external view returns (uint256);
 
+  function getProposalById(uint256 _proposalId)
+    external
+    view
+    returns (Proposal memory);
+
   function listProposals(uint256 _startIndex, uint256 _count)
     external
     view
@@ -133,11 +131,7 @@ interface IPolygonZDAO {
   function votesResultOfProposal(uint256 _proposalId)
     external
     view
-    returns (
-      uint256 voters,
-      uint256 yes,
-      uint256 no
-    );
+    returns (uint256 voters, uint256[] memory votes);
 
   function canVote(uint256 _proposalId, address _voter)
     external
@@ -152,7 +146,7 @@ interface IPolygonZDAO {
   function choiceOfVoter(uint256 _proposalId, address _voter)
     external
     view
-    returns (VoterChoice);
+    returns (uint256);
 
   function votingPowerOfVoter(uint256 _proposalId, address _voter)
     external

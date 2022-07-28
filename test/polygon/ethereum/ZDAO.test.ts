@@ -74,6 +74,7 @@ describe("ZDAO", async function () {
     zDAOInfo = await zDAO.zDAOInfo();
 
     proposalConfig = {
+      numberOfChoices: 3,
       ipfs: "0x0170171c23281b16a3c58934162488ad6d039df686eca806f21eba0cebd03486", // random byte32 string
     };
   });
@@ -100,7 +101,11 @@ describe("ZDAO", async function () {
   ): Promise<ContractTransaction> => {
     return zDAO
       .connect(zDAOChef)
-      .createProposal(user.address, proposalConfig.ipfs);
+      .createProposal(
+        user.address,
+        proposalConfig.numberOfChoices,
+        proposalConfig.ipfs
+      );
   };
 
   it("Only valid token holder can create proposal", async function () {
@@ -120,10 +125,11 @@ describe("ZDAO", async function () {
     expect(proposals.length).to.be.equal(1);
 
     // check proposal informations
-    expect(proposals[0].proposalId).to.be.equal(1);
+    expect(proposals[0].proposalId.toNumber()).to.be.equal(1);
     expect(proposals[0].createdBy).to.be.equal(userA.address);
-    expect(proposals[0].yes.toNumber()).to.be.equal(0);
-    expect(proposals[0].no.toNumber()).to.be.equal(0);
+    expect(proposals[0].numberOfChoices.toNumber()).to.be.equal(
+      proposalConfig.numberOfChoices
+    );
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
     expect(proposals[0].executed).to.be.equal(false);
@@ -153,14 +159,16 @@ describe("ZDAO", async function () {
     const proposalId = 1;
 
     await expect(
-      zDAO.connect(zDAOChef).calculateProposal(proposalId, 1, 70, 30)
+      zDAO.connect(zDAOChef).calculateProposal(proposalId, 1, [70, 20, 10])
     ).to.be.not.reverted;
 
-    const proposal = await zDAO.proposals(proposalId);
+    const proposal = await zDAO.getProposalById(proposalId);
 
     // check received result
-    expect(proposal.yes.toNumber()).to.be.equal(70);
-    expect(proposal.no.toNumber()).to.be.equal(30);
+    expect(proposal.proposalId.toNumber()).to.be.equal(proposalId);
+    expect(proposal.votes[0].toNumber()).to.be.equal(70);
+    expect(proposal.votes[1].toNumber()).to.be.equal(20);
+    expect(proposal.votes[2].toNumber()).to.be.equal(10);
   });
 
   it("Only proposal creator can cancel the proposal", async function () {
