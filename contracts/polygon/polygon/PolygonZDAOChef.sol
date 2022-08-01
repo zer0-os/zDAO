@@ -109,9 +109,9 @@ contract PolygonZDAOChef is
     uint256 _proposalId,
     uint256 _choice
   ) external override onlyValidZDAO(_zDAOId) {
-    zDAOs[_zDAOId].vote(_proposalId, msg.sender, _choice);
+    uint256 vp = zDAOs[_zDAOId].vote(_proposalId, msg.sender, _choice);
 
-    emit CastVote(_zDAOId, _proposalId, msg.sender, _choice);
+    emit CastVote(_zDAOId, _proposalId, msg.sender, _choice, vp);
   }
 
   /**

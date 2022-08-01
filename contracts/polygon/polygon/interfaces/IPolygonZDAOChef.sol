@@ -45,7 +45,8 @@ interface IPolygonZDAOChef {
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
     address indexed _voter,
-    uint256 _choice
+    uint256 _choice,
+    uint256 _votingPower
   );
 
   /* -------------------------------------------------------------------------- */

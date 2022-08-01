@@ -193,7 +193,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     uint256 _proposalId,
     address _voter,
     uint256 _choice
-  ) external onlyZDAOChef isActiveDAO onlyValidProposal(_proposalId) {
+  ) external onlyZDAOChef isActiveDAO onlyValidProposal(_proposalId) returns (uint256) {
     require(
       _choice > 0 && _choice <= proposals[_proposalId].numberOfChoices,
       "Invalid choice"
@@ -203,7 +203,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
       "Not valid for voting"
     );
 
-    _vote(_proposalId, _voter, zDAOInfo.token, _choice);
+    return _vote(_proposalId, _voter, zDAOInfo.token, _choice);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -278,7 +278,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     address _voter,
     address _token,
     uint256 _choice
-  ) internal virtual {
+  ) internal virtual returns (uint256) {
     Proposal storage proposal = proposals[_proposalId];
     ProposalVotes storage votes = proposalVotes[_proposalId];
     uint256 last = votes.votes[_voter].choice;
@@ -298,6 +298,8 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
 
     proposal.votes[_choice - 1] += vp;
     proposal.voters = votes.voters.length;
+
+    return vp;
   }
 
   function _canCalculateProposal(uint256 _proposalId)

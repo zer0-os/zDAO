@@ -102,7 +102,7 @@ interface IPolygonZDAO {
     uint256 _proposalId,
     address _voter,
     uint256 _choice
-  ) external;
+  ) external returns (uint256);
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
