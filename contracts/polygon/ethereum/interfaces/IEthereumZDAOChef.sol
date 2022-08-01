@@ -14,6 +14,8 @@ interface IEthereumZDAOChef {
     uint256 amount;
     /// @notice Time duration of this proposal in seconds
     uint256 duration;
+    /// @notice Delay of proposal to start voting in seconds, optional
+    uint256 votingDelay;
     /// @notice Voting threshold in 100% as 10000 required to check if proposal is succeeded
     uint256 votingThreshold;
     /// @notice The number of voters in support of a proposal required in order

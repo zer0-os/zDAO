@@ -52,6 +52,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     address _staking,
     uint256 _zDAOId,
     uint256 _duration,
+    uint256 _votingDelay,
     address _token
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
@@ -61,6 +62,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
       duration: _duration,
+      votingDelay: _votingDelay,
       token: _token,
       snapshot: block.number,
       destroyed: false
@@ -90,23 +92,28 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
    * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
    * @param _numberOfChoices Number of choices
-   * @param _startTimestamp Current block timestamp
+   * @param _proposalCreated Block timestamp of current proposal creation
    */
   function createProposal(
     uint256 _proposalId,
     uint256 _numberOfChoices,
-    uint256 _startTimestamp
+    uint256 _proposalCreated
   ) external onlyZDAOChef isActiveDAO {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
     );
 
+    uint256 startTimestamp = _proposalCreated + zDAOInfo.votingDelay >
+      block.timestamp
+      ? _proposalCreated + zDAOInfo.votingDelay
+      : block.timestamp;
+
     _createProposal(
       _proposalId,
       _numberOfChoices,
-      _startTimestamp,
-      _startTimestamp + zDAOInfo.duration
+      startTimestamp,
+      startTimestamp + zDAOInfo.duration
     );
   }
 
@@ -193,7 +200,13 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     uint256 _proposalId,
     address _voter,
     uint256 _choice
-  ) external onlyZDAOChef isActiveDAO onlyValidProposal(_proposalId) returns (uint256) {
+  )
+    external
+    onlyZDAOChef
+    isActiveDAO
+    onlyValidProposal(_proposalId)
+    returns (uint256)
+  {
     require(
       _choice > 0 && _choice <= proposals[_proposalId].numberOfChoices,
       "Invalid choice"
