@@ -26,6 +26,7 @@ interface IPolygonZDAOChef {
   event ProposalCreated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
+    uint256 indexed _numberOfChoices,
     uint256 _startTimestamp
   );
 
@@ -37,15 +38,15 @@ interface IPolygonZDAOChef {
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
     uint256 _voters,
-    uint256 _yes,
-    uint256 _no
+    uint256[] _votes
   );
 
   event CastVote(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,
     address indexed _voter,
-    uint256 _choice
+    uint256 _choice,
+    uint256 _votingPower
   );
 
   /* -------------------------------------------------------------------------- */

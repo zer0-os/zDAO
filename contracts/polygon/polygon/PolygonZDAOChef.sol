@@ -102,16 +102,16 @@ contract PolygonZDAOChef is
    * @dev Only for valid zDAO
    * @param _zDAOId zDAO unique id
    * @param _proposalId Proposal unique id
-   * @param _choice User's choice; yes(1) or no(2)
+   * @param _choice User's choice, starting from 1
    */
   function vote(
     uint256 _zDAOId,
     uint256 _proposalId,
     uint256 _choice
   ) external override onlyValidZDAO(_zDAOId) {
-    zDAOs[_zDAOId].vote(_proposalId, msg.sender, _choice);
+    uint256 vp = zDAOs[_zDAOId].vote(_proposalId, msg.sender, _choice);
 
-    emit CastVote(_zDAOId, _proposalId, msg.sender, _choice);
+    emit CastVote(_zDAOId, _proposalId, msg.sender, _choice, vp);
   }
 
   /**
@@ -127,10 +127,11 @@ contract PolygonZDAOChef is
     override
     onlyValidZDAO(_zDAOId)
   {
-    (uint256 voters, uint256 yes, uint256 no) = zDAOs[_zDAOId]
-      .calculateProposal(_proposalId);
+    (uint256 voters, uint256[] memory votes) = zDAOs[_zDAOId].calculateProposal(
+      _proposalId
+    );
 
-    emit ProposalCalculated(_zDAOId, _proposalId, voters, yes, no);
+    emit ProposalCalculated(_zDAOId, _proposalId, voters, votes);
 
     // send calculated result to L1
     polygonStateSender.sendMessageToRoot(
@@ -139,8 +140,7 @@ contract PolygonZDAOChef is
         _zDAOId,
         _proposalId,
         voters,
-        yes,
-        no
+        votes
       )
     );
   }
@@ -227,17 +227,19 @@ contract PolygonZDAOChef is
   }
 
   function _createProposal(bytes memory _message) internal virtual {
-    (uint256 messageType, uint256 zDAOId, uint256 proposalId) = abi.decode(
-      _message,
-      (uint256, uint256, uint256)
-    );
+    (
+      uint256 messageType,
+      uint256 zDAOId,
+      uint256 proposalId,
+      uint256 numberOfChoices
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
 
-    zDAOs[zDAOId].createProposal(proposalId, block.timestamp);
+    zDAOs[zDAOId].createProposal(proposalId, numberOfChoices, block.timestamp);
 
-    emit ProposalCreated(zDAOId, proposalId, block.timestamp);
+    emit ProposalCreated(zDAOId, proposalId, numberOfChoices, block.timestamp);
   }
 
   function _cancelProposal(bytes memory _message) internal virtual {

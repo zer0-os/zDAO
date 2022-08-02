@@ -37,12 +37,18 @@ export const encodeDeleteZDAO = (pack: DeleteZDAOPack): string => {
 export interface CreateProposalPack {
   zDAOId: number;
   proposalId: number;
+  numberOfChoices: number;
 }
 
 export const encodeCreateProposal = (pack: CreateProposalPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "uint256"],
-    [MessageType.CreateProposal, pack.zDAOId, pack.proposalId]
+    ["uint256", "uint256", "uint256", "uint256"],
+    [
+      MessageType.CreateProposal,
+      pack.zDAOId,
+      pack.proposalId,
+      pack.numberOfChoices,
+    ]
   );
 };
 
@@ -50,22 +56,20 @@ export interface CalculateProposalPack {
   zDAOId: number;
   proposalId: number;
   voters: number;
-  yes: number;
-  no: number;
+  votes: number[];
 }
 
 export const encodeCalculateProposal = (
   pack: CalculateProposalPack
 ): string => {
   return ethers.utils.defaultAbiCoder.encode(
-    ["uint256", "uint256", "uint256", "uint256", "uint256", "uint256"],
+    ["uint256", "uint256", "uint256", "uint256", "uint256[]"],
     [
       MessageType.CalculateProposal,
       pack.zDAOId,
       pack.proposalId,
       pack.voters,
-      pack.yes,
-      pack.no,
+      pack.votes,
     ]
   );
 };

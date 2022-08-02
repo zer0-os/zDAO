@@ -15,7 +15,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
   // <proposal id, Proposal>
   mapping(uint256 => Proposal) public proposals;
 
-  // <proposal id, voter address, VoterChoice>
+  // <proposal id, voter address, choice>
   mapping(uint256 => ProposalVotes) private proposalVotes;
 
   // list of proposal ids
@@ -89,13 +89,14 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
    *     EthereumZDAOChef only sends the proposal id created on Ethereum.
    * @dev Callable by PolygonZDAOChef, only available for active zDAO
    * @param _proposalId Proposal unique id
+   * @param _numberOfChoices Number of choices
    * @param _startTimestamp Current block timestamp
    */
-  function createProposal(uint256 _proposalId, uint256 _startTimestamp)
-    external
-    onlyZDAOChef
-    isActiveDAO
-  {
+  function createProposal(
+    uint256 _proposalId,
+    uint256 _numberOfChoices,
+    uint256 _startTimestamp
+  ) external onlyZDAOChef isActiveDAO {
     require(
       _proposalId > 0 && proposals[_proposalId].proposalId == 0,
       "Proposal was already created"
@@ -103,6 +104,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
 
     _createProposal(
       _proposalId,
+      _numberOfChoices,
       _startTimestamp,
       _startTimestamp + zDAOInfo.duration
     );
@@ -159,11 +161,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     onlyZDAOChef
     isActiveDAO
     onlyValidProposal(_proposalId)
-    returns (
-      uint256 voters,
-      uint256 yes,
-      uint256 no
-    )
+    returns (uint256 voters, uint256[] memory votes)
   {
     Proposal storage proposal = proposals[_proposalId];
     require(
@@ -174,8 +172,10 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     );
 
     voters = proposal.voters;
-    yes = proposal.yes;
-    no = proposal.no;
+    votes = new uint256[](proposal.votes.length);
+    for (uint256 i = 0; i < proposal.votes.length; i++) {
+      votes[i] = proposal.votes[i];
+    }
 
     proposal.calculated = true;
   }
@@ -187,16 +187,15 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
    *     proposal
    * @param _proposalId Proposal unique id
    * @param _voter Voter address
-   * @param _choice Voter choice, yes(1) or no(2)
+   * @param _choice Voter choice, starting from 1
    */
   function vote(
     uint256 _proposalId,
     address _voter,
     uint256 _choice
-  ) external onlyZDAOChef isActiveDAO onlyValidProposal(_proposalId) {
+  ) external onlyZDAOChef isActiveDAO onlyValidProposal(_proposalId) returns (uint256) {
     require(
-      _choice == uint256(IPolygonZDAO.VoterChoice.Yes) ||
-        _choice == uint256(IPolygonZDAO.VoterChoice.No),
+      _choice > 0 && _choice <= proposals[_proposalId].numberOfChoices,
       "Invalid choice"
     );
     require(
@@ -204,7 +203,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
       "Not valid for voting"
     );
 
-    _vote(_proposalId, _voter, zDAOInfo.token, VoterChoice(_choice));
+    return _vote(_proposalId, _voter, zDAOInfo.token, _choice);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -234,21 +233,22 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
 
   function _createProposal(
     uint256 _proposalId,
+    uint256 _numberOfChoices,
     uint256 _startTimestamp,
     uint256 _endTimestamp
   ) internal virtual {
     require(proposals[_proposalId].proposalId == 0, "Already proposal created");
     proposals[_proposalId] = Proposal({
       proposalId: _proposalId,
+      numberOfChoices: _numberOfChoices,
       startTimestamp: _startTimestamp,
       endTimestamp: _endTimestamp,
-      yes: 0,
-      no: 0,
       voters: 0,
       snapshot: block.number,
       calculated: false,
       executed: false,
-      canceled: false
+      canceled: false,
+      votes: new uint256[](_numberOfChoices)
     });
     proposalIds.push(_proposalId);
   }
@@ -277,32 +277,29 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     uint256 _proposalId,
     address _voter,
     address _token,
-    VoterChoice _choice
-  ) internal virtual {
+    uint256 _choice
+  ) internal virtual returns (uint256) {
     Proposal storage proposal = proposals[_proposalId];
     ProposalVotes storage votes = proposalVotes[_proposalId];
-    VoterChoice last = votes.votes[_voter].choice;
+    uint256 last = votes.votes[_voter].choice;
 
     uint256 vp = _votingPower(_proposalId, _voter, _token);
-    if (last == VoterChoice.Yes) {
-      proposal.yes -= vp;
-    } else if (last == VoterChoice.No) {
-      proposal.no -= vp;
-    } else {
-      // if VoterChoice.None
+
+    if (last == 0) {
+      // if not voted yet
       votes.voters.push(_voter);
+    } else {
+      proposal.votes[last - 1] -= vp;
     }
 
     votes.votes[_voter].voter = _voter;
     votes.votes[_voter].choice = _choice;
     votes.votes[_voter].votes = vp;
 
-    if (_choice == VoterChoice.Yes) {
-      proposal.yes += vp;
-    } else if (_choice == VoterChoice.No) {
-      proposal.no += vp;
-    }
+    proposal.votes[_choice - 1] += vp;
     proposal.voters = votes.voters.length;
+
+    return vp;
   }
 
   function _canCalculateProposal(uint256 _proposalId)
@@ -342,6 +339,14 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
 
   function numberOfProposals() external view override returns (uint256) {
     return proposalIds.length;
+  }
+
+  function getProposalById(uint256 _proposalId)
+    external
+    view
+    returns (Proposal memory)
+  {
+    return proposals[_proposalId];
   }
 
   function listProposals(uint256 _startIndex, uint256 _count)
@@ -391,17 +396,15 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     external
     view
     override
-    returns (
-      uint256 voters,
-      uint256 yes,
-      uint256 no
-    )
+    returns (uint256 voters, uint256[] memory votes)
   {
     Proposal storage proposal = proposals[_proposalId];
 
     voters = proposal.voters;
-    yes = proposal.yes;
-    no = proposal.no;
+    votes = new uint256[](proposal.votes.length);
+    for (uint256 i = 0; i < proposal.votes.length; i++) {
+      votes[i] = proposal.votes[i];
+    }
   }
 
   function canVote(uint256 _proposalId, address _voter)
@@ -426,7 +429,7 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
     external
     view
     override
-    returns (VoterChoice)
+    returns (uint256)
   {
     return proposalVotes[_proposalId].votes[_voter].choice;
   }

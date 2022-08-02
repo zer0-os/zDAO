@@ -52,10 +52,6 @@ interface IEthereumZDAO {
     address createdBy;
     /// @notice Timestamp when the proposal was created
     uint256 created;
-    /// @notice The number of all the casted votes in favor of this proposal
-    uint256 yes;
-    /// @notice The number of all the casted vote in opposition to this proposal
-    uint256 no;
     /// @notice The number of voters who votes
     uint256 voters;
     /// @notice IPFS hash which contains meta information of this proposal
@@ -68,6 +64,10 @@ interface IEthereumZDAO {
     bool executed;
     /// @notice Flag marking whether this proposal has been canceled
     bool canceled;
+    /// @notice Arrays of choices
+    string[] choices;
+    /// @notice The number of all the casted votes with given choice
+    uint256[] votes;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -94,9 +94,11 @@ interface IEthereumZDAO {
     uint256 _amount
   ) external;
 
-  function createProposal(address _createdBy, string calldata _ipfs)
-    external
-    returns (uint256);
+  function createProposal(
+    address _createdBy,
+    string[] calldata _choices,
+    string calldata _ipfs
+  ) external returns (uint256);
 
   function cancelProposal(address _cancelBy, uint256 _proposalid) external;
 
@@ -105,8 +107,7 @@ interface IEthereumZDAO {
   function calculateProposal(
     uint256 _proposalId,
     uint256 _voters,
-    uint256 _yes,
-    uint256 _no
+    uint256[] calldata _votes
   ) external;
 
   /* -------------------------------------------------------------------------- */
@@ -122,6 +123,11 @@ interface IEthereumZDAO {
   function destroyed() external view returns (bool);
 
   function numberOfProposals() external view returns (uint256);
+
+  function getProposalById(uint256 _proposalId)
+    external
+    view
+    returns (Proposal memory);
 
   function listProposals(uint256 _startIndex, uint256 _count)
     external
