@@ -7,7 +7,6 @@ type ZDAORecord @entity {
 }
 
 type ZNAAssociation @entity {
-  "zNA"
   id: ID!
   zDAORecord: ZDAORecord!
 }

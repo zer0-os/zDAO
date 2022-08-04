@@ -2,15 +2,15 @@ import {
   DAOCreated, DAODestroyed, LinkAdded, LinkRemoved
 } from "../generated/ZDAORegistry/ZDAORegistry";
 import { ZDAORecord, ZNAAssociation } from "../generated/schema";
-import { log } from "@graphprotocol/graph-ts";
+import { log, store } from "@graphprotocol/graph-ts";
 
 export function handleDAOCreated(event: DAOCreated): void {
-  const id = event.params.daoId.toString();
-  log.info("handleDAOCreated, called {}", [id]);
+  const zDAOId = event.params.daoId.toString();
 
-  const zDAO: ZDAORecord = new ZDAORecord(event.params.daoId.toString());
-  zDAO.id = event.params.daoId.toString();
-  zDAO.zDAOId = event.params.daoId.toI32();
+  log.info("handleDAOCreated, called {}", [zDAOId]);
+
+  const zDAO: ZDAORecord = new ZDAORecord(zDAOId);
+  zDAO.id = zDAOId;
   zDAO.ensSpace = event.params.ensSpace;
   zDAO.gnosisSafe = event.params.gnosisSafe;
   zDAO.destroyed = false;
@@ -36,19 +36,13 @@ export function handleDAODestroyed(event: DAODestroyed): void {
 
 export function handleLinkAdded(event: LinkAdded): void {
   const zDAOId = event.params.daoId.toString();
-  const zNA = event.params.zNA;
+  const zNAId = event.params.zNA.toString();
 
-  log.info("handleLinkAdded, called {}, {}", [zDAOId, zNA.toHexString()]);
+  log.info("handleLinkAdded, called {}, {}", [zDAOId, zNAId]);
 
-  const associationId = zNA.toHexString().concat('-').concat(zDAOId);
-  let zNAAssociation: ZNAAssociation | null = ZNAAssociation.load(associationId);
-  if (zNAAssociation) {
-    log.error("handleLinkAdded, zNA {} was already added association with zDAO {}, {}", [
-      zNA.toHexString(),
-      zDAOId,
-      event.block.number.toString()
-    ]);
-    return;
+  let zNAAssociation: ZNAAssociation | null = ZNAAssociation.load(zNAId);
+  if (!zNAAssociation) {
+    zNAAssociation = new ZNAAssociation(zNAId);
   }
 
   const zDAO: ZDAORecord | null = ZDAORecord.load(zDAOId);
@@ -67,23 +61,20 @@ export function handleLinkAdded(event: LinkAdded): void {
     return;
   }
 
-  zNAAssociation = new ZNAAssociation(associationId);
-  zNAAssociation.zNA = zNA;
   zNAAssociation.zDAORecord = zDAOId;
   zNAAssociation.save();
 }
 
 export function handleLinkRemoved(event: LinkRemoved): void {
   const zDAOId = event.params.daoId.toString();
-  const zNA = event.params.zNA;
+  const zNAId = event.params.zNA.toString();
 
-  log.info("handleLinkRemoved, called {}, {}", [zDAOId, zNA.toHexString()]);
+  log.info("handleLinkRemoved, called {}, {}", [zDAOId, zNAId]);
 
-  const associationId = zNA.toHexString().concat('-').concat(zDAOId);
-  const zNAAssociation: ZNAAssociation | null = ZNAAssociation.load(associationId);
+  const zNAAssociation: ZNAAssociation | null = ZNAAssociation.load(zNAId);
   if (!zNAAssociation) {
     log.error("handleLinkRemoved, Unable to load associated zNA {}, {}", [
-      zNA.toHexString(),
+      zNAId,
       event.block.number.toString()
     ]);
     return;
@@ -105,6 +96,5 @@ export function handleLinkRemoved(event: LinkRemoved): void {
     return;
   }
 
-  zNAAssociation.zDAORecord = '';
-  zNAAssociation.save();
+  store.remove('ZNAAssociation', zNAId);
 }
