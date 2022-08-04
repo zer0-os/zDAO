@@ -36,7 +36,7 @@ export function handleDAODestroyed(event: DAODestroyed): void {
 
 export function handleLinkAdded(event: LinkAdded): void {
   const zDAOId = event.params.daoId.toString();
-  const zNAId = event.params.zNA.toString();
+  const zNAId = event.params.zNA.toHexString();
 
   log.info("handleLinkAdded, called {}, {}", [zDAOId, zNAId]);
 
@@ -67,7 +67,7 @@ export function handleLinkAdded(event: LinkAdded): void {
 
 export function handleLinkRemoved(event: LinkRemoved): void {
   const zDAOId = event.params.daoId.toString();
-  const zNAId = event.params.zNA.toString();
+  const zNAId = event.params.zNA.toHexString();
 
   log.info("handleLinkRemoved, called {}, {}", [zDAOId, zNAId]);
 
