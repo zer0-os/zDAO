@@ -12,7 +12,7 @@ import "@nomiclabs/hardhat-waffle";
 import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
-dotenv.config();
+dotenv.config({path:__dirname+'/.env'});
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -52,7 +52,7 @@ const config: HardhatUserConfig = {
   networks: {
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
-      accounts: [process.env.TESTNET_PRIVATE_KEY],
+      accounts: [process.env.TESTNET_PRIVATE_KEY!],
     },
     mainnet: {
       url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_KEY}`,
