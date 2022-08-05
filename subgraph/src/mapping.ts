@@ -1,7 +1,10 @@
 import {
   DAOCreated, DAODestroyed, LinkAdded, LinkRemoved
 } from "../generated/ZDAORegistry/ZDAORegistry";
-import { ZDAORecord, ZNAAssociation } from "../generated/schema";
+import {
+  ProposalExecuted
+} from "../generated/ZDAOModule/ZDAOModule";
+import { ZDAORecord, ZNAAssociation, ExecutedProposal } from "../generated/schema";
 import { log, store } from "@graphprotocol/graph-ts";
 
 export function handleDAOCreated(event: DAOCreated): void {
@@ -97,4 +100,23 @@ export function handleLinkRemoved(event: LinkRemoved): void {
   }
 
   store.remove('ZNAAssociation', zNAId);
+}
+
+export function handleProposalExecuted(event: ProposalExecuted): void {
+  const platformType = event.params._platformType.toI32();
+  const proposalId = event.params._proposalId.toString();
+  const token = event.params._token;
+  const recipient = event.params._to;
+  const amount = event.params._amount;
+
+  log.info("handleProposalExecuted, called {}, {}", [platformType.toString(), proposalId]);
+
+  const id = `${platformType}-${proposalId}`;
+  const proposal: ExecutedProposal = new ExecutedProposal(id);
+  proposal.platformType = platformType;
+  proposal.proposalId = proposalId;
+  proposal.token = token;
+  proposal.recipient = recipient;
+  proposal.amount = amount;
+  proposal.save();
 }

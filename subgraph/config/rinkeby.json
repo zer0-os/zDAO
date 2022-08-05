@@ -1,5 +1,7 @@
 {
   "network": "rinkeby",
   "ZDAORegistry_address": "0x73D44dEa3A3334aB2504443479aD531FfeD2d2D9",
-  "ZDAORegistry_start_block": 10411294
+  "ZDAORegistry_start_block": 10411294,
+  "ZDAOModule_address": "0x70F9A6e7f037389f3200EB8F635AF1b06b110dDF",
+  "ZDAOModule_start_block": 11149474
 }
