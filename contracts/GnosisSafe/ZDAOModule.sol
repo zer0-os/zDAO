@@ -54,6 +54,12 @@ contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
     address _to,
     uint256 _amount
   ) external onlyAvatar {
+    // check if proposal was already executed
+    uint256 index = _proposalIndex(_platformType, _proposalId);
+    if (proposals[index].executed) {
+      revert("Already executed");
+    }
+
     bool success = _token == address(0)
       ? _executeForETH(_to, _amount)
       : _executeForERC20(_token, _to, _amount);
