@@ -112,6 +112,7 @@ contract EthereumZDAOChef is
         uint256(MessageType.CreateZDAO),
         _zDAOId,
         config.duration,
+        config.votingDelay,
         config.token
       )
     );
@@ -185,7 +186,8 @@ contract EthereumZDAOChef is
         uint256(ITunnel.MessageType.CreateProposal),
         _zDAOId,
         proposalId,
-        _choices.length
+        _choices.length,
+        block.timestamp
       )
     );
   }

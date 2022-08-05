@@ -185,8 +185,9 @@ contract PolygonZDAOChef is
       uint256 messageType,
       uint256 zDAOId,
       uint256 duration,
+      uint256 votingDelay,
       address rootToken
-    ) = abi.decode(_message, (uint256, uint256, uint256, address));
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, address));
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
@@ -201,6 +202,7 @@ contract PolygonZDAOChef is
           staking,
           zDAOId,
           duration,
+          votingDelay,
           childToken
         )
       )
@@ -231,15 +233,22 @@ contract PolygonZDAOChef is
       uint256 messageType,
       uint256 zDAOId,
       uint256 proposalId,
-      uint256 numberOfChoices
-    ) = abi.decode(_message, (uint256, uint256, uint256, uint256));
+      uint256 numberOfChoices,
+      uint256 proposalCreated
+    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
 
-    zDAOs[zDAOId].createProposal(proposalId, numberOfChoices, block.timestamp);
+    zDAOs[zDAOId].createProposal(proposalId, numberOfChoices, proposalCreated);
 
-    emit ProposalCreated(zDAOId, proposalId, numberOfChoices, block.timestamp);
+    emit ProposalCreated(
+      zDAOId,
+      proposalId,
+      numberOfChoices,
+      proposalCreated,
+      block.timestamp
+    );
   }
 
   function _cancelProposal(bytes memory _message) internal virtual {

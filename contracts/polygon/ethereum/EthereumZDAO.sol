@@ -77,6 +77,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       token: _zDAOConfig.token,
       amount: _zDAOConfig.amount,
       duration: _zDAOConfig.duration,
+      votingDelay: _zDAOConfig.votingDelay,
       votingThreshold: _zDAOConfig.votingThreshold,
       minimumVotingParticipants: _zDAOConfig.minimumVotingParticipants,
       minimumTotalVotingTokens: _zDAOConfig.minimumTotalVotingTokens,

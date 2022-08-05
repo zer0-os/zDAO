@@ -10,6 +10,8 @@ interface IPolygonZDAO {
     uint256 zDAOId;
     /// @notice Time duration of this proposal in seconds
     uint256 duration;
+    /// @notice Delay of proposal to start voting in seconds, optional
+    uint256 votingDelay;
     /// @notice Voting token on Polygon
     address token;
     /// @notice Snapshot block number on which zDAO has been created
@@ -75,6 +77,7 @@ interface IPolygonZDAO {
     address _staking,
     uint256 _zDAOId,
     uint256 _duration,
+    uint256 _votingDelay,
     address _token
   ) external;
 
