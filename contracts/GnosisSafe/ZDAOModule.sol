@@ -73,6 +73,8 @@ contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
         amount: _amount,
         executed: true
       });
+
+      emit ProposalExecuted(_platformType, _proposalId, _token, _to, _amount);
     }
   }
 
