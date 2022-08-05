@@ -7,16 +7,37 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {IZDAOModule} from "../interfaces/IZDAOModule.sol";
 
 contract ZDAOModule is IZDAOModule, Module, AccessControlUpgradeable, UUPSUpgradeable {
+  bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
+
   mapping(uint256 => Proposal) public proposals;
+
+  /* -------------------------------------------------------------------------- */
+  /*                                  Modifiers                                 */
+  /* -------------------------------------------------------------------------- */
+
+  modifier onlyOrganizer {
+    require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Only callable by organizer");
+    _;
+  }
+
+  modifier onlyExecutor {
+      require(
+          hasRole(EXECUTOR_ROLE, msg.sender),
+          "Only callable by executor"
+      );
+      _;
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOModule_init(address _owner) public initializer {
+  function __ZDAOModule_init(address _gnosisSafeProxy, address _organizer) public initializer {
     __Ownable_init();
 
-    bytes memory initializeParams = abi.encode(_owner);
+    _setupRole(DEFAULT_ADMIN_ROLE, _organizer);
+
+    bytes memory initializeParams = abi.encode(_gnosisSafeProxy);
     setUp(initializeParams);
   }
 
@@ -37,13 +58,17 @@ contract ZDAOModule is IZDAOModule, Module, AccessControlUpgradeable, UUPSUpgrad
     transferOwnership(owner);
   }
 
+  function grantExecutorRole(address _owner) external onlyOrganizer {
+    _setupRole(EXECUTOR_ROLE, _owner);
+  }
+
   function executeProposal(
     uint256 _platformType,
     string calldata _proposalId,
     address _token,
     address _to,
     uint256 _amount
-  ) external {
+  ) external onlyExecutor {
     bool success = _token == address(0)
       ? _executeForETH(_to, _amount)
       : _executeForERC20(_token, _to, _amount);
