@@ -41,7 +41,6 @@ describe("ZDAOModule", function () {
     );
 
     await gnosisSafeProxy.enableModule(zDAOModule.address);
-    await zDAOModule.grantExecutorRole(executor.address);
 
     // fund tokens
     await mockToken.transfer(gnosisSafeProxy.address, await mockToken.totalSupply());
@@ -51,14 +50,18 @@ describe("ZDAOModule", function () {
     });
   });
 
-  it("Only callable by executor", async function () {
-    await expect(zDAOModule.connect(deployer).executeProposal(0, "ProposalId", mockToken.address, userA.address, 100000)).to.be.revertedWith("Only callable by executor");
+  it("Only callable by Gnosis Safe", async function () {
+    await expect(zDAOModule.connect(deployer).executeProposal(0, "ProposalId", mockToken.address, userA.address, 100000)).to.be.revertedWith("Only callable by GnosisSafe");
+
+    await zDAOModule.setVariable("avatar", executor.address);
 
     await expect(zDAOModule.connect(executor).executeProposal(0, "ProposalId", mockToken.address, userA.address, 100000)).to.be.not.reverted;
   });
 
   it("Should transfer ERC20", async function () {
     const balanceBefore = await mockToken.balanceOf(userA.address);
+
+    await zDAOModule.setVariable("avatar", executor.address);
 
     const amount = 100000;
     await zDAOModule.connect(executor).executeProposal(0, "ProposalId", mockToken.address, userA.address, amount);
@@ -70,6 +73,8 @@ describe("ZDAOModule", function () {
   it("Should transfer ETH", async function () {
     const balanceBefore = await userA.getBalance();
 
+    await zDAOModule.setVariable("avatar", executor.address);
+
     const amount = 100000;
     await zDAOModule.connect(executor).executeProposal(0, "ProposalId", ethers.constants.AddressZero, userA.address, amount);
 
@@ -78,6 +83,8 @@ describe("ZDAOModule", function () {
   });
 
   it("Proposal should be executed", async function () {
+    await zDAOModule.setVariable("avatar", executor.address);
+
     const amount = 100000;
     await zDAOModule.connect(executor).executeProposal(0, "ProposalId", ethers.constants.AddressZero, userA.address, amount);
 

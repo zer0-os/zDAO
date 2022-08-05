@@ -12,8 +12,6 @@ interface IZDAOModule {
     bool executed;
   }
 
-  function grantExecutorRole(address _owner) external;
-
   function executeProposal(
     uint256 _platformType,
     string calldata _proposalId,

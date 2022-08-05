@@ -2,28 +2,20 @@
 pragma solidity 0.8.9;
 
 import {Module, Enum} from "@gnosis.pm/zodiac/contracts/core/Module.sol";
-import {AccessControlUpgradeable} from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {IZDAOModule} from "../interfaces/IZDAOModule.sol";
 
-contract ZDAOModule is IZDAOModule, Module, AccessControlUpgradeable, UUPSUpgradeable {
-  bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
-
+contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
   mapping(uint256 => Proposal) public proposals;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyOrganizer {
-    require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "Only callable by organizer");
-    _;
-  }
-
-  modifier onlyExecutor {
+  modifier onlyAvatar {
       require(
-          hasRole(EXECUTOR_ROLE, msg.sender),
-          "Only callable by executor"
+          msg.sender == avatar,
+          "Only callable by GnosisSafe"
       );
       _;
   }
@@ -34,8 +26,6 @@ contract ZDAOModule is IZDAOModule, Module, AccessControlUpgradeable, UUPSUpgrad
 
   function __ZDAOModule_init(address _gnosisSafeProxy, address _organizer) public initializer {
     __Ownable_init();
-
-    _setupRole(DEFAULT_ADMIN_ROLE, _organizer);
 
     bytes memory initializeParams = abi.encode(_gnosisSafeProxy);
     setUp(initializeParams);
@@ -55,11 +45,6 @@ contract ZDAOModule is IZDAOModule, Module, AccessControlUpgradeable, UUPSUpgrad
 
     setAvatar(owner);
     setTarget(owner);
-    transferOwnership(owner);
-  }
-
-  function grantExecutorRole(address _owner) external onlyOrganizer {
-    _setupRole(EXECUTOR_ROLE, _owner);
   }
 
   function executeProposal(
@@ -68,7 +53,7 @@ contract ZDAOModule is IZDAOModule, Module, AccessControlUpgradeable, UUPSUpgrad
     address _token,
     address _to,
     uint256 _amount
-  ) external onlyExecutor {
+  ) external onlyAvatar {
     bool success = _token == address(0)
       ? _executeForETH(_to, _amount)
       : _executeForERC20(_token, _to, _amount);
