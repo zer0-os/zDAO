@@ -25,8 +25,8 @@ interface IPolygonZDAO {
     Active,
     Canceled,
     Executed,
-    Calculating,
-    Calculated
+    AwaitingCalculation,
+    Closed // Bridging, Awaiting Finalizing, Awaiting Execution, or Executed
   }
 
   struct Proposal {

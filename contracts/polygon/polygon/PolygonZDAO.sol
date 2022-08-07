@@ -397,12 +397,10 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
       return ProposalState.Pending;
     } else if (block.timestamp <= proposal.endTimestamp) {
       return ProposalState.Active;
-    } else if (proposal.executed) {
-      return ProposalState.Executed;
     } else if (proposal.calculated) {
-      return ProposalState.Calculated;
+      return ProposalState.Closed;
     }
-    return ProposalState.Calculating;
+    return ProposalState.AwaitingCalculation;
   }
 
   function votesResultOfProposal(uint256 _proposalId)

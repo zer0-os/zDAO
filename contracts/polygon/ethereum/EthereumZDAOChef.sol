@@ -7,6 +7,7 @@ import {createProxy} from "../../helpers/Proxy.sol";
 import {IZNSHub} from "../../interfaces/IZNSHub.sol";
 import {IEthereumStateSender, IEthereumStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
+import {IZDAOModule} from "../../interfaces/IZDAOModule.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 
@@ -17,6 +18,8 @@ contract EthereumZDAOChef is
   IZDAOFactory
 {
   address public zDAORegistry;
+
+  IZDAOModule public zDAOModule;
 
   /**
    * Address to FxStateEthereumTunnel which is responsible for sending message
@@ -40,7 +43,7 @@ contract EthereumZDAOChef is
     require(_zDAOId > 0 && !_isZDAODestroyed(_zDAOId), "Invalid zDAO");
     _;
   }
-
+ 
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
@@ -48,12 +51,14 @@ contract EthereumZDAOChef is
   function __ZDAOChef_init(
     address _zDAORegistry,
     IEthereumStateSender _ethereumStateSender,
+    IZDAOModule _zDAOModule,
     address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     zDAORegistry = _zDAORegistry;
     ethereumStateSender = _ethereumStateSender;
+    zDAOModule = _zDAOModule;
     zDAOBase = _zDAOBase;
   }
 
@@ -97,6 +102,7 @@ contract EthereumZDAOChef is
         abi.encodeWithSelector(
           IEthereumZDAO.__ZDAO_init.selector,
           address(this),
+          zDAOModule,
           _zDAOId,
           _createdBy,
           _gnosisSafe,
@@ -232,23 +238,6 @@ contract EthereumZDAOChef is
         _proposalId
       )
     );
-  }
-
-  /**
-   * @notice Execute proposal, check the comment of executeProposal function
-   *     in the EthereumZDAO contract.
-   * @dev Only for valid zDAO
-   * @param _zDAOId zDAO unique id
-   * @param _proposalId Proposal unique id
-   */
-  function executeProposal(uint256 _zDAOId, uint256 _proposalId)
-    external
-    override
-    onlyValidZDAO(_zDAOId)
-  {
-    zDAOs[_zDAOId].executeProposal(msg.sender, _proposalId);
-
-    emit ProposalExecuted(_zDAOId, _proposalId, msg.sender);
   }
 
   /**

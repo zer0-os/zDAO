@@ -3,6 +3,7 @@
 pragma solidity ^0.8.11;
 
 import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IZDAOModule} from "../../../interfaces/IZDAOModule.sol";
 import {IEthereumZDAOChef} from "./IEthereumZDAOChef.sol";
 
 interface IEthereumZDAO {
@@ -43,8 +44,8 @@ interface IEthereumZDAO {
     Active,
     Canceled,
     Executed,
-    Failed,
-    Succeeded
+    Closed,
+    AwaitingExecution
   }
 
   struct Proposal {
@@ -62,8 +63,6 @@ interface IEthereumZDAO {
     uint256 snapshot;
     /// @notice Flag marking whether this proposal has been calculated
     bool calculated;
-    /// @notice Flag marking whether this proposal has been executed
-    bool executed;
     /// @notice Flag marking whether this proposal has been canceled
     bool canceled;
     /// @notice Arrays of choices
@@ -82,6 +81,7 @@ interface IEthereumZDAO {
 
   function __ZDAO_init(
     address _zDAOChef,
+    IZDAOModule _zDAOModule,
     uint256 _zDAOId,
     address _gnosisSafe,
     address _createdBy,
@@ -103,8 +103,6 @@ interface IEthereumZDAO {
   ) external returns (uint256);
 
   function cancelProposal(address _cancelBy, uint256 _proposalid) external;
-
-  function executeProposal(address _executeBy, uint256 _proposalId) external;
 
   function calculateProposal(
     uint256 _proposalId,

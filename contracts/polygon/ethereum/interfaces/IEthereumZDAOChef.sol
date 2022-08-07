@@ -87,8 +87,6 @@ interface IEthereumZDAOChef {
 
   function cancelProposal(uint256 _zDAOId, uint256 _proposalId) external;
 
-  function executeProposal(uint256 _zDAOId, uint256 _proposalId) external;
-
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
