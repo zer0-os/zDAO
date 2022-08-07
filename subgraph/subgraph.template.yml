@@ -32,3 +32,24 @@ dataSources:
         - event: LinkRemoved(indexed uint256,indexed uint256)
           handler: handleLinkRemoved
       file: ./src/mapping.ts
+
+  - kind: ethereum/contract
+    name: ZDAOModule
+    network: {{ network }}
+    source:
+      address: "{{ ZDAOModule_address }}"
+      abi: ZDAOModule
+      startBlock: {{ ZDAOModule_start_block }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ExecutedProposal
+      abis:
+        - name: ZDAOModule
+          file: ./abis/ZDAOModule.json
+      eventHandlers:
+        - event: ProposalExecuted(indexed uint256,uint256,address,address,uint256)
+          handler: handleProposalExecuted
+      file: ./src/mapping.ts
