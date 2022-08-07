@@ -1,0 +1,12 @@
+type ZDAORecord @entity {
+  id: ID!
+  ensSpace: String!
+  gnosisSafe: Bytes!
+  zNAs: [ZNAAssociation!]! @derivedFrom(field: "zDAORecord")
+  destroyed: Boolean!
+}
+
+type ZNAAssociation @entity {
+  id: ID!
+  zDAORecord: ZDAORecord!
+}

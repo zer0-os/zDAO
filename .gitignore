@@ -5,3 +5,11 @@ cache
 artifacts
 .env
 .DS_Store
+
+
+subgraph/node_modules
+
+#generated files
+subgraph/subgraph.yaml
+subgraph/generated
+subgraph/build
