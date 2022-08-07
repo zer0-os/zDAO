@@ -6,6 +6,16 @@ cache
 artifacts
 .env
 .DS_Store
+types
+
+
+subgraph/node_modules
+
+#generated files
+subgraph/subgraph.yaml
+subgraph/generated
+subgraph/build
+
 
 #remix files
 contracts/.deps

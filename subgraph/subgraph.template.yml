@@ -1,0 +1,55 @@
+specVersion: 0.0.2
+repository: https://github.com/zer0-os/zdao-contracts
+schema:
+  file: ./schema.graphql
+features:
+  - nonFatalErrors
+dataSources:
+  - kind: ethereum/contract
+    name: ZDAORegistry
+    network: {{ network }}
+    source:
+      address: "{{ ZDAORegistry_address }}"
+      abi: ZDAORegistry
+      startBlock: {{ ZDAORegistry_start_block }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ZDAORecord
+        - ZNAAssociation
+      abis:
+        - name: ZDAORegistry
+          file: ./abis/ZDAORegistry.json
+      eventHandlers:
+        - event: DAOCreated(indexed uint256,string,address)
+          handler: handleDAOCreated
+        - event: DAODestroyed(indexed uint256)
+          handler: handleDAODestroyed
+        - event: LinkAdded(indexed uint256,indexed uint256)
+          handler: handleLinkAdded
+        - event: LinkRemoved(indexed uint256,indexed uint256)
+          handler: handleLinkRemoved
+      file: ./src/mapping.ts
+
+  - kind: ethereum/contract
+    name: ZDAOModule
+    network: {{ network }}
+    source:
+      address: "{{ ZDAOModule_address }}"
+      abi: ZDAOModule
+      startBlock: {{ ZDAOModule_start_block }}
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - ExecutedProposal
+      abis:
+        - name: ZDAOModule
+          file: ./abis/ZDAOModule.json
+      eventHandlers:
+        - event: ProposalExecuted(indexed uint256,string,address,address,uint256)
+          handler: handleProposalExecuted
+      file: ./src/mapping.ts
