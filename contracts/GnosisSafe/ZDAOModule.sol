@@ -6,18 +6,16 @@ import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/U
 import {IZDAOModule} from "../interfaces/IZDAOModule.sol";
 
 contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
-  mapping(uint256 => Proposal) public proposals;
+  // platform type => (proposalHash => Proposal)
+  mapping(uint256 => mapping(uint256 => Proposal)) public proposals;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyAvatar {
-      require(
-          msg.sender == avatar,
-          "Only callable by GnosisSafe"
-      );
-      _;
+  modifier onlyAvatar() {
+    require(msg.sender == avatar, "Only callable by GnosisSafe");
+    _;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -49,14 +47,13 @@ contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
 
   function executeProposal(
     uint256 _platformType,
-    string calldata _proposalId,
+    uint256 _proposalHash,
     address _token,
     address _to,
     uint256 _amount
   ) external onlyAvatar {
     // check if proposal was already executed
-    uint256 index = _proposalIndex(_platformType, _proposalId);
-    if (proposals[index].executed) {
+    if (proposals[_platformType][_proposalHash].executed) {
       revert("Already executed");
     }
 
@@ -64,17 +61,16 @@ contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
       ? _executeForETH(_to, _amount)
       : _executeForERC20(_token, _to, _amount);
     if (success) {
-      uint256 index = _proposalIndex(_platformType, _proposalId);
-      proposals[index] = Proposal({
+      proposals[_platformType][_proposalHash] = Proposal({
         platformType: _platformType,
-        proposalId: _proposalId,
+        proposalHash: _proposalHash,
         token: _token,
         to: _to,
         amount: _amount,
         executed: true
       });
 
-      emit ProposalExecuted(_platformType, _proposalId, _token, _to, _amount);
+      emit ProposalExecuted(_platformType, _proposalHash, _token, _to, _amount);
     }
   }
 
@@ -102,24 +98,16 @@ contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
       );
   }
 
-  function _proposalIndex(uint256 _platformType, string memory _proposalId)
-    internal
-    pure
-    returns (uint256)
-  {
-    return uint256(keccak256(abi.encodePacked(_platformType, _proposalId)));
-  }
-
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function isProposalExecuted(uint256 _platformType, string calldata _proposalId)
+  function isProposalExecuted(uint256 _platformType, uint256 _proposalHash)
     external
     view
+    override
     returns (bool)
   {
-    uint256 index = _proposalIndex(_platformType, _proposalId);
-    return proposals[index].executed;
+    return proposals[_platformType][_proposalHash].executed;
   }
 }
