@@ -9,11 +9,14 @@ import * as zns from "@zero-tech/zns-sdk";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
+import { PlatformType } from "../../../scripts/shared/config";
 import {
   EthereumZDAO,
   EthereumZDAOChef,
   EthereumZDAOChef__factory,
   IERC20Upgradeable,
+  IZDAOModule,
+  IZDAOModule__factory,
   IZNSHub,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
@@ -39,7 +42,8 @@ describe("ZDAOChef", async function () {
 
   let ZNSHub: FakeContract<IZNSHub>,
     ethereumStateSender: FakeContract<IEthereumStateSender>,
-    ZDAOChef: MockContract<EthereumZDAOChef>,
+    zDAOChef: MockContract<EthereumZDAOChef>,
+    zDAOModule: FakeContract<IZDAOModule>,
     vToken: FakeContract<IERC20Upgradeable>;
 
   let gnosisSafe: string,
@@ -60,11 +64,13 @@ describe("ZDAOChef", async function () {
     )) as FakeContract<IEthereumStateSender>;
 
     const zDAORegistry = await ethers.Wallet.createRandom().getAddress();
-    ZDAOChef =
+    zDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
-    await ZDAOChef.__ZDAOChef_init(
+    zDAOModule = await smock.fake("IZDAOModule") as FakeContract<IZDAOModule>;
+    await zDAOChef.__ZDAOChef_init(
       zDAORegistry,
       ethereumStateSender.address,
+      zDAOModule.address,
       zDAOBase.address
     );
 
@@ -106,8 +112,8 @@ describe("ZDAOChef", async function () {
     user: SignerWithAddress,
     zDAOId: number
   ): Promise<ContractTransaction> => {
-    await ZDAOChef.setVariable("zDAORegistry", user.address);
-    return ZDAOChef.connect(user).addNewZDAO(
+    await zDAOChef.setVariable("zDAORegistry", user.address);
+    return zDAOChef.connect(user).addNewZDAO(
       zDAOId,
       zNAAsNumber,
       user.address,
@@ -141,7 +147,7 @@ describe("ZDAOChef", async function () {
     user: SignerWithAddress,
     daoId: number
   ): Promise<ContractTransaction> => {
-    return ZDAOChef.connect(user).createProposal(
+    return zDAOChef.connect(user).createProposal(
       daoId,
       proposalConfig.choices,
       proposalConfig.ipfs
@@ -160,7 +166,7 @@ describe("ZDAOChef", async function () {
     const newGnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
     await expect(
-      ZDAOChef.connect(zNAOwner).modifyZDAO(
+      zDAOChef.connect(zNAOwner).modifyZDAO(
         1,
         newGnosisSafe,
         ethers.utils.defaultAbiCoder.encode(
@@ -200,11 +206,11 @@ describe("ZDAOChef", async function () {
       votes: [70, 20, 10],
     });
 
-    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
-    await expect(ZDAOChef.connect(userA).processMessageFromChild(message)).to.be
+    await zDAOChef.setVariable("ethereumStateSender", userA.address);
+    await expect(zDAOChef.connect(userA).processMessageFromChild(message)).to.be
       .not.reverted;
 
-    const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
+    const rootZDAO = await zDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
       "EthereumZDAO",
       rootZDAO,
@@ -226,7 +232,7 @@ describe("ZDAOChef", async function () {
 
     await increaseTime(30);
 
-    const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
+    const rootZDAO = await zDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
       "EthereumZDAO",
       rootZDAO,
@@ -235,11 +241,11 @@ describe("ZDAOChef", async function () {
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
-    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
+    await zDAOChef.setVariable("ethereumStateSender", userA.address);
 
     // should not execute proposal if proposal state is failed
     await expect(
-      ZDAOChef.connect(userA).processMessageFromChild(
+      zDAOChef.connect(userA).processMessageFromChild(
         encodeCalculateProposal({
           zDAOId,
           proposalId,
@@ -253,10 +259,8 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    // should reverted because of invalid target, value and data
-    await expect(
-      ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)
-    ).to.be.revertedWith("Not a succeeded proposal");
+    const state = await zDAO.state(proposalId);
+    expect(state).to.be.equal(4); // ProposalState.Closed
   });
 
   it("Should execute a succeeded proposal", async function () {
@@ -268,7 +272,7 @@ describe("ZDAOChef", async function () {
 
     await increaseTime(30);
 
-    const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
+    const rootZDAO = await zDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
       "EthereumZDAO",
       rootZDAO,
@@ -277,11 +281,11 @@ describe("ZDAOChef", async function () {
     const zDAOInfo = await zDAO.zDAOInfo();
     const proposalId = 1;
 
-    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
+    await zDAOChef.setVariable("ethereumStateSender", userA.address);
 
     // should execute proposal if proposal state is succeeded
     await expect(
-      ZDAOChef.connect(userA).processMessageFromChild(
+      zDAOChef.connect(userA).processMessageFromChild(
         encodeCalculateProposal({
           zDAOId,
           proposalId,
@@ -291,13 +295,8 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    await ZDAOChef.setVariable(
-      "ethereumStateSender",
-      ethereumStateSender.address
-    );
-    // should reverted because of invalid target, value and data
-    await expect(ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId)).to
-      .be.not.reverted;
+    const state = await zDAO.state(proposalId);
+    expect(state).to.be.equal(5); // ProposalState.AwaitingExecution
   });
 
   it("Should execute by action", async function () {
@@ -322,7 +321,7 @@ describe("ZDAOChef", async function () {
     await createProposal(userA, zDAOId);
     await increaseTime(zDAOConfig.duration);
 
-    const rootZDAO = await ZDAOChef.zDAOs(zDAOId);
+    const rootZDAO = await zDAOChef.zDAOs(zDAOId);
     const zDAO = (await ethers.getContractAt(
       "EthereumZDAO",
       rootZDAO,
@@ -330,12 +329,12 @@ describe("ZDAOChef", async function () {
     )) as EthereumZDAO;
     const zDAOInfo = await zDAO.zDAOInfo();
 
-    const ethereumStateSender = await ZDAOChef.ethereumStateSender();
-    await ZDAOChef.setVariable("ethereumStateSender", userA.address);
+    const ethereumStateSender = await zDAOChef.ethereumStateSender();
+    await zDAOChef.setVariable("ethereumStateSender", userA.address);
 
     // should execute proposal if proposal state is succeeded
     await expect(
-      ZDAOChef.connect(userA).processMessageFromChild(
+      zDAOChef.connect(userA).processMessageFromChild(
         encodeCalculateProposal({
           zDAOId,
           proposalId,
@@ -345,7 +344,9 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    await ZDAOChef.setVariable("ethereumStateSender", ethereumStateSender);
-    await ZDAOChef.connect(userA).executeProposal(zDAOId, proposalId);
+    zDAOModule.isProposalExecuted.whenCalledWith(PlatformType.Polygon, proposalId).returns(true);
+
+    const state = await zDAO.state(proposalId);
+    expect(state).to.be.equal(3); // ProposalState.Executed
   });
 });

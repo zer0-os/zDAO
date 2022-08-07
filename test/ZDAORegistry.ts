@@ -18,6 +18,7 @@ import {
   SnapshotZDAOChef__factory,
   ZDAORegistry,
   ZDAORegistry__factory,
+  IZDAOModule,
 } from "../types";
 import { PlatformType } from "../scripts/shared/config";
 import { BigNumber } from "ethers";
@@ -40,6 +41,7 @@ describe("ZDAORegistry", function () {
 
   let znsHub: FakeContract<IZNSHub>,
     zDAORegistry: MockContract<ZDAORegistry>,
+    zDAOModule: FakeContract<IZDAOModule>,
     snapshotZDAOChef: MockContract<SnapshotZDAOChef>;
 
   const zNAPairs: zNAPair[] = [];
@@ -243,9 +245,11 @@ describe("ZDAORegistry", function () {
 
       rootZDAOChef =
         (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
+      zDAOModule = await smock.fake("IZDAOModule") as FakeContract<IZDAOModule>;
       await rootZDAOChef.__ZDAOChef_init(
         zDAORegistry.address,
         ethereumStateSender.address,
+        zDAOModule.address,
         zDAOBase.address
       );
 

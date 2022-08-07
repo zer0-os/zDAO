@@ -12,6 +12,7 @@ import {
   IERC20Upgradeable,
   EthereumZDAO,
   EthereumZDAO__factory,
+  IZDAOModule,
 } from "../../../types";
 import { ProposalConfig, ZDAOConfig } from "../../shared/types";
 import { mineToBlock, now } from "../../shared/utilities";
@@ -29,6 +30,7 @@ describe("ZDAO", async function () {
 
   let zDAO: MockContract<EthereumZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
+    zDAOModule: FakeContract<IZDAOModule>,
     zDAOInfo: any;
 
   let gnosisSafe: string,
@@ -46,6 +48,8 @@ describe("ZDAO", async function () {
     vToken = (await smock.fake(
       "IERC20Upgradeable"
     )) as FakeContract<IERC20Upgradeable>;
+
+    zDAOModule = await smock.fake("IZDAOModule") as FakeContract<IZDAOModule>;
 
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
@@ -66,6 +70,7 @@ describe("ZDAO", async function () {
 
     await zDAO.__ZDAO_init(
       zDAOChef.address, // instead of zDAOChef
+      zDAOModule.address,
       zDAOId,
       zNAOwner.address,
       gnosisSafe,
@@ -137,7 +142,6 @@ describe("ZDAO", async function () {
     );
     expect(proposals[0].ipfs).to.be.equal(proposalConfig.ipfs);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
-    expect(proposals[0].executed).to.be.equal(false);
     expect(proposals[0].canceled).to.be.equal(false);
   });
 

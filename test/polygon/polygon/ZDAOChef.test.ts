@@ -123,7 +123,8 @@ describe("ZDAOChef", async function () {
   };
 
   it("Should be able to create zDAO from the message", async function () {
-    await expect(createZDAO(userA)).to.be.not.reverted;
+    await createZDAO(userA);
+    // await expect(createZDAO(userA)).to.be.not.reverted;
 
     const zDAOAddr = await ZDAOChef.getZDAOById(1);
     const zDAO = (await ethers.getContractAt(
