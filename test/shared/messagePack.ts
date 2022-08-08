@@ -6,8 +6,7 @@ enum MessageType {
   DeleteZDAO = 2,
   CreateProposal = 3,
   CancelProposal = 4,
-  ExecuteProposal = 5,
-  CalculateProposal = 6,
+  CalculateProposal = 5,
 }
 
 export interface CreateZDAOPack {

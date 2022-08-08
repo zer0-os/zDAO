@@ -63,12 +63,6 @@ interface IEthereumZDAOChef {
     address indexed _cancelBy
   );
 
-  event ProposalExecuted(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    address indexed _executeBy
-  );
-
   event ProposalCalculated(
     uint256 indexed _zDAOId,
     uint256 indexed _propoalId,

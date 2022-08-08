@@ -33,8 +33,6 @@ interface IPolygonZDAOChef {
 
   event ProposalCanceled(uint256 indexed _zDAOId, uint256 indexed _proposalId);
 
-  event ProposalExecuted(uint256 indexed _zDAOId, uint256 indexed _proposalId);
-
   event ProposalCalculated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,

@@ -138,25 +138,6 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
   }
 
   /**
-   * @notice Mark a proposal as executed state, executing a proposal is
-   *     executed on Ethereum and synchronized to Polygon to update the state.
-   * @dev Callable by PolygonZDAOChef, only available for active zDAO
-   * @param _proposalId Proposal unique id
-   */
-  function executeProposal(uint256 _proposalId)
-    external
-    onlyZDAOChef
-    isActiveDAO
-    onlyValidProposal(_proposalId)
-  {
-    require(
-      !proposals[_proposalId].canceled && proposals[_proposalId].calculated,
-      "Not a valid proposal"
-    );
-    _executeProposal(_proposalId);
-  }
-
-  /**
    * @notice Calculate a proposal, the proposal should be ended and not canceled
    *     Anyone can calculate a proposal if it ends, and the transaction of
    *     proposal calculation will be sent to Ethereum.
@@ -268,10 +249,6 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
 
   function _cancelProposal(uint256 _proposalId) internal virtual {
     proposals[_proposalId].canceled = true;
-  }
-
-  function _executeProposal(uint256 _proposalId) internal virtual {
-    proposals[_proposalId].executed = true;
   }
 
   function _canVote(
