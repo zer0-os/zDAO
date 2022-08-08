@@ -89,6 +89,7 @@ describe("ZDAOChef", async function () {
       token: vToken.address,
       amount: minAmount.toNumber(),
       duration: minDuration,
+      votingDelay: 0,
       votingThreshold: 5001, // 50.01%
       minimumVotingParticipants: 1,
       minimumTotalVotingTokens: minimumTotalVotingTokens,
@@ -109,10 +110,12 @@ describe("ZDAOChef", async function () {
     return ZDAOChef.connect(user).addNewZDAO(
       zDAOId,
       zNAAsNumber,
+      user.address,
       gnosisSafe,
       ethers.utils.defaultAbiCoder.encode(
         [
           "address",
+          "uint256",
           "uint256",
           "uint256",
           "uint256",
@@ -124,6 +127,7 @@ describe("ZDAOChef", async function () {
           zDAOConfig.token,
           zDAOConfig.amount,
           zDAOConfig.duration,
+          zDAOConfig.votingDelay,
           zDAOConfig.votingThreshold,
           zDAOConfig.minimumVotingParticipants,
           zDAOConfig.minimumTotalVotingTokens,

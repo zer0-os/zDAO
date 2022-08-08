@@ -66,6 +66,7 @@ describe("ZDAO", async function () {
     zDAOConfig = {
       zDAOId,
       duration: minDuration,
+      votingDelay: 2000,
     };
 
     await zDAO.__ZDAO_init(
@@ -73,6 +74,7 @@ describe("ZDAO", async function () {
       staking.address,
       zDAOConfig.zDAOId,
       zDAOConfig.duration,
+      zDAOConfig.votingDelay,
       vToken.address
     );
 
@@ -134,7 +136,7 @@ describe("ZDAO", async function () {
       proposalConfig.numberOfChoices
     );
     expect(proposals[0].startTimestamp.toNumber()).to.be.equal(
-      proposalConfig.startTimestamp
+      proposalConfig.startTimestamp + zDAOConfig.votingDelay
     );
   });
 
@@ -145,7 +147,7 @@ describe("ZDAO", async function () {
     await mineToBlock(1);
 
     await createProposal();
-    await mineToBlock(1);
+    await increaseTime(zDAOConfig.votingDelay);
 
     const proposalId = 1;
     const choice = 1; // yes
@@ -177,7 +179,7 @@ describe("ZDAO", async function () {
     await mineToBlock(1);
 
     await createProposal();
-    await mineToBlock(1);
+    await increaseTime(zDAOConfig.votingDelay);
 
     const proposalId = 1;
 

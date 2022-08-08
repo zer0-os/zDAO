@@ -57,6 +57,7 @@ describe("ZDAO", async function () {
       token: vToken.address,
       amount: minAmount.toNumber(),
       duration: minDuration,
+      votingDelay: 0,
       votingThreshold: 5001, // 50.01%
       minimumVotingParticipants: 1,
       minimumTotalVotingTokens: 5000,
@@ -66,8 +67,8 @@ describe("ZDAO", async function () {
     await zDAO.__ZDAO_init(
       zDAOChef.address, // instead of zDAOChef
       zDAOId,
-      gnosisSafe,
       zNAOwner.address,
+      gnosisSafe,
       zDAOConfig
     );
 
@@ -86,6 +87,7 @@ describe("ZDAO", async function () {
     expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
     expect(zDAOInfo.amount.toNumber()).to.be.equal(zDAOConfig.amount);
     expect(zDAOInfo.duration.toNumber()).to.be.equal(zDAOConfig.duration);
+    expect(zDAOInfo.votingDelay.toNumber()).to.be.equal(zDAOConfig.votingDelay);
     expect(zDAOInfo.isRelativeMajority).to.be.equal(
       zDAOConfig.isRelativeMajority
     );

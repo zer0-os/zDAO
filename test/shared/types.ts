@@ -2,6 +2,7 @@ export interface ZDAOConfig {
   token: string;
   amount: number;
   duration: number;
+  votingDelay: number;
   votingThreshold: number;
   minimumVotingParticipants: number;
   minimumTotalVotingTokens: number;
@@ -16,6 +17,7 @@ export interface ProposalConfig {
 export interface PolygonZDAOConfig {
   zDAOId: number;
   duration: number;
+  votingDelay: number;
 }
 
 export interface PolyProposalConfig {

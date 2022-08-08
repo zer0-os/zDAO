@@ -26,6 +26,7 @@ import {
   encodeCreateZDAO,
   encodeDeleteZDAO,
 } from "../../shared/messagePack";
+import { now } from "../../shared/utilities";
 
 chai.use(smock.matchers);
 
@@ -86,6 +87,7 @@ describe("ZDAOChef", async function () {
     zDAOPack = {
       lastZDAOId: 1,
       duration: minDuration,
+      votingDelay: 0,
       token: vToken.address,
     };
 
@@ -93,6 +95,7 @@ describe("ZDAOChef", async function () {
       zDAOId: 1,
       proposalId: 1,
       numberOfChoices: 3,
+      proposalCreated: await now()
     };
   });
 

@@ -259,6 +259,7 @@ describe("ZDAORegistry", function () {
         token: vToken.address,
         amount: BigNumber.from("10000").toNumber(),
         duration: 150, // 5 min
+        votingDelay: 0,
         votingThreshold: 5001, // 50.01%
         minimumVotingParticipants: 1,
         minimumTotalVotingTokens: 5000,
@@ -278,12 +279,14 @@ describe("ZDAORegistry", function () {
           "uint256",
           "uint256",
           "uint256",
+          "uint256",
           "bool",
         ],
         [
           zDAOConfig.token,
           zDAOConfig.amount,
           zDAOConfig.duration,
+          zDAOConfig.votingDelay,
           zDAOConfig.votingThreshold,
           zDAOConfig.minimumVotingParticipants,
           zDAOConfig.minimumTotalVotingTokens,
@@ -335,12 +338,14 @@ describe("ZDAORegistry", function () {
           "uint256",
           "uint256",
           "uint256",
+          "uint256",
           "bool",
         ],
         [
           zDAOConfig.token,
           zDAOConfig.amount,
           zDAOConfig.duration,
+          zDAOConfig.votingDelay,
           zDAOConfig.votingThreshold,
           zDAOConfig.minimumVotingParticipants,
           zDAOConfig.minimumTotalVotingTokens,
