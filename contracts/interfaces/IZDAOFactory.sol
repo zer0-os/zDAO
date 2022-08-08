@@ -6,6 +6,7 @@ interface IZDAOFactory {
   function addNewZDAO(
     uint256 _zDAOId,
     uint256 _zNA,
+    address _createdBy,
     address _gnosisSafe,
     bytes calldata _options
   ) external returns (address);

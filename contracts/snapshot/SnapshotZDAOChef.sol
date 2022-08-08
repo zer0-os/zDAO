@@ -9,6 +9,8 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   struct ZDAOInfo {
     /// @notice Unique id for looking up zDAO
     uint256 id;
+    /// @notice Address who created zDAO, is the first zDAO owner
+    address createdBy;
     /// @notice Snapshot block number on which zDAO has been created
     uint256 snapshot;
     /// @notice ENS name associated in snapshot
@@ -25,6 +27,18 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   mapping(uint256 => ZDAOInfo) public zDAOInfos;
 
   address public zDAORegistry;
+
+  /* -------------------------------------------------------------------------- */
+  /*                                   Events                                   */
+  /* -------------------------------------------------------------------------- */
+
+  event DAOCreated(
+    uint256 indexed _zDAOId,
+    uint256 _zNA,
+    address _createdBy,
+    address _gnosisSafe,
+    string _ensSpace
+  );
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -54,6 +68,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   function addNewZDAO(
     uint256 _zDAOId,
     uint256 _zNA,
+    address _createdBy,
     address _gnosisSafe,
     bytes calldata _options
   ) external onlyRegistry returns (address) {
@@ -64,6 +79,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
 
     zDAOInfos[_zDAOId] = ZDAOInfo({
       id: _zDAOId,
+      createdBy: _createdBy,
       snapshot: block.number,
       ensSpace: ensSpace,
       gnosisSafe: _gnosisSafe,
@@ -71,6 +87,8 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
     });
 
     ensToZDAOId[ensId] = _zDAOId;
+
+    emit DAOCreated(_zDAOId, _zNA, _createdBy, _gnosisSafe, ensSpace);
 
     return address(0);
   }

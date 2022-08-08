@@ -34,9 +34,9 @@ interface IZDAORegistry {
   event DAOCreated(
     uint256 indexed _platformType,
     uint256 indexed _zDAOId,
-    address indexed _gnosisSafe,
+    address indexed _zDAO,
     address _creator,
-    address _zDAO
+    address _gnosisSafe
   );
 
   event DAODestroyed(uint256 indexed _zDAOId);

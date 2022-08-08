@@ -32,6 +32,22 @@ interface IEthereumZDAOChef {
   /*                                   Events                                   */
   /* -------------------------------------------------------------------------- */
 
+  event DAOCreated(
+    uint256 indexed _zDAOId,
+    uint256 indexed _zNA,
+    address indexed _zDAO,
+    address _createdBy,
+    address _gnosisSafe,
+    address _token,
+    uint256 _amount,
+    uint256 _duration,
+    uint256 _votingDelay,
+    uint256 _votingThreshold,
+    uint256 _minimumVotingParticipants,
+    uint256 _minimumTotalVotingTokens,
+    bool _isRelativeMajority
+  );
+
   event ProposalCreated(
     uint256 indexed _zDAOId,
     uint256 indexed _proposalId,

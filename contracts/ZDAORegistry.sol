@@ -97,7 +97,13 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     assert(address(factory) != address(0));
 
     lastZDAOId++;
-    address zDAO = factory.addNewZDAO(lastZDAOId, _zNA, _gnosisSafe, _options);
+    address zDAO = factory.addNewZDAO(
+      lastZDAOId,
+      _zNA,
+      msg.sender,
+      _gnosisSafe,
+      _options
+    );
 
     zDAONames[namePacked] = true;
     zDAORecords[lastZDAOId] = ZDAORecord({
@@ -113,9 +119,9 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     emit DAOCreated(
       _platformType,
       lastZDAOId,
-      _gnosisSafe,
+      address(zDAO),
       msg.sender,
-      address(zDAO)
+      _gnosisSafe
     );
 
     // Associate zDAO with zNA

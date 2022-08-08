@@ -62,8 +62,8 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   function __ZDAO_init(
     address _zDAOChef,
     uint256 _zDAOId,
-    address _gnosisSafe,
     address _createdBy,
+    address _gnosisSafe,
     IEthereumZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();

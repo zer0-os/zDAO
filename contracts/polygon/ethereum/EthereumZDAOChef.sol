@@ -83,6 +83,7 @@ contract EthereumZDAOChef is
   function addNewZDAO(
     uint256 _zDAOId,
     uint256 _zNA,
+    address _createdBy,
     address _gnosisSafe,
     bytes calldata _options
   ) external override onlyRegistry returns (address) {
@@ -97,14 +98,30 @@ contract EthereumZDAOChef is
           IEthereumZDAO.__ZDAO_init.selector,
           address(this),
           _zDAOId,
+          _createdBy,
           _gnosisSafe,
-          msg.sender, // zDAO createdBy
           config
         )
       )
     );
 
     zDAOs[_zDAOId] = zDAO;
+
+    emit DAOCreated(
+      _zDAOId,
+      _zNA,
+      address(zDAO),
+      _createdBy,
+      _gnosisSafe,
+      config.token,
+      config.amount,
+      config.duration,
+      config.votingDelay,
+      config.votingThreshold,
+      config.minimumVotingParticipants,
+      config.minimumTotalVotingTokens,
+      config.isRelativeMajority
+    );
 
     // send zDAO info to L2
     ethereumStateSender.sendMessageToChild(
