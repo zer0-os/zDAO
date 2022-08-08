@@ -1,7 +1,10 @@
 type ZDAORecord @entity {
   id: ID!
-  ensSpace: String!
+  platformType: Int!
+  zDAOId: Int!
+  name: String!
   gnosisSafe: Bytes!
+  createdBy: Bytes!
   zNAs: [ZNAAssociation!]! @derivedFrom(field: "zDAORecord")
   destroyed: Boolean!
 }
@@ -14,7 +17,7 @@ type ZNAAssociation @entity {
 type ExecutedProposal @entity {
   id: ID!
   platformType: Int!
-  proposalId: String!
+  proposalHash: BigInt!
   token: Bytes!
   recipient: Bytes!
   amount: BigInt!

@@ -23,7 +23,7 @@ dataSources:
         - name: ZDAORegistry
           file: ./abis/ZDAORegistry.json
       eventHandlers:
-        - event: DAOCreated(indexed uint256,string,address)
+        - event: DAOCreated(indexed uint256,indexed uint256,indexed address,address,address)
           handler: handleDAOCreated
         - event: DAODestroyed(indexed uint256)
           handler: handleDAODestroyed
@@ -31,7 +31,7 @@ dataSources:
           handler: handleLinkAdded
         - event: LinkRemoved(indexed uint256,indexed uint256)
           handler: handleLinkRemoved
-      file: ./src/mapping.ts
+      file: ./src/mapping.registry.ts
 
   - kind: ethereum/contract
     name: ZDAOModule
@@ -50,6 +50,6 @@ dataSources:
         - name: ZDAOModule
           file: ./abis/ZDAOModule.json
       eventHandlers:
-        - event: ProposalExecuted(indexed uint256,string,address,address,uint256)
+        - event: ProposalExecuted(indexed uint256,uint256,address,address,uint256)
           handler: handleProposalExecuted
-      file: ./src/mapping.ts
+      file: ./src/mapping.module.ts

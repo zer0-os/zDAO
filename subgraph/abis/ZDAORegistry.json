@@ -7,21 +7,65 @@
       "anonymous": false,
       "inputs": [
         {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "daoId",
-          "type": "uint256"
-        },
-        {
           "indexed": false,
-          "internalType": "string",
-          "name": "ensSpace",
-          "type": "string"
+          "internalType": "address",
+          "name": "previousAdmin",
+          "type": "address"
         },
         {
           "indexed": false,
           "internalType": "address",
-          "name": "gnosisSafe",
+          "name": "newAdmin",
+          "type": "address"
+        }
+      ],
+      "name": "AdminChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "beacon",
+          "type": "address"
+        }
+      ],
+      "name": "BeaconUpgraded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_platformType",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_zDAO",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_creator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_gnosisSafe",
           "type": "address"
         }
       ],
@@ -34,7 +78,7 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         }
       ],
@@ -47,19 +91,13 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
-          "indexed": false,
-          "internalType": "string",
-          "name": "endSpace",
-          "type": "string"
-        },
-        {
-          "indexed": false,
+          "indexed": true,
           "internalType": "address",
-          "name": "gnosisSafe",
+          "name": "_gnosisSafe",
           "type": "address"
         }
       ],
@@ -72,13 +110,13 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
@@ -91,13 +129,13 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
@@ -124,19 +162,141 @@
       "type": "event"
     },
     {
+      "anonymous": false,
       "inputs": [
         {
-          "internalType": "string",
-          "name": "ensSpace",
-          "type": "string"
-        },
-        {
+          "indexed": false,
           "internalType": "address",
-          "name": "gnosisSafe",
+          "name": "account",
           "type": "address"
         }
       ],
-      "name": "addNewDAO",
+      "name": "Paused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "previousAdminRole",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "newAdminRole",
+          "type": "bytes32"
+        }
+      ],
+      "name": "RoleAdminChanged",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RoleGranted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        }
+      ],
+      "name": "RoleRevoked",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "Unpaused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "implementation",
+          "type": "address"
+        }
+      ],
+      "name": "Upgraded",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "DEFAULT_ADMIN_ROLE",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract IZNSHub",
+          "name": "_znsHub",
+          "type": "address"
+        }
+      ],
+      "name": "__ZDAORegistry_init",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -145,12 +305,63 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_platformType",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "_gnosisSafe",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes",
+          "name": "_options",
+          "type": "bytes"
+        }
+      ],
+      "name": "addNewZDAO",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "enum IZDAORegistry.PlatformType",
+          "name": "_platformType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "contract IZDAOFactory",
+          "name": "_factory",
+          "type": "address"
+        }
+      ],
+      "name": "addZDAOFactory",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
@@ -163,12 +374,12 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
@@ -181,12 +392,12 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
@@ -199,18 +410,18 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
-          "internalType": "string",
-          "name": "ensSpace",
-          "type": "string"
+          "internalType": "address",
+          "name": "_gnosisSafe",
+          "type": "address"
         },
         {
-          "internalType": "address",
-          "name": "gnosisSafe",
-          "type": "address"
+          "internalType": "bytes",
+          "name": "_options",
+          "type": "bytes"
         }
       ],
       "name": "adminModifyZDAO",
@@ -222,24 +433,11 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         }
       ],
-      "name": "adminRemoveDAO",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_znsHub",
-          "type": "address"
-        }
-      ],
-      "name": "adminSetZNSHub",
+      "name": "adminRemoveZDAO",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -248,11 +446,11 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
-      "name": "doeszDAOExistForzNA",
+      "name": "doesZDAOExistForZNA",
       "outputs": [
         {
           "internalType": "bool",
@@ -266,24 +464,48 @@
     {
       "inputs": [
         {
-          "internalType": "string",
-          "name": "ensSpace",
-          "type": "string"
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
         }
       ],
-      "name": "getzDAOByEns",
+      "name": "getRoleAdmin",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getZDAOById",
       "outputs": [
         {
           "components": [
+            {
+              "internalType": "uint256",
+              "name": "platformType",
+              "type": "uint256"
+            },
             {
               "internalType": "uint256",
               "name": "id",
               "type": "uint256"
             },
             {
-              "internalType": "string",
-              "name": "ensSpace",
-              "type": "string"
+              "internalType": "address",
+              "name": "zDAOOwnedBy",
+              "type": "address"
             },
             {
               "internalType": "address",
@@ -291,14 +513,19 @@
               "type": "address"
             },
             {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
             },
             {
               "internalType": "bool",
               "name": "destroyed",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "associatedzNAs",
+              "type": "uint256[]"
             }
           ],
           "internalType": "struct IZDAORegistry.ZDAORecord",
@@ -313,23 +540,28 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
-      "name": "getzDAOById",
+      "name": "getZDAOByZNA",
       "outputs": [
         {
           "components": [
+            {
+              "internalType": "uint256",
+              "name": "platformType",
+              "type": "uint256"
+            },
             {
               "internalType": "uint256",
               "name": "id",
               "type": "uint256"
             },
             {
-              "internalType": "string",
-              "name": "ensSpace",
-              "type": "string"
+              "internalType": "address",
+              "name": "zDAOOwnedBy",
+              "type": "address"
             },
             {
               "internalType": "address",
@@ -337,14 +569,19 @@
               "type": "address"
             },
             {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
             },
             {
               "internalType": "bool",
               "name": "destroyed",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "associatedzNAs",
+              "type": "uint256[]"
             }
           ],
           "internalType": "struct IZDAORegistry.ZDAORecord",
@@ -358,58 +595,17 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
-          "name": "zNA",
-          "type": "uint256"
-        }
-      ],
-      "name": "getzDaoByZNA",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string",
-              "name": "ensSpace",
-              "type": "string"
-            },
-            {
-              "internalType": "address",
-              "name": "gnosisSafe",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
-            },
-            {
-              "internalType": "bool",
-              "name": "destroyed",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct IZDAORegistry.ZDAORecord",
-          "name": "",
-          "type": "tuple"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
         {
           "internalType": "address",
-          "name": "_znsHub",
+          "name": "account",
           "type": "address"
         }
       ],
-      "name": "initialize",
+      "name": "grantRole",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -417,29 +613,71 @@
     {
       "inputs": [
         {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "hasRole",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "lastZDAOId",
+      "outputs": [
+        {
           "internalType": "uint256",
-          "name": "startIndex",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_startIndex",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "endIndex",
+          "name": "_count",
           "type": "uint256"
         }
       ],
-      "name": "listzDAOs",
+      "name": "listZDAOs",
       "outputs": [
         {
           "components": [
+            {
+              "internalType": "uint256",
+              "name": "platformType",
+              "type": "uint256"
+            },
             {
               "internalType": "uint256",
               "name": "id",
               "type": "uint256"
             },
             {
-              "internalType": "string",
-              "name": "ensSpace",
-              "type": "string"
+              "internalType": "address",
+              "name": "zDAOOwnedBy",
+              "type": "address"
             },
             {
               "internalType": "address",
@@ -447,18 +685,23 @@
               "type": "address"
             },
             {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
             },
             {
               "internalType": "bool",
               "name": "destroyed",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "associatedzNAs",
+              "type": "uint256[]"
             }
           ],
           "internalType": "struct IZDAORegistry.ZDAORecord[]",
-          "name": "",
+          "name": "records",
           "type": "tuple[]"
         }
       ],
@@ -492,15 +735,28 @@
       "type": "function"
     },
     {
+      "inputs": [],
+      "name": "paused",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "daoId",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "zNA",
+          "name": "_zNA",
           "type": "uint256"
         }
       ],
@@ -519,6 +775,74 @@
     {
       "inputs": [
         {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "renounceRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "role",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "revokeRole",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_znsHub",
+          "type": "address"
+        }
+      ],
+      "name": "setZNSHub",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes4",
+          "name": "interfaceId",
+          "type": "bytes4"
+        }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "newOwner",
           "type": "address"
@@ -527,6 +851,88 @@
       "name": "transferOwnership",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        }
+      ],
+      "name": "upgradeTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newImplementation",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes",
+          "name": "data",
+          "type": "bytes"
+        }
+      ],
+      "name": "upgradeToAndCall",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "version",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "zDAOFactories",
+      "outputs": [
+        {
+          "internalType": "contract IZDAOFactory",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "zDAONames",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -541,13 +947,18 @@
       "outputs": [
         {
           "internalType": "uint256",
+          "name": "platformType",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
           "name": "id",
           "type": "uint256"
         },
         {
-          "internalType": "string",
-          "name": "ensSpace",
-          "type": "string"
+          "internalType": "address",
+          "name": "zDAOOwnedBy",
+          "type": "address"
         },
         {
           "internalType": "address",
@@ -555,9 +966,33 @@
           "type": "address"
         },
         {
+          "internalType": "string",
+          "name": "name",
+          "type": "string"
+        },
+        {
           "internalType": "bool",
           "name": "destroyed",
           "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "zNATozDAOId",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
