@@ -22,7 +22,7 @@ const main = async () => {
     const ZDAOModuleFactory = await ethers.getContractFactory("ZDAOModule");
     const zDAOModule = (await upgrades.deployProxy(
       ZDAOModuleFactory,
-      [config.module[network.name].gnosisSafeProxy, config.module[network.name].organizer],
+      [config.module[network.name].gnosisSafeProxy],
       {
         kind: "uups",
         initializer: "__ZDAOModule_init",

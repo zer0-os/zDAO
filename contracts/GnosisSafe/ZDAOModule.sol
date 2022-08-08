@@ -22,7 +22,7 @@ contract ZDAOModule is IZDAOModule, Module, UUPSUpgradeable {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOModule_init(address _gnosisSafeProxy, address _organizer) public initializer {
+  function __ZDAOModule_init(address _gnosisSafeProxy) public initializer {
     __Ownable_init();
 
     bytes memory initializeParams = abi.encode(_gnosisSafeProxy);
