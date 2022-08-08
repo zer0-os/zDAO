@@ -88,6 +88,8 @@ interface IEthereumZDAO {
     IEthereumZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external;
 
+  function setZDAOModule(IZDAOModule _zDAOModule) external;
+
   function setDestroyed(bool _destroyed) external;
 
   function modifyZDAO(

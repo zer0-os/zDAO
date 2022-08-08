@@ -43,7 +43,7 @@ contract EthereumZDAOChef is
     require(_zDAOId > 0 && !_isZDAODestroyed(_zDAOId), "Invalid zDAO");
     _;
   }
- 
+
   /* -------------------------------------------------------------------------- */
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
@@ -66,12 +66,25 @@ contract EthereumZDAOChef is
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setZDAORegistry(address _zDAORgistry) external onlyOwner {
+  function setZDAORegistry(address _zDAORgistry) external override onlyOwner {
     zDAORegistry = _zDAORgistry;
   }
 
-  function setZDAOBase(address _zDAOBase) external onlyOwner {
+  function setZDAOBase(address _zDAOBase) external override onlyOwner {
     zDAOBase = _zDAOBase;
+  }
+
+  function setZDAOModule(IZDAOModule _zDAOModule) external override onlyOwner {
+    zDAOModule = _zDAOModule;
+  }
+
+  function setZDAOModuleById(uint256 _zDAOId, IZDAOModule _zDAOModule)
+    external
+    override
+    onlyOwner
+  {
+    require(zDAOModule == _zDAOModule, "Invalid zDAOModule address");
+    zDAOs[_zDAOId].setZDAOModule(_zDAOModule);
   }
 
   /**

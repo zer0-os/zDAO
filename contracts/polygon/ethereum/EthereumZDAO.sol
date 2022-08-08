@@ -95,6 +95,14 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setZDAOModule(IZDAOModule _zDAOModule)
+    external
+    override
+    onlyZDAOChef
+  {
+    zDAOModule = _zDAOModule;
+  }
+
   /**
    * @notice Destroy the zDAO
    * @dev Callable by EthereumZDAOChef

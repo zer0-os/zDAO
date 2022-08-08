@@ -81,6 +81,7 @@ contract PolygonZDAOChef is
     external
     onlyOwner
   {
+    require(staking == _staking, "Invalid staking address");
     zDAOs[_zDAOId].setStaking(address(_staking));
 
     emit DAOStakingUpdated(_zDAOId, address(_staking));
