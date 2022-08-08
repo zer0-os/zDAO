@@ -2,7 +2,7 @@ import {
   DAOCreated, DAODestroyed, LinkAdded, LinkRemoved
 } from "../generated/ZDAORegistry/ZDAORegistry";
 import { ZDAORecord, ZNAAssociation } from "../generated/schema";
-import { log, store } from "@graphprotocol/graph-ts";
+import { Bytes, log, store } from "@graphprotocol/graph-ts";
 
 export function handleDAOCreated(event: DAOCreated): void {
   const zDAOId = event.params.daoId.toString();
@@ -11,8 +11,10 @@ export function handleDAOCreated(event: DAOCreated): void {
 
   const zDAO: ZDAORecord = new ZDAORecord(zDAOId);
   zDAO.id = zDAOId;
-  zDAO.ensSpace = event.params.ensSpace;
+  zDAO.platformType = 0; // 0: Snapshot
+  zDAO.name = event.params.ensSpace;
   zDAO.gnosisSafe = event.params.gnosisSafe;
+  zDAO.createdBy = Bytes.empty();
   zDAO.destroyed = false;
   zDAO.save();
 }
