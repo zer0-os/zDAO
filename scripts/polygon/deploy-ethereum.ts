@@ -55,6 +55,7 @@ const main = async () => {
       ZDAOChefFactory,
       [
         config[network.name].zDAORegistry,
+        config[network.name].zDAOModule,
         fxStateEthereumTunnel.address,
         zDAOBase.address,
       ],
