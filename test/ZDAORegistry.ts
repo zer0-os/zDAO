@@ -245,7 +245,9 @@ describe("ZDAORegistry", function () {
 
       rootZDAOChef =
         (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
-      zDAOModule = await smock.fake("IZDAOModule") as FakeContract<IZDAOModule>;
+      zDAOModule = (await smock.fake(
+        "IZDAOModule"
+      )) as FakeContract<IZDAOModule>;
       await rootZDAOChef.__ZDAOChef_init(
         zDAORegistry.address,
         ethereumStateSender.address,

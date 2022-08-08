@@ -49,7 +49,7 @@ describe("ZDAO", async function () {
       "IERC20Upgradeable"
     )) as FakeContract<IERC20Upgradeable>;
 
-    zDAOModule = await smock.fake("IZDAOModule") as FakeContract<IZDAOModule>;
+    zDAOModule = (await smock.fake("IZDAOModule")) as FakeContract<IZDAOModule>;
 
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");

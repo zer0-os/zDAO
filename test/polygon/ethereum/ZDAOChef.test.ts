@@ -66,7 +66,7 @@ describe("ZDAOChef", async function () {
     const zDAORegistry = await ethers.Wallet.createRandom().getAddress();
     zDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
-    zDAOModule = await smock.fake("IZDAOModule") as FakeContract<IZDAOModule>;
+    zDAOModule = (await smock.fake("IZDAOModule")) as FakeContract<IZDAOModule>;
     await zDAOChef.__ZDAOChef_init(
       zDAORegistry,
       ethereumStateSender.address,
@@ -113,45 +113,45 @@ describe("ZDAOChef", async function () {
     zDAOId: number
   ): Promise<ContractTransaction> => {
     await zDAOChef.setVariable("zDAORegistry", user.address);
-    return zDAOChef.connect(user).addNewZDAO(
-      zDAOId,
-      zNAAsNumber,
-      user.address,
-      gnosisSafe,
-      ethers.utils.defaultAbiCoder.encode(
-        [
-          "address",
-          "uint256",
-          "uint256",
-          "uint256",
-          "uint256",
-          "uint256",
-          "uint256",
-          "bool",
-        ],
-        [
-          zDAOConfig.token,
-          zDAOConfig.amount,
-          zDAOConfig.duration,
-          zDAOConfig.votingDelay,
-          zDAOConfig.votingThreshold,
-          zDAOConfig.minimumVotingParticipants,
-          zDAOConfig.minimumTotalVotingTokens,
-          zDAOConfig.isRelativeMajority,
-        ]
-      )
-    );
+    return zDAOChef
+      .connect(user)
+      .addNewZDAO(
+        zDAOId,
+        zNAAsNumber,
+        user.address,
+        gnosisSafe,
+        ethers.utils.defaultAbiCoder.encode(
+          [
+            "address",
+            "uint256",
+            "uint256",
+            "uint256",
+            "uint256",
+            "uint256",
+            "uint256",
+            "bool",
+          ],
+          [
+            zDAOConfig.token,
+            zDAOConfig.amount,
+            zDAOConfig.duration,
+            zDAOConfig.votingDelay,
+            zDAOConfig.votingThreshold,
+            zDAOConfig.minimumVotingParticipants,
+            zDAOConfig.minimumTotalVotingTokens,
+            zDAOConfig.isRelativeMajority,
+          ]
+        )
+      );
   };
 
   const createProposal = (
     user: SignerWithAddress,
     daoId: number
   ): Promise<ContractTransaction> => {
-    return zDAOChef.connect(user).createProposal(
-      daoId,
-      proposalConfig.choices,
-      proposalConfig.ipfs
-    );
+    return zDAOChef
+      .connect(user)
+      .createProposal(daoId, proposalConfig.choices, proposalConfig.ipfs);
   };
 
   it("Should not add same DAO twice", async function () {
@@ -166,14 +166,16 @@ describe("ZDAOChef", async function () {
     const newGnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
     await expect(
-      zDAOChef.connect(zNAOwner).modifyZDAO(
-        1,
-        newGnosisSafe,
-        ethers.utils.defaultAbiCoder.encode(
-          ["address", "uint256"],
-          [zDAOConfig.token, zDAOConfig.amount]
+      zDAOChef
+        .connect(zNAOwner)
+        .modifyZDAO(
+          1,
+          newGnosisSafe,
+          ethers.utils.defaultAbiCoder.encode(
+            ["address", "uint256"],
+            [zDAOConfig.token, zDAOConfig.amount]
+          )
         )
-      )
     ).to.be.not.reverted;
   });
 
@@ -344,7 +346,9 @@ describe("ZDAOChef", async function () {
       )
     ).to.be.not.reverted;
 
-    zDAOModule.isProposalExecuted.whenCalledWith(PlatformType.Polygon, proposalId).returns(true);
+    zDAOModule.isProposalExecuted
+      .whenCalledWith(PlatformType.Polygon, proposalId)
+      .returns(true);
 
     const state = await zDAO.state(proposalId);
     expect(state).to.be.equal(3); // ProposalState.Executed

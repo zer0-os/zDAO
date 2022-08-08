@@ -20,7 +20,13 @@ export interface CreateZDAOPack {
 export const encodeCreateZDAO = (pack: CreateZDAOPack): string => {
   return ethers.utils.defaultAbiCoder.encode(
     ["uint256", "uint256", "uint256", "uint256", "address"],
-    [MessageType.CreateZDAO, pack.lastZDAOId, pack.duration, pack.votingDelay, pack.token]
+    [
+      MessageType.CreateZDAO,
+      pack.lastZDAOId,
+      pack.duration,
+      pack.votingDelay,
+      pack.token,
+    ]
   );
 };
 
@@ -50,7 +56,7 @@ export const encodeCreateProposal = (pack: CreateProposalPack): string => {
       pack.zDAOId,
       pack.proposalId,
       pack.numberOfChoices,
-      pack.proposalCreated
+      pack.proposalCreated,
     ]
   );
 };

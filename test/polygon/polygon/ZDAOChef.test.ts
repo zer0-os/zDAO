@@ -95,7 +95,7 @@ describe("ZDAOChef", async function () {
       zDAOId: 1,
       proposalId: 1,
       numberOfChoices: 3,
-      proposalCreated: await now()
+      proposalCreated: await now(),
     };
   });
 
