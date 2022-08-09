@@ -4,14 +4,22 @@ import {
 import { ZDAORecord, ZNAAssociation } from "../generated/schema";
 import { Bytes, log, store } from "@graphprotocol/graph-ts";
 
+function generateZDAORecordID(platformType: number, zDAOId: number): string {
+  const id = `${platformType.toString()}-${zDAOId.toString()}`;
+  return id;
+}
+
 export function handleDAOCreated(event: DAOCreated): void {
-  const zDAOId = event.params.daoId.toString();
+  const platformType = 0; // 0: Snapshot
+  const zDAOId = event.params.daoId.toI32();
+  const id = generateZDAORecordID(platformType, zDAOId);
 
-  log.info("handleDAOCreated, called {}", [zDAOId]);
+  log.info("handleDAOCreated, called {}", [id]);
 
-  const zDAO: ZDAORecord = new ZDAORecord(zDAOId);
-  zDAO.id = zDAOId;
-  zDAO.platformType = 0; // 0: Snapshot
+  const zDAO: ZDAORecord = new ZDAORecord(id);
+  zDAO.id = id;
+  zDAO.platformType = platformType;
+  zDAO.zDAOId = zDAOId;
   zDAO.name = event.params.ensSpace;
   zDAO.gnosisSafe = event.params.gnosisSafe;
   zDAO.createdBy = Bytes.empty();
@@ -20,58 +28,64 @@ export function handleDAOCreated(event: DAOCreated): void {
 }
 
 export function handleDAODestroyed(event: DAODestroyed): void {
-  const zDAOId = event.params.daoId.toString();
+  const platformType = 0; // 0: Snapshot
+  const zDAOId = event.params.daoId.toI32();
+  const id = generateZDAORecordID(platformType, zDAOId);
 
-  log.info("handleDAODestroyed, called {}", [zDAOId]);
+  log.info("handleDAODestroyed, called {}", [id]);
 
-  const zDAO: ZDAORecord | null = ZDAORecord.load(zDAOId);
+  const zDAO: ZDAORecord | null = ZDAORecord.load(id);
   if (zDAO) {
     zDAO.destroyed = true;
     zDAO.save();
   } else {
     log.error("handleDAODestroyed, Unable to load ZDAORecord with zDAOId {}, {}", [
-      zDAOId,
+      id,
       event.block.number.toString()
     ]);
   }
 }
 
 export function handleLinkAdded(event: LinkAdded): void {
-  const zDAOId = event.params.daoId.toString();
+  const platformType = 0; // 0: Snapshot
+  const zDAOId = event.params.daoId.toI32();
+  const zDAORecordId = generateZDAORecordID(platformType, zDAOId);
   const zNAId = event.params.zNA.toHexString();
 
-  log.info("handleLinkAdded, called {}, {}", [zDAOId, zNAId]);
+  log.info("handleLinkAdded, called {}, {}", [zDAORecordId, zNAId]);
 
   let zNAAssociation: ZNAAssociation | null = ZNAAssociation.load(zNAId);
   if (!zNAAssociation) {
     zNAAssociation = new ZNAAssociation(zNAId);
   }
 
-  const zDAO: ZDAORecord | null = ZDAORecord.load(zDAOId);
+  const zDAO: ZDAORecord | null = ZDAORecord.load(zDAORecordId);
   if (!zDAO) {
     log.error("handleLinkAdded, Unable to load ZDAORecord with zDAOId {}, {}", [
-      zDAOId,
+      zDAORecordId,
       event.block.number.toString()
     ]);
     return;
   }
   if (zDAO.destroyed) {
     log.error("handleLinkAdded, zDAO {} was already destroyed, {}", [
-      zDAOId,
+      zDAORecordId,
       event.block.number.toString()
     ]);
     return;
   }
 
-  zNAAssociation.zDAORecord = zDAOId;
+  zNAAssociation.zDAORecord = zDAORecordId;
   zNAAssociation.save();
 }
 
 export function handleLinkRemoved(event: LinkRemoved): void {
-  const zDAOId = event.params.daoId.toString();
+  const platformType = 0; // 0: Snapshot
+  const zDAOId = event.params.daoId.toI32();
+  const zDAORecordId = generateZDAORecordID(platformType, zDAOId);
   const zNAId = event.params.zNA.toHexString();
 
-  log.info("handleLinkRemoved, called {}, {}", [zDAOId, zNAId]);
+  log.info("handleLinkRemoved, called {}, {}", [zDAORecordId, zNAId]);
 
   const zNAAssociation: ZNAAssociation | null = ZNAAssociation.load(zNAId);
   if (!zNAAssociation) {
@@ -82,17 +96,17 @@ export function handleLinkRemoved(event: LinkRemoved): void {
     return;
   }
   
-  const zDAO: ZDAORecord | null = ZDAORecord.load(zDAOId);
+  const zDAO: ZDAORecord | null = ZDAORecord.load(zDAORecordId);
   if (!zDAO) {
     log.error("handleLinkRemoved, Unable to load ZDAORecord with zDAOId {}, {}", [
-      zDAOId,
+      zDAORecordId,
       event.block.number.toString()
     ]);
     return;
   }
   if (zDAO.destroyed) {
     log.error("handleLinkRemoved, zDAO {} was already destroyed, {}", [
-      zDAOId,
+      zDAORecordId,
       event.block.number.toString()
     ]);
     return;
