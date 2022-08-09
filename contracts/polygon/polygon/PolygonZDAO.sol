@@ -240,7 +240,6 @@ contract PolygonZDAO is ZeroUpgradeable, IPolygonZDAO {
       voters: 0,
       snapshot: block.number,
       calculated: false,
-      executed: false,
       canceled: false,
       votes: new uint256[](_numberOfChoices)
     });
