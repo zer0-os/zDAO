@@ -1,6 +1,7 @@
 type ZDAORecord @entity {
   id: ID!
   platformType: Int!
+  zDAOId: Int!
   name: String!
   gnosisSafe: Bytes!
   createdBy: Bytes!
