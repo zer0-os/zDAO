@@ -2,15 +2,15 @@
 
 ## Example
 
-Subgraph: QmcTJZ1aqKTx5jPUnKUJ799BYwBpwbDya12GSseH8W4YdN
+Subgraph: QmS1mAWu6zWLhXwFqPedNt8sdKynJdgMbirWANdcdyXm25
 
-Deployed to https://thegraph.com/explorer/subgraph/deep-quality-dev/zdao-registry
+Deployed to https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby
 
 Subgraph endpoints:
 
-Queries (HTTP): https://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry
+Queries (HTTP): https://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby
 
-Subscriptions (WS): wss://api.thegraph.com/subgraphs/name/deep-quality-dev/zdao-registry
+Subscriptions (WS): wss://api.thegraph.com/subgraphs/name/zer0-os/zdao-registry-rinkeby
 
 ## Deploy on Local
 
@@ -32,6 +32,12 @@ Run docker
 
 ```
 docker-compose up -d
+```
+
+Check docker log
+
+```
+docker container logs <NODE NAME>
 ```
 
 ### Remove endpoint

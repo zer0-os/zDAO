@@ -1,13 +1,12 @@
 import {
-  DAOCreated, DAODestroyed, LinkAdded, LinkRemoved
+  DAOCreated,
+  DAODestroyed,
+  LinkAdded,
+  LinkRemoved,
 } from "../generated/ZDAORegistry/ZDAORegistry";
 import { ZDAORecord, ZNAAssociation } from "../generated/schema";
 import { Bytes, log, store } from "@graphprotocol/graph-ts";
-
-function generateZDAORecordID(platformType: number, zDAOId: number): string {
-  const id = `${platformType.toString()}-${zDAOId.toString()}`;
-  return id;
-}
+import { generateZDAORecordID } from "./shared/utils";
 
 export function handleDAOCreated(event: DAOCreated): void {
   const platformType = event.params._platformType.toI32(); // 0: Snapshot
@@ -20,7 +19,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.id = id;
   zDAO.platformType = platformType;
   zDAO.zDAOId = zDAOId;
-  zDAO.name = '';
+  zDAO.name = "";
   zDAO.gnosisSafe = event.params._gnosisSafe;
   zDAO.createdBy = Bytes.empty();
   zDAO.destroyed = false;
@@ -39,10 +38,10 @@ export function handleDAODestroyed(event: DAODestroyed): void {
     zDAO.destroyed = true;
     zDAO.save();
   } else {
-    log.error("handleDAODestroyed, Unable to load ZDAORecord with zDAOId {}, {}", [
-      id,
-      event.block.number.toString()
-    ]);
+    log.error(
+      "handleDAODestroyed, Unable to load ZDAORecord with zDAOId {}, {}",
+      [id, event.block.number.toString()]
+    );
   }
 }
 
@@ -63,14 +62,14 @@ export function handleLinkAdded(event: LinkAdded): void {
   if (!zDAO) {
     log.error("handleLinkAdded, Unable to load ZDAORecord with zDAOId {}, {}", [
       zDAORecordId,
-      event.block.number.toString()
+      event.block.number.toString(),
     ]);
     return;
   }
   if (zDAO.destroyed) {
     log.error("handleLinkAdded, zDAO {} was already destroyed, {}", [
       zDAORecordId,
-      event.block.number.toString()
+      event.block.number.toString(),
     ]);
     return;
   }
@@ -91,26 +90,26 @@ export function handleLinkRemoved(event: LinkRemoved): void {
   if (!zNAAssociation) {
     log.error("handleLinkRemoved, Unable to load associated zNA {}, {}", [
       zNAId,
-      event.block.number.toString()
+      event.block.number.toString(),
     ]);
     return;
   }
-  
+
   const zDAO: ZDAORecord | null = ZDAORecord.load(zDAORecordId);
   if (!zDAO) {
-    log.error("handleLinkRemoved, Unable to load ZDAORecord with zDAOId {}, {}", [
-      zDAORecordId,
-      event.block.number.toString()
-    ]);
+    log.error(
+      "handleLinkRemoved, Unable to load ZDAORecord with zDAOId {}, {}",
+      [zDAORecordId, event.block.number.toString()]
+    );
     return;
   }
   if (zDAO.destroyed) {
     log.error("handleLinkRemoved, zDAO {} was already destroyed, {}", [
       zDAORecordId,
-      event.block.number.toString()
+      event.block.number.toString(),
     ]);
     return;
   }
 
-  store.remove('ZNAAssociation', zNAId);
+  store.remove("ZNAAssociation", zNAId);
 }

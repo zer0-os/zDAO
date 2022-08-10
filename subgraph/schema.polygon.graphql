@@ -1,0 +1,34 @@
+type PolygonZDAO @entity {
+  id: ID!
+  platformType: Int!
+  zDAOId: Int!
+  token: Bytes!
+  duration: Int!
+  votingDelay: Int!
+  proposals: [PolygonProposal!]! @derivedFrom(field: "zDAO")
+  destroyed: Boolean!
+}
+
+type PolygonProposal @entity {
+  id: ID!
+  platformType: Int!
+  zDAO: PolygonZDAO!
+  proposalId: String!
+  numberOfChoices: Int!
+  startTimestamp: Int!
+  endTimestamp: Int!
+  voters: Int!
+  snapshot: Int!
+  canceled: Boolean!
+  calculated: Boolean!
+  sumOfVotes: [BigInt!]!
+  votes: [ProposalVote!]! @derivedFrom(field: "proposal")
+}
+
+type ProposalVote @entity {
+  id: ID!
+  proposal: PolygonProposal!
+  voter: Bytes!
+  choice: Int!
+  votingPower: BigInt!
+}
