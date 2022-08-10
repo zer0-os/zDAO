@@ -12,7 +12,9 @@ interface IPolygonZDAOChef {
   event DAOCreated(
     address indexed _zDAO,
     uint256 indexed _zDAOId,
-    uint256 _duration
+    address indexed _token,
+    uint256 _duration,
+    uint256 _votingDelay
   );
 
   event DAODestroyed(uint256 indexed _zDAOId);

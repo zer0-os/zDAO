@@ -65,7 +65,7 @@ interface IEthereumZDAOChef {
 
   event ProposalCalculated(
     uint256 indexed _zDAOId,
-    uint256 indexed _propoalId,
+    uint256 indexed _proposalId,
     uint256 _voters,
     uint256[] votes
   );

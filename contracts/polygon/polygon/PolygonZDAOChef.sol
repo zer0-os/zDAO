@@ -209,7 +209,7 @@ contract PolygonZDAOChef is
 
     zDAOs[zDAOId] = zDAO;
 
-    emit DAOCreated(address(zDAO), zDAOId, duration);
+    emit DAOCreated(address(zDAO), zDAOId, childToken, duration, votingDelay);
 
     return zDAO;
   }
