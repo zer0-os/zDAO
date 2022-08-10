@@ -202,7 +202,6 @@ describe("ZDAOChef", async function () {
     expect(proposals[0].votes[1].toNumber()).to.be.equal(0);
     expect(proposals[0].votes[2].toNumber()).to.be.equal(0);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
-    expect(proposals[0].executed).to.be.equal(false);
     expect(proposals[0].canceled).to.be.equal(false);
   });
 });
