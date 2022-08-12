@@ -39,13 +39,25 @@ interface IZDAORegistry {
     address _gnosisSafe
   );
 
-  event DAODestroyed(uint256 indexed _zDAOId);
+  event DAODestroyed(uint256 indexed _platformType, uint256 indexed _zDAOId);
 
-  event DAOModified(uint256 indexed _zDAOId, address indexed _gnosisSafe);
+  event DAOModified(
+    uint256 indexed _platformType,
+    uint256 indexed _zDAOId,
+    address indexed _gnosisSafe
+  );
 
-  event LinkAdded(uint256 indexed _zDAOId, uint256 indexed _zNA);
+  event LinkAdded(
+    uint256 indexed _platformType,
+    uint256 indexed _zDAOId,
+    uint256 indexed _zNA
+  );
 
-  event LinkRemoved(uint256 indexed _zDAOId, uint256 indexed _zNA);
+  event LinkRemoved(
+    uint256 indexed _platformType,
+    uint256 indexed _zDAOId,
+    uint256 indexed _zNA
+  );
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */

@@ -10,7 +10,7 @@ function generateZDAORecordID(platformType: number, zDAOId: number): string {
 }
 
 export function handleDAOCreated(event: DAOCreated): void {
-  const platformType = event.params._platformType.toI32(); // 0: Snapshot
+  const platformType = event.params._platformType.toI32();
   const zDAOId = event.params._zDAOId.toI32();
   const id = generateZDAORecordID(platformType, zDAOId);
 
