@@ -1,11 +1,11 @@
 {
   "network": "goerli",
-  "ZDAORegistry_address": "0xd04B0A93E42345F689d5278AB1c6661D5B540920",
-  "ZDAORegistry_start_block": 7391197,
+  "ZDAORegistry_address": "0x96c027373845eB79686bfD984EEed33D825296CA",
+  "ZDAORegistry_start_block": 7391647,
   "ZDAOModule_address": "0x97199c4d45037c1D12F24048Ea8a19A564A4b661",
   "ZDAOModule_start_block": 7366714,
-  "EthereumZDAOChef_address": "0x3760E3Ee7c6542A782D49EC4F0c2C92c9647c2df",
-  "EthereumZDAOChef_start_block": 7391223,
+  "EthereumZDAOChef_address": "0x9a586ec0d2144B5E6926a4Cfc62bF32aE374652F",
+  "EthereumZDAOChef_start_block": 7391671,
   "SnapshotZDAOChef_address": "0x0000000000000000000000000000000000000000",
   "SnapshotZDAOChef_start_block": 7390807
 }
