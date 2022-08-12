@@ -121,7 +121,8 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
       lastZDAOId,
       address(zDAO),
       msg.sender,
-      _gnosisSafe
+      _gnosisSafe,
+      _name
     );
 
     // Associate zDAO with zNA
