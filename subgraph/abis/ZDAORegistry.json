@@ -67,6 +67,12 @@
           "internalType": "address",
           "name": "_gnosisSafe",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
         }
       ],
       "name": "DAOCreated",

@@ -11,6 +11,7 @@ import { generateZDAORecordID } from "./shared/utils";
 export function handleDAOCreated(event: DAOCreated): void {
   const platformType = event.params._platformType.toI32(); // 0: Snapshot
   const zDAOId = event.params._zDAOId.toI32();
+  const name = event.params._name;
   const id = generateZDAORecordID(platformType, zDAOId);
 
   log.info("handleDAOCreated, called {}", [id]);
@@ -19,7 +20,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.id = id;
   zDAO.platformType = platformType;
   zDAO.zDAOId = zDAOId;
-  zDAO.name = "";
+  zDAO.name = name;
   zDAO.gnosisSafe = event.params._gnosisSafe;
   zDAO.createdBy = Bytes.empty();
   zDAO.destroyed = false;

@@ -23,7 +23,7 @@ dataSources:
         - name: ZDAORegistry
           file: ./abis/ZDAORegistry.json
       eventHandlers:
-        - event: DAOCreated(indexed uint256,indexed uint256,indexed address,address,address)
+        - event: DAOCreated(indexed uint256,indexed uint256,indexed address,address,address,string)
           handler: handleDAOCreated
         - event: DAODestroyed(indexed uint256,indexed uint256)
           handler: handleDAODestroyed
