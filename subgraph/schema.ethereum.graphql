@@ -23,7 +23,7 @@ type ExecutedProposal @entity {
   amount: BigInt!
 }
 
-type ZDAO @entity {
+interface ZDAO {
   id: ID!
   zDAORecord: ZDAORecord!
   createdBy: Bytes!

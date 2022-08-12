@@ -1,7 +1,7 @@
 version: '3'
 services:
   graph-node:
-    container_name: zDAO
+    container_name: zDAO-goerli
     image: graphprotocol/graph-node
     ports:
       - '8000:8000'
@@ -20,7 +20,7 @@ services:
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
-      ethereum: "rinkeby:https://eth-rinkeby.alchemyapi.io/v2/l1u0wuvuvoqtYye4fFuY9C3NGZFKWhXC"
+      ethereum: "goerli:https://eth-goerli.alchemyapi.io/v2/31rH3AAc0dhVDgaiw3azbIolhFSeMHZZ"
       GRAPH_LOG: info
   ipfs:
     image: ipfs/go-ipfs:v0.10.0
