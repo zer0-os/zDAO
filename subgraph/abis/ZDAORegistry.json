@@ -78,6 +78,12 @@
         {
           "indexed": true,
           "internalType": "uint256",
+          "name": "_platformType",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_zDAOId",
           "type": "uint256"
         }
@@ -88,6 +94,12 @@
     {
       "anonymous": false,
       "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_platformType",
+          "type": "uint256"
+        },
         {
           "indexed": true,
           "internalType": "uint256",
@@ -110,6 +122,12 @@
         {
           "indexed": true,
           "internalType": "uint256",
+          "name": "_platformType",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
           "name": "_zDAOId",
           "type": "uint256"
         },
@@ -126,6 +144,12 @@
     {
       "anonymous": false,
       "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_platformType",
+          "type": "uint256"
+        },
         {
           "indexed": true,
           "internalType": "uint256",

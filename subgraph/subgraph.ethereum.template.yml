@@ -25,11 +25,11 @@ dataSources:
       eventHandlers:
         - event: DAOCreated(indexed uint256,indexed uint256,indexed address,address,address)
           handler: handleDAOCreated
-        - event: DAODestroyed(indexed uint256)
+        - event: DAODestroyed(indexed uint256,indexed uint256)
           handler: handleDAODestroyed
-        - event: LinkAdded(indexed uint256,indexed uint256)
+        - event: LinkAdded(indexed uint256,indexed uint256,indexed uint256)
           handler: handleLinkAdded
-        - event: LinkRemoved(indexed uint256,indexed uint256)
+        - event: LinkRemoved(indexed uint256,indexed uint256,indexed uint256)
           handler: handleLinkRemoved
       file: ./src/mapping.registry.ts
 

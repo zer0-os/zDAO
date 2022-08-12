@@ -27,7 +27,7 @@ export function handleDAOCreated(event: DAOCreated): void {
 }
 
 export function handleDAODestroyed(event: DAODestroyed): void {
-  const platformType = 0; // 0: Snapshot
+  const platformType = event.params._platformType.toI32();
   const zDAOId = event.params._zDAOId.toI32();
   const id = generateZDAORecordID(platformType, zDAOId);
 
@@ -46,7 +46,7 @@ export function handleDAODestroyed(event: DAODestroyed): void {
 }
 
 export function handleLinkAdded(event: LinkAdded): void {
-  const platformType = 0; // 0: Snapshot
+  const platformType = event.params._platformType.toI32();
   const zDAOId = event.params._zDAOId.toI32();
   const zDAORecordId = generateZDAORecordID(platformType, zDAOId);
   const zNAId = event.params._zNA.toHexString();
@@ -79,7 +79,7 @@ export function handleLinkAdded(event: LinkAdded): void {
 }
 
 export function handleLinkRemoved(event: LinkRemoved): void {
-  const platformType = 0; // 0: Snapshot
+  const platformType = event.params._platformType.toI32();
   const zDAOId = event.params._zDAOId.toI32();
   const zDAORecordId = generateZDAORecordID(platformType, zDAOId);
   const zNAId = event.params._zNA.toHexString();
