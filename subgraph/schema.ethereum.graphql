@@ -58,6 +58,7 @@ type EthereumProposal @entity {
   numberOfChoices: Int!
   createdBy: Bytes!
   snapshot: Int!
+  ipfs: String!
   created: Int!
   canceled: Boolean!
   calculated: Boolean!

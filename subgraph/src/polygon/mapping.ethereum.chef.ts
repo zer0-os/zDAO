@@ -61,6 +61,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   const numberOfChoices = event.params._numberOfChoices.toI32();
   const createdBy = event.params._createdBy;
   const snapshot = event.params._snapshot.toI32();
+  const ipfs = event.params._ipfs;
 
   log.info("handleProposalCreated, called {}, {}, {}", [
     platformType.toString(),
@@ -75,6 +76,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   proposal.numberOfChoices = numberOfChoices;
   proposal.createdBy = createdBy;
   proposal.snapshot = snapshot;
+  proposal.ipfs = ipfs;
   proposal.created = event.block.timestamp.toI32();
   proposal.canceled = false;
   proposal.calculated = false;

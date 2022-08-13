@@ -74,7 +74,7 @@ dataSources:
       eventHandlers:
         - event: DAOCreated(indexed uint256,indexed uint256,indexed address,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bool)
           handler: handleDAOCreated
-        - event: ProposalCreated(indexed uint256,indexed uint256,indexed uint256,address,uint256)
+        - event: ProposalCreated(indexed uint256,indexed uint256,indexed uint256,address,uint256,string)
           handler: handleProposalCreated
         - event: ProposalCanceled(indexed uint256,indexed uint256,indexed address)
           handler: handleProposalCanceled

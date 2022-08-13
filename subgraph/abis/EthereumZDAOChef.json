@@ -240,6 +240,12 @@
           "internalType": "uint256",
           "name": "_snapshot",
           "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "_ipfs",
+          "type": "string"
         }
       ],
       "name": "ProposalCreated",
