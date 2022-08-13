@@ -54,7 +54,8 @@ interface IEthereumZDAOChef {
     uint256 indexed _proposalId,
     uint256 indexed _numberOfChoices,
     address _createdBy,
-    uint256 _snapshot
+    uint256 _snapshot,
+    string _ipfs
   );
 
   event ProposalCanceled(

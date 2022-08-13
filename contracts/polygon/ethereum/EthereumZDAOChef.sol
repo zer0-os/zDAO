@@ -213,7 +213,8 @@ contract EthereumZDAOChef is
       proposalId,
       _choices.length,
       msg.sender,
-      uint256(block.number)
+      uint256(block.number),
+      _ipfs
     );
 
     // send proposal info to L2
