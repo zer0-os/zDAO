@@ -24,6 +24,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   const id = generateZDAOID(platformType, zDAOId);
   const zDAO: SnapshotZDAO = new SnapshotZDAO(id);
   zDAO.zDAORecord = generateZDAORecordID(platformType, zDAOId);
+  zDAO.zDAOId = zDAOId;
   zDAO.createdBy = createdBy;
   zDAO.gnosisSafe = gnosisSafe;
   zDAO.ensSpace = ensSpace;

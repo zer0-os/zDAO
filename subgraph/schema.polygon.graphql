@@ -5,6 +5,7 @@ type PolygonZDAO @entity {
   token: Bytes!
   duration: Int!
   votingDelay: Int!
+  snapshot: Int!
   proposals: [PolygonProposal!]! @derivedFrom(field: "zDAO")
   destroyed: Boolean!
 }

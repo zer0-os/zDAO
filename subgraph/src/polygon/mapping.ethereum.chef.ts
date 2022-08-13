@@ -27,6 +27,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   const minimumVotingParticipants =
     event.params._minimumVotingParticipants.toI32();
   const minimumTotalVotingTokens = event.params._duration;
+  const isRelativeMajority = event.params._isRelativeMajority;
 
   log.info("handleDAOCreated, called {}, {}", [
     platformType.toString(),
@@ -36,6 +37,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   const id = generateZDAOID(platformType, zDAOId);
   const zDAO: EthereumZDAO = new EthereumZDAO(id);
   zDAO.zDAORecord = generateZDAORecordID(platformType, zDAOId);
+  zDAO.zDAOId = zDAOId;
   zDAO.createdBy = createdBy;
   zDAO.gnosisSafe = gnosisSafe;
   zDAO.token = token;
@@ -45,6 +47,8 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.votingThreshold = votingThreshold;
   zDAO.minimumVotingParticipants = minimumVotingParticipants;
   zDAO.minimumTotalVotingTokens = minimumTotalVotingTokens;
+  zDAO.isRelativeMajority = isRelativeMajority;
+  zDAO.snapshot = event.block.number.toI32();
   zDAO.destroyed = false;
 
   zDAO.save();
@@ -71,6 +75,7 @@ export function handleProposalCreated(event: ProposalCreated): void {
   proposal.numberOfChoices = numberOfChoices;
   proposal.createdBy = createdBy;
   proposal.snapshot = snapshot;
+  proposal.created = event.block.timestamp.toI32();
   proposal.canceled = false;
   proposal.calculated = false;
   proposal.save();

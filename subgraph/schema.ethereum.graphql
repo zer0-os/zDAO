@@ -26,6 +26,7 @@ type ExecutedProposal @entity {
 interface ZDAO {
   id: ID!
   zDAORecord: ZDAORecord!
+  zDAOId: Int!
   createdBy: Bytes!
   gnosisSafe: Bytes!
   destroyed: Boolean!
@@ -34,6 +35,7 @@ interface ZDAO {
 type EthereumZDAO implements ZDAO @entity {
   id: ID!
   zDAORecord: ZDAORecord!
+  zDAOId: Int!
   createdBy: Bytes!
   gnosisSafe: Bytes!
   destroyed: Boolean!
@@ -44,6 +46,8 @@ type EthereumZDAO implements ZDAO @entity {
   votingThreshold: Int!
   minimumVotingParticipants: Int!
   minimumTotalVotingTokens: BigInt!
+  isRelativeMajority: Boolean!
+  snapshot: Int!
   proposals: [EthereumProposal!]! @derivedFrom(field: "zDAO")
 }
 
@@ -54,6 +58,7 @@ type EthereumProposal @entity {
   numberOfChoices: Int!
   createdBy: Bytes!
   snapshot: Int!
+  created: Int!
   canceled: Boolean!
   calculated: Boolean!
 }
@@ -61,6 +66,7 @@ type EthereumProposal @entity {
 type SnapshotZDAO implements ZDAO @entity {
   id: ID!
   zDAORecord: ZDAORecord!
+  zDAOId: Int!
   createdBy: Bytes!
   gnosisSafe: Bytes!
   destroyed: Boolean!

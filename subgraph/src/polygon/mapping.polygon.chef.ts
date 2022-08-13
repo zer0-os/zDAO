@@ -37,6 +37,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.token = token;
   zDAO.duration = duration;
   zDAO.votingDelay = votingDelay;
+  zDAO.snapshot = event.block.number.toI32();
   zDAO.destroyed = false;
 
   zDAO.save();
@@ -76,13 +77,15 @@ export function handleProposalCreated(event: ProposalCreated): void {
     proposalCreated + zDAO.votingDelay > currentTimestamp
       ? proposalCreated + zDAO.votingDelay
       : currentTimestamp;
+  proposal.endTimestamp = proposal.startTimestamp + zDAO.duration;
   proposal.snapshot = event.block.number.toI32();
   proposal.canceled = false;
   proposal.calculated = false;
-  proposal.sumOfVotes = new Array<BigInt>(proposal.numberOfChoices);
+  const sumOfVotes = new Array<BigInt>(proposal.numberOfChoices);
   for (let i = 0; i < proposal.numberOfChoices; i++) {
-    proposal.sumOfVotes[i] = BigInt.fromI32(0);
+    sumOfVotes[i] = BigInt.fromI32(0);
   }
+  proposal.sumOfVotes = sumOfVotes;
   proposal.save();
 }
 
