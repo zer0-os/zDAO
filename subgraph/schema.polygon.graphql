@@ -12,7 +12,6 @@ type PolygonZDAO @entity {
 
 type PolygonProposal @entity {
   id: ID!
-  platformType: Int!
   zDAO: PolygonZDAO!
   proposalId: String!
   numberOfChoices: Int!
