@@ -3,13 +3,12 @@ import { SnapshotZDAO } from "../../generated/schema";
 import { log } from "@graphprotocol/graph-ts";
 import { PlatformType } from "../shared/config";
 import {
-  generateProposalId,
   generateZDAOID,
   generateZDAORecordID,
 } from "../shared/utils";
 
 export function handleDAOCreated(event: DAOCreated): void {
-  const platformType = PlatformType.Polygon;
+  const platformType = PlatformType.Snapshot;
   const zDAOId = event.params._zDAOId.toI32();
   const zNA = event.params._zNA.toHexString();
   const createdBy = event.params._createdBy;
