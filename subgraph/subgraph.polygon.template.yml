@@ -19,7 +19,7 @@ dataSources:
       entities:
         - PolygonZDAO
         - PolygonProposal
-        - ProposalVote
+        - PolygonVote
       abis:
         - name: PolygonZDAOChef
           file: ./abis/PolygonZDAOChef.json

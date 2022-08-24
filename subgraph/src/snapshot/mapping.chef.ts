@@ -2,10 +2,7 @@ import { DAOCreated } from "../../generated/SnapshotZDAOChef/SnapshotZDAOChef";
 import { SnapshotZDAO } from "../../generated/schema";
 import { log } from "@graphprotocol/graph-ts";
 import { PlatformType } from "../shared/config";
-import {
-  generateZDAOID,
-  generateZDAORecordID,
-} from "../shared/utils";
+import { generateZDAOID, generateZDAORecordID } from "../shared/utils";
 
 export function handleDAOCreated(event: DAOCreated): void {
   const platformType = PlatformType.Snapshot;

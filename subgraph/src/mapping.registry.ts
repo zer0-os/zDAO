@@ -22,7 +22,7 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.zDAOId = zDAOId;
   zDAO.name = name;
   zDAO.gnosisSafe = event.params._gnosisSafe;
-  zDAO.createdBy = Bytes.empty();
+  zDAO.createdBy = event.params._creator;
   zDAO.destroyed = false;
   zDAO.save();
 }

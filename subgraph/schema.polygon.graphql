@@ -21,11 +21,12 @@ type PolygonProposal @entity {
   snapshot: Int!
   canceled: Boolean!
   calculated: Boolean!
+  calculatedTx: Bytes!
   sumOfVotes: [BigInt!]!
-  votes: [ProposalVote!]! @derivedFrom(field: "proposal")
+  votes: [PolygonVote!]! @derivedFrom(field: "proposal")
 }
 
-type ProposalVote @entity {
+type PolygonVote @entity {
   id: ID!
   proposal: PolygonProposal!
   voter: Bytes!

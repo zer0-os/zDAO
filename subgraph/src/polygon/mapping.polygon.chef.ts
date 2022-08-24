@@ -8,7 +8,7 @@ import {
 import {
   PolygonZDAO,
   PolygonProposal,
-  ProposalVote,
+  PolygonVote,
 } from "../../generated/schema";
 import { BigInt, log } from "@graphprotocol/graph-ts";
 import { PlatformType } from "../shared/config";
@@ -156,6 +156,7 @@ export function handleProposalCalculated(event: ProposalCalculated): void {
     return;
   }
   proposal.calculated = true;
+  proposal.calculatedTx = event.transaction.hash;
   proposal.save();
 }
 
@@ -203,10 +204,19 @@ export function handleCastVote(event: CastVote): void {
     proposalId,
     voter.toHexString()
   );
-  const vote = new ProposalVote(id);
+  let vote: PolygonVote | null = PolygonVote.load(id);
+  if (!vote) {
+    vote = new PolygonVote(id);
+    proposal.voters++;
+  }
   vote.proposal = pId;
   vote.voter = voter;
   vote.choice = choice;
   vote.votingPower = votingPower;
   vote.save();
+
+  const sumOfVotes = proposal.sumOfVotes;
+  sumOfVotes[choice - 1] = sumOfVotes[choice - 1].plus(votingPower);
+  proposal.sumOfVotes = sumOfVotes;
+  proposal.save();
 }
