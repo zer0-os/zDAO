@@ -6,8 +6,7 @@
     "build": "yarn run clean && yarn run compile",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
-    "deploy": "hardhat run scripts/deploy.ts --network",
-    "deploy-module": "hardhat run scripts/deploy-module.ts --network"
+    "deploy": "hardhat run scripts/deploy.ts --network"
   },
   "devDependencies": {
     "@defi-wonderland/smock": "2.0.7",
