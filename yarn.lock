@@ -972,31 +972,6 @@
     "@ethersproject/properties" "^5.6.0"
     "@ethersproject/strings" "^5.6.0"
 
-"@gnosis.pm/mock-contract@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.npmjs.org/@gnosis.pm/mock-contract/-/mock-contract-4.0.0.tgz"
-  integrity sha512-SkRq2KwPx6vo0LAjSc8JhgQstrQFXRyn2yqquIfub7r2WHi5nUbF8beeSSXsd36hvBcQxQfmOIYNYRpj9JOhrQ==
-
-"@gnosis.pm/safe-contracts@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/@gnosis.pm/safe-contracts/-/safe-contracts-1.3.0.tgz"
-  integrity sha512-1p+1HwGvxGUVzVkFjNzglwHrLNA67U/axP0Ct85FzzH8yhGJb4t9jDjPYocVMzLorDoWAfKicGy1akPY9jXRVw==
-
-"@gnosis.pm/zodiac@1.1.4":
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/@gnosis.pm/zodiac/-/zodiac-1.1.4.tgz#40d829837834d3d2c746003f1e34880a42d7f5bd"
-  integrity sha512-qELBXyD6lf3S0hcKnsiy4K5ThonBhgkTiKfhr57biO/NLLZOXf7HEXe/PA322jEMMYbohgWfcaFspUDQcVpfNA==
-  dependencies:
-    "@gnosis.pm/mock-contract" "^4.0.0"
-    "@gnosis.pm/safe-contracts" "1.3.0"
-    "@openzeppelin/contracts" "^4.3.2"
-    "@openzeppelin/contracts-upgradeable" "^4.2.0"
-    argv "^0.0.2"
-    dotenv "^8.0.0"
-    ethers "^5.4.6"
-    solc "^0.8.6"
-    yargs "^16.1.1"
-
 "@graphql-typed-document-node/core@^3.0.0":
   version "3.1.1"
   resolved "https://registry.npmjs.org/@graphql-typed-document-node/core/-/core-3.1.1.tgz"
@@ -1081,7 +1056,7 @@
     "@types/sinon-chai" "^3.2.3"
     "@types/web3" "1.0.19"
 
-"@openzeppelin/contracts-upgradeable@4.3.2", "@openzeppelin/contracts-upgradeable@^4.2.0":
+"@openzeppelin/contracts-upgradeable@4.3.2":
   version "4.3.2"
   resolved "https://registry.npmjs.org/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.3.2.tgz"
   integrity sha512-i/pOaOtcqDk4UqsrOv735uYyTbn6dvfiuVu5hstsgV6c4ZKUtu88/31zT2BzkCg+3JfcwOfgg2TtRKVKKZIGkQ==
@@ -1090,11 +1065,6 @@
   version "4.1.0"
   resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.1.0.tgz"
   integrity sha512-TihZitscnaHNcZgXGj9zDLDyCqjziytB4tMCwXq0XimfWkAjBYyk5/pOsDbbwcavhlc79HhpTEpQcrMnPVa1mw==
-
-"@openzeppelin/contracts@^4.3.2":
-  version "4.7.2"
-  resolved "https://registry.npmjs.org/@openzeppelin/contracts/-/contracts-4.7.2.tgz"
-  integrity sha512-4n/JL9izql8303mPqPdubuna/DWEMbmOzWYUWyCPhjhiEr2w3nQrjE7vZz1fBF+wzzP6dZbIcsgqACk53c9FGA==
 
 "@openzeppelin/hardhat-upgrades@1.17.0":
   version "1.17.0"
@@ -1733,11 +1703,6 @@ argparse@^2.0.1:
   version "2.0.1"
   resolved "https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz"
   integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
-
-argv@^0.0.2:
-  version "0.0.2"
-  resolved "https://registry.npmjs.org/argv/-/argv-0.0.2.tgz"
-  integrity sha512-dEamhpPEwRUBpLNHeuCm/v+g0anFByHahxodVO/BbAarHVBBg2MccCwf9K+o1Pof+2btdnkJelYVUWjW/VrATw==
 
 arr-diff@^4.0.0:
   version "4.0.0"
@@ -3043,11 +3008,6 @@ commander@3.0.2:
   resolved "https://registry.npmjs.org/commander/-/commander-3.0.2.tgz"
   integrity sha512-Gar0ASD4BDyKC4hl4DwHqDrmvjoxWKZigVnAbn5H1owvm4CxCPdb0HQDehwNYMJpla5+M2tPmPARzhtYuwpHow==
 
-commander@^8.1.0:
-  version "8.3.0"
-  resolved "https://registry.npmjs.org/commander/-/commander-8.3.0.tgz"
-  integrity sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==
-
 compare-versions@^4.0.0:
   version "4.1.3"
   resolved "https://registry.npmjs.org/compare-versions/-/compare-versions-4.1.3.tgz"
@@ -3482,11 +3442,6 @@ dotenv@10.0.0:
   version "10.0.0"
   resolved "https://registry.npmjs.org/dotenv/-/dotenv-10.0.0.tgz"
   integrity sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==
-
-dotenv@^8.0.0:
-  version "8.6.0"
-  resolved "https://registry.npmjs.org/dotenv/-/dotenv-8.6.0.tgz"
-  integrity sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==
 
 dotignore@~0.1.2:
   version "0.1.2"
@@ -4110,7 +4065,7 @@ ethereumjs-wallet@0.6.5:
     utf8 "^3.0.0"
     uuid "^3.3.2"
 
-ethers@5.5.4, ethers@^5.4.6:
+ethers@5.5.4:
   version "5.5.4"
   resolved "https://registry.npmjs.org/ethers/-/ethers-5.5.4.tgz"
   integrity sha512-N9IAXsF8iKhgHIC6pquzRgPBJEzc9auw3JoRkaKe+y4Wl/LFBtDDunNe7YmdomontECAcC5APaAgWZBiu1kirw==
@@ -8179,19 +8134,6 @@ solc@^0.6.3:
     semver "^5.5.0"
     tmp "0.0.33"
 
-solc@^0.8.6:
-  version "0.8.15"
-  resolved "https://registry.npmjs.org/solc/-/solc-0.8.15.tgz"
-  integrity sha512-Riv0GNHNk/SddN/JyEuFKwbcWcEeho15iyupTSHw5Np6WuXA5D8kEHbyzDHi6sqmvLzu2l+8b1YmL8Ytple+8w==
-  dependencies:
-    command-exists "^1.2.8"
-    commander "^8.1.0"
-    follow-redirects "^1.12.1"
-    js-sha3 "0.8.0"
-    memorystream "^0.3.1"
-    semver "^5.5.0"
-    tmp "0.0.33"
-
 solidity-ast@^0.4.15:
   version "0.4.30"
   resolved "https://registry.npmjs.org/solidity-ast/-/solidity-ast-0.4.30.tgz"
@@ -9964,7 +9906,7 @@ yargs@13.2.4:
     y18n "^4.0.0"
     yargs-parser "^13.1.0"
 
-yargs@16.2.0, yargs@^16.1.1:
+yargs@16.2.0:
   version "16.2.0"
   resolved "https://registry.npmjs.org/yargs/-/yargs-16.2.0.tgz"
   integrity sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==
