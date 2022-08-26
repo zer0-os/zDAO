@@ -2,6 +2,10 @@
   "network": "mainnet",
   "ZDAORegistry_address": "0x7701913b65C9bCDa4d353F77EC12123d57D77f1e",
   "ZDAORegistry_start_block": 14526282,
-  "ZDAOModule_address": "",
-  "ZDAOModule_start_block": 0
+  "ZDAOModule_address": "0x0000000000000000000000000000000000000000",
+  "ZDAOModule_start_block": 14526282,
+  "EthereumZDAOChef_address": "0x0000000000000000000000000000000000000000",
+  "EthereumZDAOChef_start_block": 14526282,
+  "SnapshotZDAOChef_address": "0x0000000000000000000000000000000000000000",
+  "SnapshotZDAOChef_start_block": 14526282
 }

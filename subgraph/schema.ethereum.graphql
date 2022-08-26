@@ -1,0 +1,75 @@
+type ZDAORecord @entity {
+  id: ID!
+  platformType: Int!
+  zDAOId: Int!
+  name: String!
+  gnosisSafe: Bytes!
+  createdBy: Bytes!
+  zNAs: [ZNAAssociation!]! @derivedFrom(field: "zDAORecord")
+  destroyed: Boolean!
+}
+
+type ZNAAssociation @entity {
+  id: ID!
+  zDAORecord: ZDAORecord!
+}
+
+type ExecutedProposal @entity {
+  id: ID!
+  platformType: Int!
+  proposalHash: BigInt!
+  token: Bytes!
+  recipient: Bytes!
+  amount: BigInt!
+}
+
+interface ZDAO {
+  id: ID!
+  zDAORecord: ZDAORecord!
+  zDAOId: Int!
+  createdBy: Bytes!
+  gnosisSafe: Bytes!
+  destroyed: Boolean!
+}
+
+type EthereumZDAO implements ZDAO @entity {
+  id: ID!
+  zDAORecord: ZDAORecord!
+  zDAOId: Int!
+  createdBy: Bytes!
+  gnosisSafe: Bytes!
+  destroyed: Boolean!
+  token: Bytes!
+  amount: BigInt!
+  duration: Int!
+  votingDelay: Int!
+  votingThreshold: Int!
+  minimumVotingParticipants: Int!
+  minimumTotalVotingTokens: BigInt!
+  isRelativeMajority: Boolean!
+  snapshot: Int!
+  proposals: [EthereumProposal!]! @derivedFrom(field: "zDAO")
+}
+
+type EthereumProposal @entity {
+  id: ID!
+  zDAO: EthereumZDAO!
+  proposalId: String!
+  numberOfChoices: Int!
+  createdBy: Bytes!
+  snapshot: Int!
+  ipfs: String!
+  created: Int!
+  canceled: Boolean!
+  calculated: Boolean!
+}
+
+type SnapshotZDAO implements ZDAO @entity {
+  id: ID!
+  zDAORecord: ZDAORecord!
+  zDAOId: Int!
+  createdBy: Bytes!
+  gnosisSafe: Bytes!
+  destroyed: Boolean!
+  ensSpace: String!
+}

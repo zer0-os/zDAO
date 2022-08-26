@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "ZDAORegistry",
-  "sourceName": "contracts/ZDAORegistry.sol",
+  "contractName": "PolygonZDAOChef",
+  "sourceName": "contracts/polygon/polygon/PolygonZDAOChef.sol",
   "abi": [
     {
       "anonymous": false,
@@ -41,8 +41,45 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "_platformType",
+          "name": "_zDAOId",
           "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_voter",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_choice",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_votingPower",
+          "type": "uint256"
+        }
+      ],
+      "name": "CastVote",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_zDAO",
+          "type": "address"
         },
         {
           "indexed": true,
@@ -53,26 +90,20 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_zDAO",
+          "name": "_token",
           "type": "address"
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "_creator",
-          "type": "address"
+          "internalType": "uint256",
+          "name": "_duration",
+          "type": "uint256"
         },
         {
           "indexed": false,
-          "internalType": "address",
-          "name": "_gnosisSafe",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "_name",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "_votingDelay",
+          "type": "uint256"
         }
       ],
       "name": "DAOCreated",
@@ -81,12 +112,6 @@
     {
       "anonymous": false,
       "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_platformType",
-          "type": "uint256"
-        },
         {
           "indexed": true,
           "internalType": "uint256",
@@ -103,9 +128,22 @@
         {
           "indexed": true,
           "internalType": "uint256",
-          "name": "_platformType",
+          "name": "_zDAOId",
           "type": "uint256"
         },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_staking",
+          "type": "address"
+        }
+      ],
+      "name": "DAOStakingUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
         {
           "indexed": true,
           "internalType": "uint256",
@@ -115,61 +153,11 @@
         {
           "indexed": true,
           "internalType": "address",
-          "name": "_gnosisSafe",
+          "name": "_token",
           "type": "address"
         }
       ],
-      "name": "DAOModified",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_platformType",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
-        }
-      ],
-      "name": "LinkAdded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_platformType",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
-        }
-      ],
-      "name": "LinkRemoved",
+      "name": "DAOTokenUpdated",
       "type": "event"
     },
     {
@@ -202,6 +190,93 @@
         }
       ],
       "name": "Paused",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_voters",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256[]",
+          "name": "_votes",
+          "type": "uint256[]"
+        }
+      ],
+      "name": "ProposalCalculated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalCanceled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_proposalId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "_numberOfChoices",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_proposalCreated",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_currentTimestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProposalCreated",
       "type": "event"
     },
     {
@@ -283,6 +358,19 @@
       "anonymous": false,
       "inputs": [
         {
+          "indexed": true,
+          "internalType": "address",
+          "name": "_staking",
+          "type": "address"
+        }
+      ],
+      "name": "StakingUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
           "indexed": false,
           "internalType": "address",
           "name": "account",
@@ -321,63 +409,27 @@
     {
       "inputs": [
         {
-          "internalType": "contract IZNSHub",
-          "name": "_znsHub",
+          "internalType": "contract Staking",
+          "name": "_stakingBase",
           "type": "address"
-        }
-      ],
-      "name": "__ZDAORegistry_init",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_platformType",
-          "type": "uint256"
         },
         {
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
+          "internalType": "contract IPolygonStateSender",
+          "name": "_polygonStateSender",
+          "type": "address"
         },
         {
           "internalType": "address",
-          "name": "_gnosisSafe",
+          "name": "_zDAOBase",
           "type": "address"
         },
         {
-          "internalType": "string",
-          "name": "_name",
-          "type": "string"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_options",
-          "type": "bytes"
-        }
-      ],
-      "name": "addNewZDAO",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "enum IZDAORegistry.PlatformType",
-          "name": "_platformType",
-          "type": "uint8"
-        },
-        {
-          "internalType": "contract IZDAOFactory",
-          "name": "_factory",
+          "internalType": "contract IChildChainManager",
+          "name": "_childChainManager",
           "type": "address"
         }
       ],
-      "name": "addZDAOFactory",
+      "name": "__ZDAOChef_init",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -391,101 +443,23 @@
         },
         {
           "internalType": "uint256",
-          "name": "_zNA",
+          "name": "_proposalId",
           "type": "uint256"
         }
       ],
-      "name": "addZNAAssociation",
+      "name": "calculateProposal",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
-        }
-      ],
-      "name": "adminAssociateZNA",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
-        }
-      ],
-      "name": "adminDisassociateZNA",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "_gnosisSafe",
-          "type": "address"
-        },
-        {
-          "internalType": "bytes",
-          "name": "_options",
-          "type": "bytes"
-        }
-      ],
-      "name": "adminModifyZDAO",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        }
-      ],
-      "name": "adminRemoveZDAO",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
-        }
-      ],
-      "name": "doesZDAOExistForZNA",
+      "inputs": [],
+      "name": "childChainManager",
       "outputs": [
         {
-          "internalType": "bool",
+          "internalType": "contract IChildChainManager",
           "name": "",
-          "type": "bool"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -521,46 +495,9 @@
       "name": "getZDAOById",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "platformType",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "zDAOOwnedBy",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "gnosisSafe",
-              "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "internalType": "bool",
-              "name": "destroyed",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
-            }
-          ],
-          "internalType": "struct IZDAORegistry.ZDAORecord",
+          "internalType": "contract IPolygonZDAO",
           "name": "",
-          "type": "tuple"
+          "type": "address"
         }
       ],
       "stateMutability": "view",
@@ -570,51 +507,46 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_zNA",
+          "name": "_zDAOId",
           "type": "uint256"
         }
       ],
-      "name": "getZDAOByZNA",
+      "name": "getZDAOInfoById",
       "outputs": [
         {
           "components": [
             {
               "internalType": "uint256",
-              "name": "platformType",
+              "name": "zDAOId",
               "type": "uint256"
             },
             {
               "internalType": "uint256",
-              "name": "id",
+              "name": "duration",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "votingDelay",
               "type": "uint256"
             },
             {
               "internalType": "address",
-              "name": "zDAOOwnedBy",
+              "name": "token",
               "type": "address"
             },
             {
-              "internalType": "address",
-              "name": "gnosisSafe",
-              "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
+              "internalType": "uint256",
+              "name": "snapshot",
+              "type": "uint256"
             },
             {
               "internalType": "bool",
               "name": "destroyed",
               "type": "bool"
-            },
-            {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
             }
           ],
-          "internalType": "struct IZDAORegistry.ZDAORecord",
+          "internalType": "struct IPolygonZDAO.ZDAOInfo",
           "name": "",
           "type": "tuple"
         }
@@ -666,93 +598,6 @@
     },
     {
       "inputs": [],
-      "name": "lastZDAOId",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_startIndex",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_count",
-          "type": "uint256"
-        }
-      ],
-      "name": "listZDAOs",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "platformType",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "id",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "zDAOOwnedBy",
-              "type": "address"
-            },
-            {
-              "internalType": "address",
-              "name": "gnosisSafe",
-              "type": "address"
-            },
-            {
-              "internalType": "string",
-              "name": "name",
-              "type": "string"
-            },
-            {
-              "internalType": "bool",
-              "name": "destroyed",
-              "type": "bool"
-            },
-            {
-              "internalType": "uint256[]",
-              "name": "associatedzNAs",
-              "type": "uint256[]"
-            }
-          ],
-          "internalType": "struct IZDAORegistry.ZDAORecord[]",
-          "name": "records",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "numberOfzDAOs",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
       "name": "owner",
       "outputs": [
         {
@@ -778,19 +623,27 @@
       "type": "function"
     },
     {
-      "inputs": [
+      "inputs": [],
+      "name": "polygonStateSender",
+      "outputs": [
         {
-          "internalType": "uint256",
-          "name": "_zDAOId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_zNA",
-          "type": "uint256"
+          "internalType": "contract IPolygonStateSender",
+          "name": "",
+          "type": "address"
         }
       ],
-      "name": "removeZNAAssociation",
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes",
+          "name": "_message",
+          "type": "bytes"
+        }
+      ],
+      "name": "processMessageFromRoot",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -841,14 +694,71 @@
     {
       "inputs": [
         {
-          "internalType": "address",
-          "name": "_znsHub",
+          "internalType": "contract IChildChainManager",
+          "name": "_childChainManager",
           "type": "address"
         }
       ],
-      "name": "setZNSHub",
+      "name": "setChildChainManager",
       "outputs": [],
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "contract Staking",
+          "name": "_staking",
+          "type": "address"
+        }
+      ],
+      "name": "setStaking",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_zDAOBase",
+          "type": "address"
+        }
+      ],
+      "name": "setZDAOBase",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_zDAOId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "contract Staking",
+          "name": "_staking",
+          "type": "address"
+        }
+      ],
+      "name": "setZDAOStaking",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "staking",
+      "outputs": [
+        {
+          "internalType": "contract Staking",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -931,109 +841,50 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "zDAOFactories",
-      "outputs": [
-        {
-          "internalType": "contract IZDAOFactory",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "zDAONames",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "zDAORecords",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "platformType",
+          "name": "_zDAOId",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "id",
+          "name": "_proposalId",
           "type": "uint256"
         },
-        {
-          "internalType": "address",
-          "name": "zDAOOwnedBy",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "gnosisSafe",
-          "type": "address"
-        },
-        {
-          "internalType": "string",
-          "name": "name",
-          "type": "string"
-        },
-        {
-          "internalType": "bool",
-          "name": "destroyed",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "_choice",
           "type": "uint256"
         }
       ],
-      "name": "zNATozDAOId",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
+      "name": "vote",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "znsHub",
+      "name": "zDAOBase",
       "outputs": [
         {
-          "internalType": "contract IZNSHub",
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "zDAOs",
+      "outputs": [
+        {
+          "internalType": "contract IPolygonZDAO",
           "name": "",
           "type": "address"
         }
