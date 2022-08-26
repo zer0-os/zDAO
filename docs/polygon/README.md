@@ -29,7 +29,7 @@ The created `zDAO`s and proposals are automatically synchronized to Polygon, use
 
 - Users can get voting power on Polygon as much as they staked mapped voting tokens on Polygon.
 
-- If the proposal ends, the voting result will be transferred to Ethereum for execution.
+- If the proposal ends, the voting result will be transferred to Ethereum for finalization.
 
 ### Collaboration
 
@@ -99,11 +99,7 @@ This command deploys `FxStatePolygonTunnel`, `Staking` and `PolygonZDAOChef`.
    Once the transaction hash of calculating proposal is checkpointed, `PoS` mechanism generates bytes of payload.
    Call `receiveMessage` in `FxStateEthereumTunnel` with this payload.
 
-8. Execute a proposal on Ethereum
-
-   Call `executeProposal` in `EthereumZDAOChef` with `proposalId` and `zDAOId`.
-
-9. Stake voting token on Polygon
+8. Stake voting token on Polygon
 
    Call `stakeERC20` in `Staking` to stake ERC20 or call `stakeERC721` in `Staking` to stake ERC721.
 
