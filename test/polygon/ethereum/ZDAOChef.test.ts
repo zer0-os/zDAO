@@ -15,8 +15,6 @@ import {
   EthereumZDAOChef,
   EthereumZDAOChef__factory,
   IERC20Upgradeable,
-  IZDAOModule,
-  IZDAOModule__factory,
   IZNSHub,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
@@ -43,7 +41,6 @@ describe("ZDAOChef", async function () {
   let ZNSHub: FakeContract<IZNSHub>,
     ethereumStateSender: FakeContract<IEthereumStateSender>,
     zDAOChef: MockContract<EthereumZDAOChef>,
-    zDAOModule: FakeContract<IZDAOModule>,
     vToken: FakeContract<IERC20Upgradeable>;
 
   let gnosisSafe: string,
@@ -66,11 +63,9 @@ describe("ZDAOChef", async function () {
     const zDAORegistry = await ethers.Wallet.createRandom().getAddress();
     zDAOChef =
       (await ZDAOChefFactory.deploy()) as MockContract<EthereumZDAOChef>;
-    zDAOModule = (await smock.fake("IZDAOModule")) as FakeContract<IZDAOModule>;
     await zDAOChef.__ZDAOChef_init(
       zDAORegistry,
       ethereumStateSender.address,
-      zDAOModule.address,
       zDAOBase.address
     );
 
@@ -262,7 +257,7 @@ describe("ZDAOChef", async function () {
     ).to.be.not.reverted;
 
     const state = await zDAO.state(proposalId);
-    expect(state).to.be.equal(4); // ProposalState.Closed
+    expect(state).to.be.equal(3); // ProposalState.Closed
   });
 
   it("Should execute a succeeded proposal", async function () {
@@ -298,59 +293,6 @@ describe("ZDAOChef", async function () {
     ).to.be.not.reverted;
 
     const state = await zDAO.state(proposalId);
-    expect(state).to.be.equal(5); // ProposalState.AwaitingExecution
-  });
-
-  it("Should execute by action", async function () {
-    const ERC20Factory = (await smock.mock<MockTokenUpgradeable__factory>(
-      "MockTokenUpgradeable"
-    )) as MockContractFactory<MockTokenUpgradeable__factory>;
-    const MockERC20 =
-      (await ERC20Factory.deploy()) as MockContract<MockTokenUpgradeable>;
-    await MockERC20.__MockTokenUpgradeable_init("VT", "VT");
-
-    await MockERC20.mintFor(userA.address, zDAOConfig.minimumTotalVotingTokens);
-
-    zDAOConfig.token = MockERC20.address;
-    zDAOConfig.amount = 100;
-    zDAOConfig.minimumTotalVotingTokens = 100000;
-
-    await addNewDAO(zNAOwner, 1);
-
-    const zDAOId = 1;
-    const proposalId = 1;
-
-    await createProposal(userA, zDAOId);
-    await increaseTime(zDAOConfig.duration);
-
-    const rootZDAO = await zDAOChef.zDAOs(zDAOId);
-    const zDAO = (await ethers.getContractAt(
-      "EthereumZDAO",
-      rootZDAO,
-      userA
-    )) as EthereumZDAO;
-    const zDAOInfo = await zDAO.zDAOInfo();
-
-    const ethereumStateSender = await zDAOChef.ethereumStateSender();
-    await zDAOChef.setVariable("ethereumStateSender", userA.address);
-
-    // should execute proposal if proposal state is succeeded
-    await expect(
-      zDAOChef.connect(userA).processMessageFromChild(
-        encodeCalculateProposal({
-          zDAOId,
-          proposalId,
-          voters: 1,
-          votes: [zDAOInfo.minimumTotalVotingTokens.toNumber(), 30, 0],
-        })
-      )
-    ).to.be.not.reverted;
-
-    zDAOModule.isProposalExecuted
-      .whenCalledWith(PlatformType.Polygon, proposalId)
-      .returns(true);
-
-    const state = await zDAO.state(proposalId);
-    expect(state).to.be.equal(3); // ProposalState.Executed
+    expect(state).to.be.equal(3); // ProposalState.Closed
   });
 });

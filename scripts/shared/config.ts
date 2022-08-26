@@ -9,7 +9,6 @@ type polygonNetwork = "polygonMumbai" | "polygon";
 interface EthereumConfig {
   zNSHub: string;
   zDAORegistry: string;
-  zDAOModule: string;
   // refer link: https://docs.polygon.technology/docs/develop/l1-l2-communication/state-transfer
   checkpointManager: string;
   fxRoot: string;
@@ -26,14 +25,12 @@ const ethereumConfig: { [key in ethereumNetwork]: EthereumConfig } = {
   goerli: {
     zNSHub: "0x9a35367c5e8C01cd009885e497a33a9761938832", // todo
     zDAORegistry: "0xC9d640CB7a1Cdfa02b31f0AE36c239380B493448", // todo
-    zDAOModule: "0x97199c4d45037c1D12F24048Ea8a19A564A4b661", // todo
     checkpointManager: "0x2890bA17EfE978480615e330ecB65333b880928e",
     fxRoot: "0x3d1d3E34f7fB6D26245E6640E1c50710eFFf15bA",
   },
   mainnet: {
     zNSHub: "0x6141d5cb3517215a03519a464bf9c39814df7479",
     zDAORegistry: "", // todo
-    zDAOModule: "", // todo
     checkpointManager: "0x86e4dc95c7fbdbf52e33d563bbdb00823894c287",
     fxRoot: "0xfe5e5D361b2ad62c541bAb87C45a0B9B018389a2",
   },

@@ -2,8 +2,6 @@
   "network": "goerli",
   "ZDAORegistry_address": "0xC9d640CB7a1Cdfa02b31f0AE36c239380B493448",
   "ZDAORegistry_start_block": 7398790,
-  "ZDAOModule_address": "0x97199c4d45037c1D12F24048Ea8a19A564A4b661",
-  "ZDAOModule_start_block": 7366714,
   "EthereumZDAOChef_address": "0xc9DC42076E5323Ae6c2f438302c70E08FaF0cae8",
   "EthereumZDAOChef_start_block": 7398828,
   "SnapshotZDAOChef_address": "0x0000000000000000000000000000000000000000",

@@ -14,15 +14,6 @@ type ZNAAssociation @entity {
   zDAORecord: ZDAORecord!
 }
 
-type ExecutedProposal @entity {
-  id: ID!
-  platformType: Int!
-  proposalHash: BigInt!
-  token: Bytes!
-  recipient: Bytes!
-  amount: BigInt!
-}
-
 interface ZDAO {
   id: ID!
   zDAORecord: ZDAORecord!

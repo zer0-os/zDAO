@@ -56,7 +56,6 @@ const main = async () => {
       [
         config[network.name].zDAORegistry,
         fxStateEthereumTunnel.address,
-        config[network.name].zDAOModule,
         zDAOBase.address,
       ],
       {

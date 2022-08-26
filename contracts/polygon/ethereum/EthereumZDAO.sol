@@ -3,7 +3,6 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
-import {IZDAOModule} from "../../interfaces/IZDAOModule.sol";
 import {ITunnel} from "../interfaces/ITunnel.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
@@ -20,7 +19,6 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   uint256[] public proposalIds;
 
   address public zDAOChef;
-  IZDAOModule public zDAOModule;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -63,7 +61,6 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    */
   function __ZDAO_init(
     address _zDAOChef,
-    IZDAOModule _zDAOModule,
     uint256 _zDAOId,
     address _createdBy,
     address _gnosisSafe,
@@ -72,7 +69,6 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     zDAOChef = _zDAOChef;
-    zDAOModule = _zDAOModule;
 
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
@@ -94,14 +90,6 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
-
-  function setZDAOModule(IZDAOModule _zDAOModule)
-    external
-    override
-    onlyZDAOChef
-  {
-    zDAOModule = _zDAOModule;
-  }
 
   /**
    * @notice Destroy the zDAO
@@ -299,16 +287,9 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /**
    * @notice Return the proposal state
    *     Canceled if already canceled
-   *     Executed if already executed
    *     Pending if the proposal is synchronizing to Polygon or already started,
    *       but not calculated yet
-   *     The number of participated voters should be exceed minimum voting
-   *     participants, and total votes should also be exceed minimum total
-   *     voting tokens.
-   *     The voting result is determined by percentage, in which Yes votes takes
-   *     In relative majority, calculate the percentage in the total sum of yes
-   *     no votes. On the other hand, in absolute majority, calculate in total
-   *     supply.
+   *     Closed if proposal is successfully finalized
    */
   function state(uint256 _proposalId)
     external
@@ -316,49 +297,12 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     override
     returns (ProposalState)
   {
-    uint256 platformType = 1; // PlatformType.Polygon
-
     Proposal storage proposal = proposals[_proposalId];
     if (proposal.canceled) {
       return ProposalState.Canceled;
-    } else if (zDAOModule.isProposalExecuted(platformType, _proposalId)) {
-      return ProposalState.Executed;
     } else if (!proposal.calculated) {
       return ProposalState.Pending;
     }
-
-    uint256 sumOfVotes = 0;
-    for (uint256 i = 0; i < proposal.votes.length; i++) {
-      sumOfVotes += proposal.votes[i];
-    }
-
-    // Check quorum
-    if (
-      proposal.voters < zDAOInfo.minimumVotingParticipants ||
-      sumOfVotes < zDAOInfo.minimumTotalVotingTokens
-    ) {
-      return ProposalState.Closed;
-    }
-    // If relative majority, the denominator should be sum of yes and no votes
-    if (
-      zDAOInfo.isRelativeMajority &&
-      sumOfVotes > 0 &&
-      ((proposal.votes[0] * divisionConstant) / (sumOfVotes) >=
-        zDAOInfo.votingThreshold)
-    ) {
-      return ProposalState.AwaitingExecution;
-    }
-    // If absolute majority, the denominator should be total supply
-    uint256 totalSupply = IERC20Upgradeable(zDAOInfo.token).totalSupply();
-    if (
-      !zDAOInfo.isRelativeMajority &&
-      totalSupply > 0 &&
-      (proposal.votes[0] * divisionConstant) / totalSupply >=
-      zDAOInfo.votingThreshold
-    ) {
-      return ProposalState.AwaitingExecution;
-    }
-
     return ProposalState.Closed;
   }
 }
