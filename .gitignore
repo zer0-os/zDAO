@@ -5,6 +5,7 @@ cache
 artifacts
 .env
 .DS_Store
+types
 
 
 subgraph/node_modules
