@@ -24,9 +24,8 @@ interface IPolygonZDAO {
     Pending,
     Active,
     Canceled,
-    Executed,
-    Calculating,
-    Calculated
+    AwaitingCalculation,
+    Closed // Bridging, Awaiting Finalizing, Awaiting Execution, or Executed
   }
 
   struct Proposal {
@@ -44,8 +43,6 @@ interface IPolygonZDAO {
     uint256 snapshot;
     /// @notice Flag marking whether this proposal has been calculated
     bool calculated;
-    /// @notice Flag marking whether this proposal has been executed
-    bool executed;
     /// @notice Flag marking whether this proposal has been canceled
     bool canceled;
     /// @notice The number of all the casted votes with given choice
@@ -94,8 +91,6 @@ interface IPolygonZDAO {
   ) external;
 
   function cancelProposal(uint256 _proposalId) external;
-
-  function executeProposal(uint256 _proposalId) external;
 
   function calculateProposal(uint256 _proposalId)
     external

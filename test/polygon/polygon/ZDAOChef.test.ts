@@ -95,7 +95,7 @@ describe("ZDAOChef", async function () {
       zDAOId: 1,
       proposalId: 1,
       numberOfChoices: 3,
-      proposalCreated: await now()
+      proposalCreated: await now(),
     };
   });
 
@@ -123,7 +123,8 @@ describe("ZDAOChef", async function () {
   };
 
   it("Should be able to create zDAO from the message", async function () {
-    await expect(createZDAO(userA)).to.be.not.reverted;
+    await createZDAO(userA);
+    // await expect(createZDAO(userA)).to.be.not.reverted;
 
     const zDAOAddr = await ZDAOChef.getZDAOById(1);
     const zDAO = (await ethers.getContractAt(
@@ -201,7 +202,6 @@ describe("ZDAOChef", async function () {
     expect(proposals[0].votes[1].toNumber()).to.be.equal(0);
     expect(proposals[0].votes[2].toNumber()).to.be.equal(0);
     expect(proposals[0].snapshot.toNumber()).to.be.greaterThan(0);
-    expect(proposals[0].executed).to.be.equal(false);
     expect(proposals[0].canceled).to.be.equal(false);
   });
 });

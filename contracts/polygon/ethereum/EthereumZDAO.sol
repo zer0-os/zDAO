@@ -3,6 +3,7 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable, SafeERC20Upgradeable, IERC20Upgradeable} from "../../abstracts/ZeroUpgradeable.sol";
+import {IZDAOModule} from "../../interfaces/IZDAOModule.sol";
 import {ITunnel} from "../interfaces/ITunnel.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
@@ -19,6 +20,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   uint256[] public proposalIds;
 
   address public zDAOChef;
+  IZDAOModule public zDAOModule;
 
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
@@ -61,6 +63,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    */
   function __ZDAO_init(
     address _zDAOChef,
+    IZDAOModule _zDAOModule,
     uint256 _zDAOId,
     address _createdBy,
     address _gnosisSafe,
@@ -69,6 +72,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     zDAOChef = _zDAOChef;
+    zDAOModule = _zDAOModule;
 
     zDAOInfo = ZDAOInfo({
       zDAOId: _zDAOId,
@@ -90,6 +94,14 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
+
+  function setZDAOModule(IZDAOModule _zDAOModule)
+    external
+    override
+    onlyZDAOChef
+  {
+    zDAOModule = _zDAOModule;
+  }
 
   /**
    * @notice Destroy the zDAO
@@ -167,29 +179,6 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   }
 
   /**
-   * @notice Execute proposal, only granted owner can execute proposal
-   *     Execute proposal means transfer assets from Gnosis Safe to certain
-   *     wallet address, once owner propose transaction on Gnosis Safe,
-   *     then the proposal can be flaged by executed state
-   * @dev Callable by EthereumZDAOChef, only available for active zDAO and valid
-   *     proposal
-   * @param _executeBy Address to wallet who is going to executed
-   * @param _proposalId Proposal unique id to execute
-   */
-  function executeProposal(address _executeBy, uint256 _proposalId)
-    external
-    override
-    onlyZDAOChef
-    isActiveDAO
-    onlyValidProposal(_proposalId)
-  {
-    ProposalState state2 = this.state(_proposalId);
-    require(state2 == ProposalState.Succeeded, "Not a succeeded proposal");
-
-    proposals[_proposalId].executed = true;
-  }
-
-  /**
    * @notice Calculate proposal, anybody can calculate proposal.
    *     Through proposal calculation, zDAO can receive the final voting result
    *     from the Polygon. This function should be executed only when zDAOChef
@@ -244,7 +233,6 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       ipfs: _ipfs,
       snapshot: block.number,
       calculated: false,
-      executed: false,
       canceled: false,
       choices: _choices,
       votes: new uint256[](_choices.length)
@@ -328,10 +316,12 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     override
     returns (ProposalState)
   {
+    uint256 platformType = 1; // PlatformType.Polygon
+
     Proposal storage proposal = proposals[_proposalId];
     if (proposal.canceled) {
       return ProposalState.Canceled;
-    } else if (proposal.executed) {
+    } else if (zDAOModule.isProposalExecuted(platformType, _proposalId)) {
       return ProposalState.Executed;
     } else if (!proposal.calculated) {
       return ProposalState.Pending;
@@ -347,7 +337,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       proposal.voters < zDAOInfo.minimumVotingParticipants ||
       sumOfVotes < zDAOInfo.minimumTotalVotingTokens
     ) {
-      return ProposalState.Failed;
+      return ProposalState.Closed;
     }
     // If relative majority, the denominator should be sum of yes and no votes
     if (
@@ -356,7 +346,7 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       ((proposal.votes[0] * divisionConstant) / (sumOfVotes) >=
         zDAOInfo.votingThreshold)
     ) {
-      return ProposalState.Succeeded;
+      return ProposalState.AwaitingExecution;
     }
     // If absolute majority, the denominator should be total supply
     uint256 totalSupply = IERC20Upgradeable(zDAOInfo.token).totalSupply();
@@ -366,9 +356,9 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
       (proposal.votes[0] * divisionConstant) / totalSupply >=
       zDAOInfo.votingThreshold
     ) {
-      return ProposalState.Succeeded;
+      return ProposalState.AwaitingExecution;
     }
 
-    return ProposalState.Failed;
+    return ProposalState.Closed;
   }
 }

@@ -108,9 +108,9 @@
         },
         {
           "indexed": false,
-          "internalType": "string",
-          "name": "_proposalId",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "_proposalHash",
+          "type": "uint256"
         },
         {
           "indexed": false,
@@ -205,9 +205,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "string",
-          "name": "_proposalId",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "_proposalHash",
+          "type": "uint256"
         },
         {
           "internalType": "address",
@@ -264,9 +264,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "string",
-          "name": "_proposalId",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "_proposalHash",
+          "type": "uint256"
         }
       ],
       "name": "isProposalExecuted",
@@ -299,6 +299,11 @@
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "name": "proposals",
@@ -309,9 +314,9 @@
           "type": "uint256"
         },
         {
-          "internalType": "string",
-          "name": "proposalId",
-          "type": "string"
+          "internalType": "uint256",
+          "name": "proposalHash",
+          "type": "uint256"
         },
         {
           "internalType": "address",

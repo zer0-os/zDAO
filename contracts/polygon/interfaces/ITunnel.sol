@@ -9,7 +9,6 @@ interface ITunnel {
     DeleteZDAO,
     CreateProposal,
     CancelProposal,
-    ExecuteProposal,
     CalculateProposal,
     UpdateToken
   }

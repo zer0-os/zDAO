@@ -3,6 +3,7 @@
 pragma solidity ^0.8.11;
 
 import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
+import {IZDAOModule} from "../../../interfaces/IZDAOModule.sol";
 import {IEthereumZDAO} from "./IEthereumZDAO.sol";
 
 interface IEthereumZDAOChef {
@@ -53,7 +54,8 @@ interface IEthereumZDAOChef {
     uint256 indexed _proposalId,
     uint256 indexed _numberOfChoices,
     address _createdBy,
-    uint256 _snapshot
+    uint256 _snapshot,
+    string _ipfs
   );
 
   event ProposalCanceled(
@@ -62,15 +64,9 @@ interface IEthereumZDAOChef {
     address indexed _cancelBy
   );
 
-  event ProposalExecuted(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    address indexed _executeBy
-  );
-
   event ProposalCalculated(
     uint256 indexed _zDAOId,
-    uint256 indexed _propoalId,
+    uint256 indexed _proposalId,
     uint256 _voters,
     uint256[] votes
   );
@@ -79,6 +75,14 @@ interface IEthereumZDAOChef {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setZDAORegistry(address _zDAORgistry) external;
+
+  function setZDAOBase(address _zDAOBase) external;
+
+  function setZDAOModule(IZDAOModule _zDAOModule) external;
+
+  function setZDAOModuleById(uint256 _zDAOId, IZDAOModule _zDAOModule) external;
+
   function createProposal(
     uint256 _zDAOId,
     string[] calldata _choices,
@@ -86,8 +90,6 @@ interface IEthereumZDAOChef {
   ) external;
 
   function cancelProposal(uint256 _zDAOId, uint256 _proposalId) external;
-
-  function executeProposal(uint256 _zDAOId, uint256 _proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */

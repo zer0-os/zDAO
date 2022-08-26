@@ -121,7 +121,8 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
       lastZDAOId,
       address(zDAO),
       msg.sender,
-      _gnosisSafe
+      _gnosisSafe,
+      _name
     );
 
     // Associate zDAO with zNA
@@ -180,7 +181,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     zDAORecord.destroyed = true;
     factory.removeZDAO(_zDAOId);
 
-    emit DAODestroyed(_zDAOId);
+    emit DAODestroyed(zDAORecord.platformType, _zDAOId);
   }
 
   function adminAssociateZNA(uint256 _zDAOId, uint256 _zNA)
@@ -215,7 +216,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     zDAORecord.gnosisSafe = _gnosisSafe;
     factory.modifyZDAO(_zDAOId, _gnosisSafe, _options);
 
-    emit DAOModified(_zDAOId, _gnosisSafe);
+    emit DAOModified(zDAORecord.platformType, _zDAOId, _gnosisSafe);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -238,7 +239,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     zNATozDAOId[_zNA] = _zDAOId;
     zDAORecords[_zDAOId].associatedzNAs.push(_zNA);
 
-    emit LinkAdded(_zDAOId, _zNA);
+    emit LinkAdded(zDAORecords[_zDAOId].platformType, _zDAOId, _zNA);
   }
 
   function _disassociatezNA(uint256 _zDAOId, uint256 _zNA) internal {
@@ -251,7 +252,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
         dao.associatedzNAs.pop();
         zNATozDAOId[_zNA] = 0;
 
-        emit LinkRemoved(_zDAOId, _zNA);
+        emit LinkRemoved(zDAORecords[_zDAOId].platformType, _zDAOId, _zNA);
         break;
       }
     }

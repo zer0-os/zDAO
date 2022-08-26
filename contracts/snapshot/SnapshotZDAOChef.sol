@@ -34,8 +34,8 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
 
   event DAOCreated(
     uint256 indexed _zDAOId,
-    uint256 _zNA,
-    address _createdBy,
+    uint256 indexed _zNA,
+    address indexed _createdBy,
     address _gnosisSafe,
     string _ensSpace
   );

@@ -81,6 +81,7 @@ contract PolygonZDAOChef is
     external
     onlyOwner
   {
+    require(staking == _staking, "Invalid staking address");
     zDAOs[_zDAOId].setStaking(address(_staking));
 
     emit DAOStakingUpdated(_zDAOId, address(_staking));
@@ -169,8 +170,6 @@ contract PolygonZDAOChef is
       _createProposal(_message);
     } else if (messageType == uint256(MessageType.CancelProposal)) {
       _cancelProposal(_message);
-    } else if (messageType == uint256(MessageType.ExecuteProposal)) {
-      _executeProposal(_message);
     } else if (messageType == uint256(MessageType.UpdateToken)) {
       _updateToken(_message);
     }
@@ -210,7 +209,7 @@ contract PolygonZDAOChef is
 
     zDAOs[zDAOId] = zDAO;
 
-    emit DAOCreated(address(zDAO), zDAOId, duration);
+    emit DAOCreated(address(zDAO), zDAOId, childToken, duration, votingDelay);
 
     return zDAO;
   }
@@ -263,20 +262,6 @@ contract PolygonZDAOChef is
     zDAOs[zDAOId].cancelProposal(proposalId);
 
     emit ProposalCanceled(zDAOId, proposalId);
-  }
-
-  function _executeProposal(bytes memory _message) internal virtual {
-    (uint256 messageType, uint256 zDAOId, uint256 proposalId) = abi.decode(
-      _message,
-      (uint256, uint256, uint256)
-    );
-
-    require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
-    require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
-
-    zDAOs[zDAOId].executeProposal(proposalId);
-
-    emit ProposalExecuted(zDAOId, proposalId);
   }
 
   function _updateToken(bytes memory _message) internal virtual {

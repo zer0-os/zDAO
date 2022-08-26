@@ -56,6 +56,7 @@ const main = async () => {
       [
         config[network.name].zDAORegistry,
         fxStateEthereumTunnel.address,
+        config[network.name].zDAOModule,
         zDAOBase.address,
       ],
       {
@@ -86,7 +87,7 @@ const main = async () => {
       config[network.name].zDAORegistry,
       deployer
     )) as ZDAORegistry;
-    console.log("Adding SnapshotZDAOChef factory to ZDAORegistry");
+    console.log("Adding EthereumZDAOChef factory to ZDAORegistry");
     const gasEstimated2 = await zDAORegistry.estimateGas.addZDAOFactory(
       PlatformType.Polygon, // Snapshot platform
       zDAOChef.address
