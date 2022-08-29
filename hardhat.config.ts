@@ -10,7 +10,7 @@ import "hardhat-contract-sizer";
 import "solidity-coverage";
 import { removeConsoleLog } from "hardhat-preprocessor";
 
-dotenv.config();
+dotenv.config({path:__dirname+'/.env'});
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
