@@ -7,7 +7,6 @@ import {createProxy} from "../../helpers/Proxy.sol";
 import {IZNSHub} from "../../interfaces/IZNSHub.sol";
 import {IEthereumStateSender, IEthereumStateReceiver, ITunnel} from "../interfaces/ITunnel.sol";
 import {IZDAOFactory} from "../../interfaces/IZDAOFactory.sol";
-import {IZDAOModule} from "../../interfaces/IZDAOModule.sol";
 import {IEthereumZDAOChef} from "./interfaces/IEthereumZDAOChef.sol";
 import {IEthereumZDAO} from "./interfaces/IEthereumZDAO.sol";
 
@@ -18,8 +17,6 @@ contract EthereumZDAOChef is
   IZDAOFactory
 {
   address public zDAORegistry;
-
-  IZDAOModule public zDAOModule;
 
   /**
    * Address to FxStateEthereumTunnel which is responsible for sending message
@@ -51,14 +48,12 @@ contract EthereumZDAOChef is
   function __ZDAOChef_init(
     address _zDAORegistry,
     IEthereumStateSender _ethereumStateSender,
-    IZDAOModule _zDAOModule,
     address _zDAOBase
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     zDAORegistry = _zDAORegistry;
     ethereumStateSender = _ethereumStateSender;
-    zDAOModule = _zDAOModule;
     zDAOBase = _zDAOBase;
   }
 
@@ -72,19 +67,6 @@ contract EthereumZDAOChef is
 
   function setZDAOBase(address _zDAOBase) external override onlyOwner {
     zDAOBase = _zDAOBase;
-  }
-
-  function setZDAOModule(IZDAOModule _zDAOModule) external override onlyOwner {
-    zDAOModule = _zDAOModule;
-  }
-
-  function setZDAOModuleById(uint256 _zDAOId, IZDAOModule _zDAOModule)
-    external
-    override
-    onlyOwner
-  {
-    require(zDAOModule == _zDAOModule, "Invalid zDAOModule address");
-    zDAOs[_zDAOId].setZDAOModule(_zDAOModule);
   }
 
   /**
@@ -115,7 +97,6 @@ contract EthereumZDAOChef is
         abi.encodeWithSelector(
           IEthereumZDAO.__ZDAO_init.selector,
           address(this),
-          zDAOModule,
           _zDAOId,
           _createdBy,
           _gnosisSafe,

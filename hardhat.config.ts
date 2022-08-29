@@ -66,7 +66,7 @@ const config: HardhatUserConfig = {
       accounts: [process.env.MAINNET_PRIVATE_KEY],
     },
     polygonMumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.MUMBAI_API_KEY}`,
+      url: `https://polygon-mumbai.infura.io/v3/97e75e0bbc6a4419a5dd7fe4a518b917`,
       accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
     polygon: {

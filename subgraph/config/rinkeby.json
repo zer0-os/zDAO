@@ -2,8 +2,6 @@
   "network": "rinkeby",
   "ZDAORegistry_address": "0x9c870c0B043E8ce4a7CFa31e82185C7a07fA3573",
   "ZDAORegistry_start_block": 11201610,
-  "ZDAOModule_address": "0x70F9A6e7f037389f3200EB8F635AF1b06b110dDF",
-  "ZDAOModule_start_block": 11149474,
   "EthereumZDAOChef_address": "0x0000000000000000000000000000000000000000",
   "EthereumZDAOChef_start_block": 11167982,
   "SnapshotZDAOChef_address": "0x53A9C5756a28B853Bb4ae645e26bBD65a4115FCA",

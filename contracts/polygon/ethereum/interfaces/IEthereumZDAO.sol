@@ -3,7 +3,6 @@
 pragma solidity ^0.8.11;
 
 import {IERC20Upgradeable} from "../../../oz-upgradeable/token/ERC20/IERC20Upgradeable.sol";
-import {IZDAOModule} from "../../../interfaces/IZDAOModule.sol";
 import {IEthereumZDAOChef} from "./IEthereumZDAOChef.sol";
 
 interface IEthereumZDAO {
@@ -43,9 +42,7 @@ interface IEthereumZDAO {
     Pending,
     Active,
     Canceled,
-    Executed,
-    Closed,
-    AwaitingExecution
+    Closed
   }
 
   struct Proposal {
@@ -81,14 +78,11 @@ interface IEthereumZDAO {
 
   function __ZDAO_init(
     address _zDAOChef,
-    IZDAOModule _zDAOModule,
     uint256 _zDAOId,
     address _gnosisSafe,
     address _createdBy,
     IEthereumZDAOChef.ZDAOConfig calldata _zDAOConfig
   ) external;
-
-  function setZDAOModule(IZDAOModule _zDAOModule) external;
 
   function setDestroyed(bool _destroyed) external;
 
