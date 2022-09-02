@@ -205,9 +205,12 @@ export function handleCastVote(event: CastVote): void {
     voter.toHexString()
   );
   let vote: PolygonVote | null = PolygonVote.load(id);
+  let lastChoice: i32 = -1;
   if (!vote) {
     vote = new PolygonVote(id);
     proposal.voters++;
+  } else {
+    lastChoice = vote.choice;
   }
   vote.proposal = pId;
   vote.voter = voter;
@@ -216,6 +219,9 @@ export function handleCastVote(event: CastVote): void {
   vote.save();
 
   const sumOfVotes = proposal.sumOfVotes;
+  if (lastChoice >= 0) {
+    sumOfVotes[lastChoice] = sumOfVotes[lastChoice].minus(votingPower);
+  }
   sumOfVotes[choice - 1] = sumOfVotes[choice - 1].plus(votingPower);
   proposal.sumOfVotes = sumOfVotes;
   proposal.save();
