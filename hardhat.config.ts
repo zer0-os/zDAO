@@ -18,11 +18,11 @@ dotenv.config({path:__dirname+'/.env'});
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      GOERLI_API_KEY: string;
-      RINKEBY_API_KEY: string;
-      MAINNET_API_KEY: string;
-      MUMBAI_API_KEY: string;
-      POLYGON_API_KEY: string;
+      GOERLI_RPC_URL: string;
+      RINKEBY_RPC_URL: string;
+      MAINNET_RPC_URL: string;
+      MUMBAI_RPC_URL: string;
+      POLYGON_RPC_URL: string;
       ETHERSCAN_API_KEY: string;
       POLYGONSCAN_API_KEY: string;
 
@@ -54,23 +54,23 @@ const config: HardhatUserConfig = {
   defaultNetwork: 'hardhat',
   networks: {
     goerli: {
-      url: `https://eth-goerli.alchemyapi.io/v2/${process.env.GOERLI_API_KEY}`,
+      url: process.env.GOERLI_RPC_URL,
       accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
     rinkeby: {
-      url: `https://eth-rinkeby.alchemyapi.io/v2/${process.env.RINKEBY_API_KEY}`,
+      url: process.env.RINKEBY_RPC_URL,
       accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
     mainnet: {
-      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.MAINNET_API_KEY}`,
+      url: process.env.MAINNET_RPC_URL,
       accounts: [process.env.MAINNET_PRIVATE_KEY],
     },
     polygonMumbai: {
-      url: `https://polygon-mumbai.infura.io/v3/97e75e0bbc6a4419a5dd7fe4a518b917`,
+      url: process.env.MUMBAI_RPC_URL,
       accounts: [process.env.TESTNET_PRIVATE_KEY],
     },
     polygon: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.POLYGON_API_KEY}`,
+      url: process.env.POLYGON_RPC_URL,
       accounts: [process.env.MAINNET_PRIVATE_KEY],
     },
     hardhat: {
