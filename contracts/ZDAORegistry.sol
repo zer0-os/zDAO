@@ -6,7 +6,6 @@ import {ZeroUpgradeable} from "./abstracts/ZeroUpgradeable.sol";
 import {IResourceRegistry} from "./interfaces/IResourceRegistry.sol";
 import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
 import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
-import {IZNSHub} from "./interfaces/IZNSHub.sol";
 
 contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   // zDAOId => zDAORecord
