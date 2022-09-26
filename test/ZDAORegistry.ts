@@ -106,7 +106,7 @@ describe("ZDAORegistry", function () {
     }
   });
 
-  describe("#addNewDAO for snapshot", () => {
+  describe("Check addNewDAO for snapshot", () => {
     it("adds new dao record", async function () {
       znsHub.ownerOf.whenCalledWith(zNAPairs[0].zNA).returns(deployer.address);
       znsHub.ownerOf.whenCalledWith(zNAPairs[1].zNA).returns(deployer.address);
@@ -167,7 +167,7 @@ describe("ZDAORegistry", function () {
     });
   });
 
-  describe("#addNewDAO for polygon", () => {
+  describe("Check addNewDAO for polygon", () => {
     let ethereumStateSender: FakeContract<IEthereumStateSender>,
       rootZDAOChef: MockContract<EthereumZDAOChef>,
       vToken: FakeContract<IERC20Upgradeable>;
@@ -371,7 +371,7 @@ describe("ZDAORegistry", function () {
     });
   });
 
-  describe("#addZNAAssociation", () => {
+  describe("Check addZNAAssociation", () => {
     it("adds new zna association", async function () {
       znsHub.ownerOf.whenCalledWith(zNAPairs[0].zNA).returns(user1.address);
       znsHub.ownerOf.whenCalledWith(zNAPairs[1].zNA).returns(user2.address);
@@ -461,7 +461,7 @@ describe("ZDAORegistry", function () {
     });
   });
 
-  describe("#removezNAAssociation", () => {
+  describe("Check removezNAAssociation", () => {
     it("removes existing association", async function () {
       znsHub.ownerOf.whenCalledWith(zNAPairs[0].zNA).returns(user1.address);
       znsHub.ownerOf.whenCalledWith(zNAPairs[1].zNA).returns(user2.address);
@@ -508,6 +508,48 @@ describe("ZDAORegistry", function () {
       await expect(
         zDAORegistry.connect(user1).removeZNAAssociation(1, zNAPairs[0].zNA)
       ).to.revertedWith("zNA not associated");
+    });
+  });
+
+  describe("Check ResourceRegistry", () => {
+    it("resource should exist", async function () {
+      // Add new DAO
+      znsHub.ownerOf.whenCalledWith(zNAPairs[0].zNA).returns(user1.address);
+
+      await zDAORegistry.connect(user1).addNewZDAO(
+        PlatformType.Snapshot, // platformType
+        zNAPairs[0].zNA, // zNA
+        zNAPairs[0].gnosisSafe,
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
+      );
+
+      const zDAOId = 1, emptyZDAOID = 0;
+      const exists = await zDAORegistry.resourceExists(zDAOId);
+      expect(exists).to.be.equal(true);
+
+      const notExists = await zDAORegistry.resourceExists(emptyZDAOID);
+      expect(notExists).to.be.equal(false);
+    });
+
+    it("destroyed resource should not exist", async function () {
+      // Add new DAO
+      znsHub.ownerOf.whenCalledWith(zNAPairs[0].zNA).returns(user1.address);
+
+      await zDAORegistry.connect(user1).addNewZDAO(
+        PlatformType.Snapshot, // platformType
+        zNAPairs[0].zNA, // zNA
+        zNAPairs[0].gnosisSafe,
+        zNAPairs[0].name,
+        ethers.utils.defaultAbiCoder.encode(["string"], [zNAPairs[0].ens])
+      );
+
+      // Destroy it
+      const zDAOId = 1;
+      await zDAORegistry.connect(deployer).adminRemoveZDAO(zDAOId);
+
+      const notExists = await zDAORegistry.resourceExists(zDAOId);
+      expect(notExists).to.be.equal(false);
     });
   });
 });

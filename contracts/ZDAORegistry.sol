@@ -3,11 +3,12 @@
 pragma solidity ^0.8.11;
 
 import {ZeroUpgradeable} from "./abstracts/ZeroUpgradeable.sol";
+import {IResourceRegistry} from "./interfaces/IResourceRegistry.sol";
 import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
 import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
 import {IZNSHub} from "./interfaces/IZNSHub.sol";
 
-contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
+contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   IZNSHub public znsHub;
 
   // zNA    => zDAOId
@@ -312,5 +313,12 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry {
     returns (bool)
   {
     return zNATozDAOId[_zNA] != 0;
+  }
+
+  function resourceExists(uint256 _resourceID) external view returns (bool) {
+    ZDAORecord storage zDAORecord = zDAORecords[_resourceID];
+    return !zDAORecord.destroyed &&
+      zDAORecord.id == _resourceID &&
+      zDAORecord.zDAOOwnedBy != address(0);
   }
 }
