@@ -88,6 +88,9 @@ contract EthereumZDAOChef is
     assert(address(zDAOs[_zDAOId]) == address(0));
 
     ZDAOConfig memory config = abi.decode(_options, (ZDAOConfig));
+    require(config.token != address(0), "Invalid voting token");
+    require(config.duration > 0, "Invalid voting period");
+    require(config.votingThreshold > 0, "Invalid voting threshold");
 
     IEthereumZDAO zDAO = IEthereumZDAO(
       createProxy(
