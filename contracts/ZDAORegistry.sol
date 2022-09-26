@@ -9,8 +9,6 @@ import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
 import {IZNSHub} from "./interfaces/IZNSHub.sol";
 
 contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
-  IZNSHub public znsHub;
-
   // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
   // zDAO name => bool
@@ -36,19 +34,13 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAORegistry_init(IZNSHub _znsHub) public initializer {
+  function __ZDAORegistry_init() public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
-
-    znsHub = _znsHub;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
-
-  function setZNSHub(address _znsHub) external onlyOwner {
-    znsHub = IZNSHub(_znsHub);
-  }
 
   function addZDAOFactory(
     IZDAORegistry.PlatformType _platformType,
