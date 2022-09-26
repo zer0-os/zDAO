@@ -23,8 +23,6 @@ interface IZDAORegistry {
     string name;
     /// @notice Flag marking whether the zDAO has been destroyed
     bool destroyed;
-    /// @notice Array of zNA ids associated with zDAO
-    uint256[] associatedzNAs;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -48,33 +46,16 @@ interface IZDAORegistry {
     address indexed _gnosisSafe
   );
 
-  event LinkAdded(
-    uint256 indexed _platformType,
-    uint256 indexed _zDAOId,
-    uint256 indexed _zNA
-  );
-
-  event LinkRemoved(
-    uint256 indexed _platformType,
-    uint256 indexed _zDAOId,
-    uint256 indexed _zNA
-  );
-
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
   function addNewZDAO(
     uint256 _platformType,
-    uint256 _zNA,
     address _gnosisSafe,
     string calldata _title,
     bytes calldata _options
   ) external;
-
-  function addZNAAssociation(uint256 _zDAOId, uint256 _zNA) external;
-
-  function removeZNAAssociation(uint256 _zDAOId, uint256 _zNA) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
@@ -92,12 +73,8 @@ interface IZDAORegistry {
     view
     returns (ZDAORecord[] memory);
 
-  function getZDAOByZNA(uint256 _zNA) external view returns (ZDAORecord memory);
-
   function getZDAOById(uint256 _zDAOId)
     external
     view
     returns (ZDAORecord memory);
-
-  function doesZDAOExistForZNA(uint256 _zNA) external view returns (bool);
 }

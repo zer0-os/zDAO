@@ -34,7 +34,6 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
 
   event DAOCreated(
     uint256 indexed _zDAOId,
-    uint256 indexed _zNA,
     address indexed _createdBy,
     address _gnosisSafe,
     string _ensSpace
@@ -67,7 +66,6 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
 
   function addNewZDAO(
     uint256 _zDAOId,
-    uint256 _zNA,
     address _createdBy,
     address _gnosisSafe,
     bytes calldata _options
@@ -88,7 +86,7 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
 
     ensToZDAOId[ensId] = _zDAOId;
 
-    emit DAOCreated(_zDAOId, _zNA, _createdBy, _gnosisSafe, ensSpace);
+    emit DAOCreated(_zDAOId, _createdBy, _gnosisSafe, ensSpace);
 
     return address(0);
   }

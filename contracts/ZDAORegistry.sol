@@ -11,8 +11,6 @@ import {IZNSHub} from "./interfaces/IZNSHub.sol";
 contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   IZNSHub public znsHub;
 
-  // zNA    => zDAOId
-  mapping(uint256 => uint256) public zNATozDAOId;
   // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
   // zDAO name => bool
@@ -25,11 +23,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   /* -------------------------------------------------------------------------- */
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
-
-  modifier onlyZNAOwner(uint256 _zNA) {
-    require(znsHub.ownerOf(_zNA) == msg.sender, "Not a zNA owner");
-    _;
-  }
 
   modifier onlyValidZDAO(uint256 _zDAOId) {
     require(
@@ -70,27 +63,22 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   }
 
   /**
-   * @notice Add new zDAO associating with given zNA.
-   *     Create new EthereumZDAO contract and associate new zDAO with given zNA.
+   * @notice Add new zDAO with given parameters.
+   *     Create new EthereumZDAO contract and associate new zDAO.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
-   * @dev Only zNA owner can create zDAO
+   * @dev Only owner can create zDAO
    * @param _platformType PlatformType enum value
-   * @param _zNA zNA unique Id
    * @param _gnosisSafe Gnosis Safe address per zDAO
    * @param _name zDAO name
    * @param _options Abi encoded the structure of zDAO information
    */
   function addNewZDAO(
     uint256 _platformType,
-    uint256 _zNA,
     address _gnosisSafe,
     string calldata _name,
     bytes calldata _options
-  ) external override onlyZNAOwner(_zNA) {
-    uint256 zDAOId = zNATozDAOId[_zNA];
-    require(zDAOId == 0, "Already added DAO with same zNA");
-
+  ) external override onlyOwner {
     uint256 namePacked = uint256(keccak256(abi.encodePacked(_name)));
     require(!zDAONames[namePacked], "Already added zDAO with same name");
 
@@ -100,7 +88,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     lastZDAOId++;
     address zDAO = factory.addNewZDAO(
       lastZDAOId,
-      _zNA,
       msg.sender,
       _gnosisSafe,
       _options
@@ -113,8 +100,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
       zDAOOwnedBy: msg.sender,
       gnosisSafe: _gnosisSafe,
       name: _name,
-      destroyed: false,
-      associatedzNAs: new uint256[](0)
+      destroyed: false
     });
 
     emit DAOCreated(
@@ -125,41 +111,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
       _gnosisSafe,
       _name
     );
-
-    // Associate zDAO with zNA
-    _associatezNA(lastZDAOId, _zNA);
-  }
-
-  /**
-   * @notice Add association with zNA
-   * @dev Callable by zDAO owner and for valid zDAO
-   * @param _zDAOId zDAO unique id
-   * @param _zNA zNA id required to associate
-   */
-  function addZNAAssociation(uint256 _zDAOId, uint256 _zNA)
-    external
-    override
-    onlyValidZDAO(_zDAOId)
-    onlyZNAOwner(_zNA)
-  {
-    _associatezNA(_zDAOId, _zNA);
-  }
-
-  /**
-   * @notice Remove association from given zDAO
-   * @dev Callable by zDAO owner and for valid zDAO
-   * @param _zDAOId zDAO unique id
-   * @param _zNA zNA id required to remove
-   */
-  function removeZNAAssociation(uint256 _zDAOId, uint256 _zNA)
-    external
-    override
-    onlyZNAOwner(_zNA)
-  {
-    require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
-    require(zNATozDAOId[_zNA] == _zDAOId, "zNA not associated");
-
-    _disassociatezNA(_zDAOId, _zNA);
   }
 
   /**
@@ -185,25 +136,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     emit DAODestroyed(zDAORecord.platformType, _zDAOId);
   }
 
-  function adminAssociateZNA(uint256 _zDAOId, uint256 _zNA)
-    external
-    onlyValidZDAO(_zDAOId)
-    onlyOwner
-  {
-    require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
-    _associatezNA(_zDAOId, _zNA);
-  }
-
-  function adminDisassociateZNA(uint256 _zDAOId, uint256 _zNA)
-    external
-    onlyOwner
-  {
-    require(_zDAOId > 0 && _zDAOId <= lastZDAOId, "Invalid zDAO");
-    require(zNATozDAOId[_zNA] == _zDAOId, "zNA not associated");
-
-    _disassociatezNA(_zDAOId, _zNA);
-  }
-
   function adminModifyZDAO(
     uint256 _zDAOId,
     address _gnosisSafe,
@@ -226,37 +158,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
     return zDAORecords[_index].destroyed;
-  }
-
-  function _associatezNA(uint256 _zDAOId, uint256 _zNA) internal {
-    uint256 currentDAOAssociation = zNATozDAOId[_zNA];
-    require(currentDAOAssociation != _zDAOId, "zNA already linked to DAO");
-
-    // If an association already exists, remove it
-    if (currentDAOAssociation != 0) {
-      _disassociatezNA(currentDAOAssociation, _zNA);
-    }
-
-    zNATozDAOId[_zNA] = _zDAOId;
-    zDAORecords[_zDAOId].associatedzNAs.push(_zNA);
-
-    emit LinkAdded(zDAORecords[_zDAOId].platformType, _zDAOId, _zNA);
-  }
-
-  function _disassociatezNA(uint256 _zDAOId, uint256 _zNA) internal {
-    ZDAORecord storage dao = zDAORecords[_zDAOId];
-    uint256 length = zDAORecords[_zDAOId].associatedzNAs.length;
-
-    for (uint256 i = 0; i < length; i++) {
-      if (dao.associatedzNAs[i] == _zNA) {
-        dao.associatedzNAs[i] = dao.associatedzNAs[length - 1];
-        dao.associatedzNAs.pop();
-        zNATozDAOId[_zNA] = 0;
-
-        emit LinkRemoved(zDAORecords[_zDAOId].platformType, _zDAOId, _zNA);
-        break;
-      }
-    }
   }
 
   /* -------------------------------------------------------------------------- */
@@ -287,32 +188,12 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     return records;
   }
 
-  function getZDAOByZNA(uint256 _zNA)
-    external
-    view
-    override
-    returns (ZDAORecord memory)
-  {
-    uint256 zDAOId = zNATozDAOId[_zNA];
-    // require(zDAOId > 0 && zDAOId <= lastZDAOId, "No zDAO associated with zNA");
-    return zDAORecords[zDAOId];
-  }
-
   function getZDAOById(uint256 _zDAOId)
     external
     view
     returns (ZDAORecord memory)
   {
     return zDAORecords[_zDAOId];
-  }
-
-  function doesZDAOExistForZNA(uint256 _zNA)
-    external
-    view
-    override
-    returns (bool)
-  {
-    return zNATozDAOId[_zNA] != 0;
   }
 
   function resourceExists(uint256 _resourceID) external view returns (bool) {

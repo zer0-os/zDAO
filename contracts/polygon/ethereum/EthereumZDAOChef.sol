@@ -70,19 +70,17 @@ contract EthereumZDAOChef is
   }
 
   /**
-   * @notice Add new zDAO associating with given zNA.
-   *     Create new EthereumZDAO contract and associate new zDAO with given zNA.
+   * @notice Add new zDAO with given parameters.
+   *     Create new EthereumZDAO contract and associate new zDAO.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
-   * @dev Only zNA owner can create zDAO
+   * @dev Only callable by registry contract
    * @param _zDAOId zDAO unique id
-   * @param _zNA zNA unique Id
    * @param _gnosisSafe Address to Gnosis Safe
    * @param _options Abi encoded the structure of zDAO information
    */
   function addNewZDAO(
     uint256 _zDAOId,
-    uint256 _zNA,
     address _createdBy,
     address _gnosisSafe,
     bytes calldata _options
@@ -109,7 +107,6 @@ contract EthereumZDAOChef is
 
     emit DAOCreated(
       _zDAOId,
-      _zNA,
       address(zDAO),
       _createdBy,
       _gnosisSafe,

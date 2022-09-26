@@ -5,7 +5,6 @@ pragma solidity ^0.8.11;
 interface IZDAOFactory {
   function addNewZDAO(
     uint256 _zDAOId,
-    uint256 _zNA,
     address _createdBy,
     address _gnosisSafe,
     bytes calldata _options
