@@ -97,7 +97,6 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     zDAORecords[lastZDAOId] = ZDAORecord({
       platformType: _platformType,
       id: lastZDAOId,
-      zDAOOwnedBy: msg.sender,
       gnosisSafe: _gnosisSafe,
       name: _name,
       destroyed: false
@@ -120,36 +119,30 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
    * @dev Only owner can remove zDAO, and only for valid zDAO
    * @param _zDAOId zDAO unique id
    */
-  function adminRemoveZDAO(uint256 _zDAOId)
+  function removeZDAO(uint256 _zDAOId)
     external
     onlyValidZDAO(_zDAOId)
     onlyOwner
   {
-    ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
+    (uint256 platformType, ) = _removeZDAO(_zDAOId);
 
-    IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
-    assert(address(factory) != address(0));
-
-    zDAORecord.destroyed = true;
-    factory.removeZDAO(_zDAOId);
-
-    emit DAODestroyed(zDAORecord.platformType, _zDAOId);
+    emit DAODestroyed(platformType, _zDAOId);
   }
 
-  function adminModifyZDAO(
+  function modifyZDAO(
     uint256 _zDAOId,
     address _gnosisSafe,
+    string calldata _name,
     bytes calldata _options
   ) external onlyValidZDAO(_zDAOId) onlyOwner {
-    ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
+    (uint256 platformType, , ) = _modifyZDAO(
+      _zDAOId,
+      _gnosisSafe,
+      _name,
+      _options
+    );
 
-    IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
-    assert(address(factory) != address(0));
-
-    zDAORecord.gnosisSafe = _gnosisSafe;
-    factory.modifyZDAO(_zDAOId, _gnosisSafe, _options);
-
-    emit DAOModified(zDAORecord.platformType, _zDAOId, _gnosisSafe);
+    emit DAOModified(platformType, _zDAOId, _gnosisSafe);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -158,6 +151,50 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
 
   function _isZDAODestroyed(uint256 _index) internal view returns (bool) {
     return zDAORecords[_index].destroyed;
+  }
+
+  function _removeZDAO(uint256 _zDAOId) internal returns (uint256, uint256) {
+    ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
+
+    IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
+    assert(address(factory) != address(0));
+
+    zDAORecord.destroyed = true;
+    factory.removeZDAO(_zDAOId);
+
+    return (zDAORecord.platformType, _zDAOId);
+  }
+
+  function _modifyZDAO(
+    uint256 _zDAOId,
+    address _gnosisSafe,
+    string memory _name,
+    bytes memory _options
+  )
+    internal
+    returns (
+      uint256,
+      uint256,
+      address
+    )
+  {
+    ZDAORecord storage zDAORecord = zDAORecords[_zDAOId];
+
+    IZDAOFactory factory = zDAOFactories[zDAORecord.platformType];
+    assert(address(factory) != address(0));
+
+    uint256 oldNamePacked = uint256(
+      keccak256(abi.encodePacked(zDAORecord.name))
+    );
+    zDAONames[oldNamePacked] = false;
+    uint256 newNamePacked = uint256(keccak256(abi.encodePacked(_name)));
+    zDAONames[newNamePacked] = false;
+
+    zDAORecord.gnosisSafe = _gnosisSafe;
+    zDAORecord.name = _name;
+    factory.modifyZDAO(_zDAOId, _gnosisSafe, _options);
+
+    return (zDAORecord.platformType, _zDAOId, _gnosisSafe);
   }
 
   /* -------------------------------------------------------------------------- */

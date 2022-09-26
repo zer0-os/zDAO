@@ -15,8 +15,6 @@ interface IZDAORegistry {
     uint256 platformType;
     /// @notice Unique id for looking up zDAO
     uint256 id;
-    /// @notice zDAO owner and created by
-    address zDAOOwnedBy;
     /// @notice Gnosis safe address where collected treasuries are stored
     address gnosisSafe;
     /// @notice zDAO name
@@ -33,7 +31,7 @@ interface IZDAORegistry {
     uint256 indexed _platformType,
     uint256 indexed _zDAOId,
     address indexed _zDAO,
-    address _creator,
+    address _createdBy,
     address _gnosisSafe,
     string _name
   );
