@@ -78,7 +78,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     address _gnosisSafe,
     string calldata _name,
     bytes calldata _options
-  ) external override onlyOwner {
+  ) external override {
     uint256 namePacked = uint256(keccak256(abi.encodePacked(_name)));
     require(!zDAONames[namePacked], "Already added zDAO with same name");
 
