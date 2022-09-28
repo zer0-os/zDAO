@@ -305,7 +305,8 @@ describe("ZDAORegistry", function () {
         ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[0].ens])
       );
 
-      const zDAOId = 1, emptyZDAOID = 0;
+      const zDAOId = 1,
+        emptyZDAOID = 0;
       const exists = await zDAORegistry.resourceExists(zDAOId);
       expect(exists).to.be.equal(true);
 
@@ -324,7 +325,7 @@ describe("ZDAORegistry", function () {
 
       // Destroy it
       const zDAOId = 1;
-      await zDAORegistry.connect(deployer).adminRemoveZDAO(zDAOId);
+      await zDAORegistry.connect(deployer).removeZDAO(zDAOId);
 
       const notExists = await zDAORegistry.resourceExists(zDAOId);
       expect(notExists).to.be.equal(false);

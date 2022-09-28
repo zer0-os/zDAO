@@ -226,8 +226,7 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
 
   function resourceExists(uint256 _resourceID) external view returns (bool) {
     ZDAORecord storage zDAORecord = zDAORecords[_resourceID];
-    return !zDAORecord.destroyed &&
-      zDAORecord.id == _resourceID &&
-      zDAORecord.zDAOOwnedBy != address(0);
+    return
+      _resourceID > 0 && !zDAORecord.destroyed && zDAORecord.id == _resourceID;
   }
 }
