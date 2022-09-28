@@ -17,14 +17,17 @@ import {
   SnapshotZDAOChef__factory,
   ZDAORegistry,
   ZDAORegistry__factory,
+  IZNSHub,
 } from "../types";
 import { PlatformType } from "../scripts/shared/config";
 import { BigNumber } from "ethers";
 import { ZDAOConfig } from "./shared/types";
+import { IZNAResolver } from "../types/IZNAResolver";
 
 chai.use(smock.matchers);
 
 interface zDAOPair {
+  zNA: number;
   gnosisSafe: string;
   name: string;
   ens: string;
@@ -37,8 +40,11 @@ describe("ZDAORegistry", function () {
     user3: SignerWithAddress;
 
   let zDAORegistry: MockContract<ZDAORegistry>,
+    zNAResolver: FakeContract<IZNAResolver>,
+    zNSHub: FakeContract<IZNSHub>,
     snapshotZDAOChef: MockContract<SnapshotZDAOChef>;
 
+  const zNA = "wilder.wheels";
   const zDAOPairs: zDAOPair[] = [];
 
   const validateSnapshotDAOInformation = async (
@@ -67,12 +73,18 @@ describe("ZDAORegistry", function () {
   beforeEach("init setup", async function () {
     [deployer, user1, user2, user3] = await ethers.getSigners();
 
+    zNSHub = (await smock.fake<IZNSHub>("IZNSHub")) as FakeContract<IZNSHub>;
+
+    zNAResolver = (await smock.fake(
+      "IZNAResolver"
+    )) as FakeContract<IZNAResolver>;
+
     const zDAORegistryFactory = (await smock.mock<ZDAORegistry__factory>(
       "ZDAORegistry"
     )) as MockContractFactory<ZDAORegistry__factory>;
     zDAORegistry =
       (await zDAORegistryFactory.deploy()) as MockContract<ZDAORegistry>;
-    await zDAORegistry.__ZDAORegistry_init();
+    await zDAORegistry.__ZDAORegistry_init(zNSHub.address, zNAResolver.address);
 
     const snapshotZDAOChefFactory =
       (await smock.mock<SnapshotZDAOChef__factory>(
@@ -90,6 +102,7 @@ describe("ZDAORegistry", function () {
     const count = 3;
     for (let i = 0; i < count; i++) {
       zDAOPairs.push({
+        zNA: i + 1,
         gnosisSafe: ethers.Wallet.createRandom().address,
         name: `ens${i + 1}-name`,
         ens: `ens${i + 1}`,
@@ -99,14 +112,19 @@ describe("ZDAORegistry", function () {
 
   describe("Check addNewDAO for snapshot", () => {
     it("adds new dao record", async function () {
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[0].zNA).returns(deployer.address);
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[1].zNA).returns(deployer.address);
+
       await zDAORegistry.addNewZDAO(
         PlatformType.Snapshot, // platformType
+        zDAOPairs[0].zNA,
         zDAOPairs[0].gnosisSafe,
         zDAOPairs[0].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[0].ens])
       );
       await zDAORegistry.addNewZDAO(
         PlatformType.Snapshot, // platformType
+        zDAOPairs[1].zNA,
         zDAOPairs[1].gnosisSafe,
         zDAOPairs[1].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[1].ens])
@@ -129,8 +147,11 @@ describe("ZDAORegistry", function () {
     });
 
     it("blocks when ens is already added", async function () {
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[0].zNA).returns(deployer.address);
+
       await zDAORegistry.addNewZDAO(
         PlatformType.Snapshot, // platformType
+        zDAOPairs[0].zNA,
         zDAOPairs[0].gnosisSafe,
         zDAOPairs[0].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[0].ens])
@@ -139,6 +160,7 @@ describe("ZDAORegistry", function () {
       await expect(
         zDAORegistry.addNewZDAO(
           PlatformType.Snapshot, // platformType
+          zDAOPairs[0].zNA,
           zDAOPairs[0].gnosisSafe,
           zDAOPairs[0].name,
           ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[0].ens])
@@ -243,6 +265,9 @@ describe("ZDAORegistry", function () {
     });
 
     it("adds new dao record", async function () {
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[0].zNA).returns(deployer.address);
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[1].zNA).returns(deployer.address);
+
       const options = ethers.utils.defaultAbiCoder.encode(
         [
           "address",
@@ -267,12 +292,14 @@ describe("ZDAORegistry", function () {
       );
       await zDAORegistry.addNewZDAO(
         PlatformType.Polygon, // platformType
+        zDAOPairs[0].zNA,
         zDAOPairs[0].gnosisSafe,
         zDAOPairs[0].name,
         options
       );
       await zDAORegistry.addNewZDAO(
         PlatformType.Polygon, // platformType
+        zDAOPairs[1].zNA,
         zDAOPairs[1].gnosisSafe,
         zDAOPairs[1].name,
         options
@@ -297,9 +324,12 @@ describe("ZDAORegistry", function () {
 
   describe("Check ResourceRegistry", () => {
     it("resource should exist", async function () {
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[0].zNA).returns(user1.address);
+
       // Add new DAO
       await zDAORegistry.connect(user1).addNewZDAO(
         PlatformType.Snapshot, // platformType
+        zDAOPairs[0].zNA,
         zDAOPairs[0].gnosisSafe,
         zDAOPairs[0].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[0].ens])
@@ -315,9 +345,12 @@ describe("ZDAORegistry", function () {
     });
 
     it("destroyed resource should not exist", async function () {
+      zNSHub.ownerOf.whenCalledWith(zDAOPairs[0].zNA).returns(user1.address);
+
       // Add new DAO
       await zDAORegistry.connect(user1).addNewZDAO(
         PlatformType.Snapshot, // platformType
+        zDAOPairs[0].zNA,
         zDAOPairs[0].gnosisSafe,
         zDAOPairs[0].name,
         ethers.utils.defaultAbiCoder.encode(["string"], [zDAOPairs[0].ens])

@@ -44,7 +44,10 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAORegistry_init(IZNSHub _znsHub, IZNAResolver _zNAResolver) public initializer {
+  function __ZDAORegistry_init(IZNSHub _znsHub, IZNAResolver _zNAResolver)
+    public
+    initializer
+  {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
     znsHub = _znsHub;
