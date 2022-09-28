@@ -6,8 +6,14 @@ import {ZeroUpgradeable} from "./abstracts/ZeroUpgradeable.sol";
 import {IResourceRegistry} from "./interfaces/IResourceRegistry.sol";
 import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
 import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
+import {IZNAResolver} from "./interfaces/IZNAResolver.sol";
+import {IZNSHub} from "./interfaces/IZNSHub.sol";
 
 contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
+  IZNSHub public znsHub;
+
+  IZNAResolver public zNAResolver;
+
   // zDAOId => zDAORecord
   mapping(uint256 => ZDAORecord) public zDAORecords;
   // zDAO name => bool
@@ -21,6 +27,11 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
+  modifier onlyZNAOwner(uint256 _zNA) {
+    require(znsHub.ownerOf(_zNA) == msg.sender, "Not a zNA owner");
+    _;
+  }
+
   modifier onlyValidZDAO(uint256 _zDAOId) {
     require(
       _zDAOId > 0 && _zDAOId <= lastZDAOId && !_isZDAODestroyed(_zDAOId),
@@ -33,8 +44,11 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAORegistry_init() public initializer {
+  function __ZDAORegistry_init(IZNSHub _znsHub, IZNAResolver _zNAResolver) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
+
+    znsHub = _znsHub;
+    zNAResolver = _zNAResolver;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -46,16 +60,12 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     IZDAOFactory _factory
   ) external onlyOwner {
     uint256 platformType = uint256(_platformType);
-    // require(
-    //   address(zDAOFactories[platformType]) == address(0),
-    //   "Already has factory address"
-    // );
     zDAOFactories[platformType] = _factory;
   }
 
   /**
-   * @notice Add new zDAO with given parameters.
-   *     Create new EthereumZDAO contract and associate new zDAO.
+   * @notice Add new zDAO associating with given zNA.
+   *     Create new EthereumZDAO contract and associate new zDAO with given zNA.
    *     Once create new zDAO, it should be synchronized to Polygon.
    *     Users can create proposal and cast a vote after zDAO synchronization.
    * @dev Only owner can create zDAO
@@ -66,10 +76,11 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
    */
   function addNewZDAO(
     uint256 _platformType,
+    uint256 _zNA,
     address _gnosisSafe,
     string calldata _name,
     bytes calldata _options
-  ) external override {
+  ) external override onlyZNAOwner(_zNA) {
     uint256 namePacked = uint256(keccak256(abi.encodePacked(_name)));
     require(!zDAONames[namePacked], "Already added zDAO with same name");
 
@@ -101,6 +112,9 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
       _gnosisSafe,
       _name
     );
+
+    // Associate zDAO with zNA, resource type = 0x1
+    zNAResolver.associateWithResourceType(_zNA, 0x1, lastZDAOId);
   }
 
   /**
