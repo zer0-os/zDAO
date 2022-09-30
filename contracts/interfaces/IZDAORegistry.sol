@@ -50,6 +50,7 @@ interface IZDAORegistry {
 
   function addNewZDAO(
     uint256 _platformType,
+    uint256 _zNA,
     address _gnosisSafe,
     string calldata _title,
     bytes calldata _options
