@@ -58,6 +58,14 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
+  function setZNSHub(IZNSHub _znsHub) external onlyOwner {
+    znsHub = _znsHub;
+  }
+
+  function setZNAResolver(IZNAResolver _zNAResolver) external onlyOwner {
+    zNAResolver = _zNAResolver;
+  }
+
   function addZDAOFactory(
     IZDAORegistry.PlatformType _platformType,
     IZDAOFactory _factory
