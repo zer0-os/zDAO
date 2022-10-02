@@ -21,14 +21,10 @@ const main = async () => {
     // ZDAORegistry
     console.log("Deploying ZDAORegistry proxy contract...");
     const ZDAORegistryFactory = await ethers.getContractFactory("ZDAORegistry");
-    const zDAORegistry = (await upgrades.deployProxy(
-      ZDAORegistryFactory,
-      [config[network.name].zNSHub],
-      {
-        kind: "uups",
-        initializer: "__ZDAORegistry_init",
-      }
-    )) as ZDAORegistry;
+    const zDAORegistry = (await upgrades.deployProxy(ZDAORegistryFactory, [], {
+      kind: "uups",
+      initializer: "__ZDAORegistry_init",
+    })) as ZDAORegistry;
     await zDAORegistry.deployed();
     console.log(`\ndeployed: ${zDAORegistry.address}`);
 

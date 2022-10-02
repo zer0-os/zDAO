@@ -15,16 +15,12 @@ interface IZDAORegistry {
     uint256 platformType;
     /// @notice Unique id for looking up zDAO
     uint256 id;
-    /// @notice zDAO owner and created by
-    address zDAOOwnedBy;
     /// @notice Gnosis safe address where collected treasuries are stored
     address gnosisSafe;
     /// @notice zDAO name
     string name;
     /// @notice Flag marking whether the zDAO has been destroyed
     bool destroyed;
-    /// @notice Array of zNA ids associated with zDAO
-    uint256[] associatedzNAs;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -35,7 +31,7 @@ interface IZDAORegistry {
     uint256 indexed _platformType,
     uint256 indexed _zDAOId,
     address indexed _zDAO,
-    address _creator,
+    address _createdBy,
     address _gnosisSafe,
     string _name
   );
@@ -46,18 +42,6 @@ interface IZDAORegistry {
     uint256 indexed _platformType,
     uint256 indexed _zDAOId,
     address indexed _gnosisSafe
-  );
-
-  event LinkAdded(
-    uint256 indexed _platformType,
-    uint256 indexed _zDAOId,
-    uint256 indexed _zNA
-  );
-
-  event LinkRemoved(
-    uint256 indexed _platformType,
-    uint256 indexed _zDAOId,
-    uint256 indexed _zNA
   );
 
   /* -------------------------------------------------------------------------- */
@@ -71,10 +55,6 @@ interface IZDAORegistry {
     string calldata _title,
     bytes calldata _options
   ) external;
-
-  function addZNAAssociation(uint256 _zDAOId, uint256 _zNA) external;
-
-  function removeZNAAssociation(uint256 _zDAOId, uint256 _zNA) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
@@ -92,12 +72,8 @@ interface IZDAORegistry {
     view
     returns (ZDAORecord[] memory);
 
-  function getZDAOByZNA(uint256 _zNA) external view returns (ZDAORecord memory);
-
   function getZDAOById(uint256 _zDAOId)
     external
     view
     returns (ZDAORecord memory);
-
-  function doesZDAOExistForZNA(uint256 _zNA) external view returns (bool);
 }

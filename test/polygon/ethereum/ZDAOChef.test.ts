@@ -15,7 +15,6 @@ import {
   EthereumZDAOChef,
   EthereumZDAOChef__factory,
   IERC20Upgradeable,
-  IZNSHub,
   MockTokenUpgradeable,
   MockTokenUpgradeable__factory,
 } from "../../../types";
@@ -28,18 +27,10 @@ chai.use(smock.matchers);
 
 describe("ZDAOChef", async function () {
   let owner: SignerWithAddress,
-    zNAOwner: SignerWithAddress,
-    zNAOwner2: SignerWithAddress,
     userA: SignerWithAddress,
     userB: SignerWithAddress;
 
-  const zNA = "wilder.wheels";
-  const zNAAsNumber = zns.domains.domainNameToId(zNA);
-  const zNA2 = "wilder.cat";
-  const zNAAsNumber2 = zns.domains.domainNameToId(zNA2);
-
-  let ZNSHub: FakeContract<IZNSHub>,
-    ethereumStateSender: FakeContract<IEthereumStateSender>,
+  let ethereumStateSender: FakeContract<IEthereumStateSender>,
     zDAOChef: MockContract<EthereumZDAOChef>,
     vToken: FakeContract<IERC20Upgradeable>;
 
@@ -48,7 +39,7 @@ describe("ZDAOChef", async function () {
     proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
-    [owner, zNAOwner, zNAOwner2, userA, userB] = await ethers.getSigners();
+    [owner, userA, userB] = await ethers.getSigners();
 
     const ZDAOChefFactory = (await smock.mock<EthereumZDAOChef__factory>(
       "EthereumZDAOChef"
@@ -68,14 +59,6 @@ describe("ZDAOChef", async function () {
       ethereumStateSender.address,
       zDAOBase.address
     );
-
-    const znsHubAddress = await ethers.Wallet.createRandom().getAddress();
-    ZNSHub = (await smock.fake("IZNSHub", {
-      address: znsHubAddress,
-    })) as FakeContract<IZNSHub>;
-    // make sure that `owner` is owner of zNA
-    ZNSHub.ownerOf.whenCalledWith(zNAAsNumber).returns(zNAOwner.address);
-    ZNSHub.ownerOf.whenCalledWith(zNAAsNumber2).returns(zNAOwner2.address);
 
     vToken = (await smock.fake(
       "IERC20Upgradeable"
@@ -112,7 +95,6 @@ describe("ZDAOChef", async function () {
       .connect(user)
       .addNewZDAO(
         zDAOId,
-        zNAAsNumber,
         user.address,
         gnosisSafe,
         ethers.utils.defaultAbiCoder.encode(
@@ -150,19 +132,19 @@ describe("ZDAOChef", async function () {
   };
 
   it("Should not add same DAO twice", async function () {
-    await addNewDAO(zNAOwner, 1);
+    await addNewDAO(userA, 1);
 
-    await expect(addNewDAO(zNAOwner, 1)).to.be.reverted;
+    await expect(addNewDAO(userA, 1)).to.be.reverted;
   });
 
   it("Should modify Gnosis Safe and voting token", async function () {
-    await addNewDAO(zNAOwner, 1);
+    await addNewDAO(userA, 1);
 
     const newGnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
     await expect(
       zDAOChef
-        .connect(zNAOwner)
+        .connect(userA)
         .modifyZDAO(
           1,
           newGnosisSafe,
@@ -175,7 +157,7 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should create a proposal", async function () {
-    await addNewDAO(zNAOwner, 1);
+    await addNewDAO(userA, 1);
 
     const zDAOId = 1;
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
@@ -185,7 +167,7 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should calculate voting result", async function () {
-    await addNewDAO(zNAOwner, 1);
+    await addNewDAO(userA, 1);
 
     const zDAOId = 1;
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
@@ -221,7 +203,7 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should not execute a failed proposal", async function () {
-    await addNewDAO(zNAOwner, 1);
+    await addNewDAO(userA, 1);
 
     const zDAOId = 1;
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);
@@ -261,7 +243,7 @@ describe("ZDAOChef", async function () {
   });
 
   it("Should execute a succeeded proposal", async function () {
-    await addNewDAO(zNAOwner, 1);
+    await addNewDAO(userA, 1);
 
     const zDAOId = 1;
     vToken.balanceOf.whenCalledWith(userA.address).returns(zDAOConfig.amount);

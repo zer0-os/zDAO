@@ -34,9 +34,8 @@ interface IEthereumZDAOChef {
 
   event DAOCreated(
     uint256 indexed _zDAOId,
-    uint256 indexed _zNA,
     address indexed _zDAO,
-    address _createdBy,
+    address indexed _createdBy,
     address _gnosisSafe,
     address _token,
     uint256 _amount,

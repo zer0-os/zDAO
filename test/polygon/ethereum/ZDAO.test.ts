@@ -21,7 +21,7 @@ chai.use(smock.matchers);
 describe("ZDAO", async function () {
   let owner: SignerWithAddress,
     zDAOChef: SignerWithAddress,
-    zNAOwner: SignerWithAddress,
+    zDAOCreatedBy: SignerWithAddress,
     userA: SignerWithAddress,
     userB: SignerWithAddress;
 
@@ -36,7 +36,7 @@ describe("ZDAO", async function () {
     proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
-    [owner, zDAOChef, zNAOwner, userA, userB] = await ethers.getSigners();
+    [owner, zDAOChef, zDAOCreatedBy, userA, userB] = await ethers.getSigners();
 
     const ZDAOFactory = (await smock.mock<EthereumZDAO__factory>(
       "EthereumZDAO"
@@ -67,7 +67,7 @@ describe("ZDAO", async function () {
     await zDAO.__ZDAO_init(
       zDAOChef.address, // instead of zDAOChef
       zDAOId,
-      zNAOwner.address,
+      zDAOCreatedBy.address,
       gnosisSafe,
       zDAOConfig
     );
@@ -82,7 +82,7 @@ describe("ZDAO", async function () {
 
   it("Check zDAO information", async function () {
     expect(zDAOInfo.zDAOId).to.be.equal(1);
-    expect(zDAOInfo.createdBy).to.be.equal(zNAOwner.address);
+    expect(zDAOInfo.createdBy).to.be.equal(zDAOCreatedBy.address);
     expect(zDAOInfo.gnosisSafe).to.be.equal(gnosisSafe);
     expect(zDAOInfo.token).to.be.equal(zDAOConfig.token);
     expect(zDAOInfo.amount.toNumber()).to.be.equal(zDAOConfig.amount);
