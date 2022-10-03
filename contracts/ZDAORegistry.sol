@@ -8,12 +8,9 @@ import {IZDAOFactory} from "./interfaces/IZDAOFactory.sol";
 import {IZDAORegistry} from "./interfaces/IZDAORegistry.sol";
 import {IZNAResolver} from "./interfaces/IZNAResolver.sol";
 import {IZNSHub} from "./interfaces/IZNSHub.sol";
+import {ResourceType} from "./libraries/ResourceType.sol";
 
 contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
-  // Resource Type is defined by ZNAResolver
-  // https://github.com/zer0-os/zNS/blob/feature/zna-resolver/contracts/resolver/ZNAResolver.sol
-  uint256 public constant RESOURCE_TYPE_DAO = 0x1;
-
   IZNSHub public znsHub;
 
   IZNAResolver public zNAResolver;
@@ -129,7 +126,11 @@ contract ZDAORegistry is ZeroUpgradeable, IZDAORegistry, IResourceRegistry {
     );
 
     // Associate zDAO with zNA
-    zNAResolver.associateWithResourceType(_zNA, RESOURCE_TYPE_DAO, lastZDAOId);
+    zNAResolver.associateWithResourceType(
+      _zNA,
+      ResourceType.RESOURCE_TYPE_DAO,
+      lastZDAOId
+    );
   }
 
   /**
