@@ -33,39 +33,39 @@ interface IEthereumZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   event DAOCreated(
-    uint256 indexed _zDAOId,
-    address indexed _zDAO,
-    address indexed _createdBy,
-    address _gnosisSafe,
-    address _token,
-    uint256 _amount,
-    uint256 _duration,
-    uint256 _votingDelay,
-    uint256 _votingThreshold,
-    uint256 _minimumVotingParticipants,
-    uint256 _minimumTotalVotingTokens,
-    bool _isRelativeMajority
+    uint256 indexed zDAOId,
+    address indexed zDAO,
+    address indexed createdBy,
+    address gnosisSafe,
+    address token,
+    uint256 amount,
+    uint256 duration,
+    uint256 votingDelay,
+    uint256 votingThreshold,
+    uint256 minimumVotingParticipants,
+    uint256 minimumTotalVotingTokens,
+    bool isRelativeMajority
   );
 
   event ProposalCreated(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    uint256 indexed _numberOfChoices,
-    address _createdBy,
-    uint256 _snapshot,
-    string _ipfs
+    uint256 indexed zDAOId,
+    uint256 indexed proposalId,
+    uint256 indexed numberOfChoices,
+    address createdBy,
+    uint256 snapshot,
+    string ipfs
   );
 
   event ProposalCanceled(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    address indexed _cancelBy
+    uint256 indexed zDAOId,
+    uint256 indexed proposalId,
+    address indexed cancelBy
   );
 
   event ProposalCalculated(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    uint256 _voters,
+    uint256 indexed zDAOId,
+    uint256 indexed proposalId,
+    uint256 voters,
     uint256[] votes
   );
 
@@ -73,25 +73,25 @@ interface IEthereumZDAOChef {
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setZDAORegistry(address _zDAORgistry) external;
+  function setZDAORegistry(address zDAORgistry) external;
 
-  function setZDAOBase(address _zDAOBase) external;
+  function setZDAOBase(address zDAOBase) external;
 
   function createProposal(
-    uint256 _zDAOId,
-    string[] calldata _choices,
-    string calldata _ipfs
+    uint256 zDAOId,
+    string[] calldata choices,
+    string calldata ipfs
   ) external;
 
-  function cancelProposal(uint256 _zDAOId, uint256 _proposalId) external;
+  function cancelProposal(uint256 zDAOId, uint256 proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function getZDAOById(uint256 _zDAOId) external view returns (IEthereumZDAO);
+  function getZDAOById(uint256 zDAOId) external view returns (IEthereumZDAO);
 
-  function getZDAOInfoById(uint256 _zDAOId)
+  function getZDAOInfoById(uint256 zDAOId)
     external
     view
     returns (IEthereumZDAO.ZDAOInfo memory);

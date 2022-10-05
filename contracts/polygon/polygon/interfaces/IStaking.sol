@@ -8,76 +8,76 @@ interface IStaking {
   /* -------------------------------------------------------------------------- */
 
   event StakedERC20(
-    address indexed _user,
-    address indexed _token,
-    uint256 indexed _decimals,
-    uint256 _amount
+    address indexed user,
+    address indexed token,
+    uint256 indexed decimals,
+    uint256 amount
   );
 
   event StakedERC721(
-    address indexed _user,
-    address indexed _token,
-    uint256 indexed _tokenId
+    address indexed user,
+    address indexed token,
+    uint256 indexed tokenId
   );
 
   event UnstakedERC20(
-    address indexed _user,
-    address indexed _token,
-    uint256 indexed _decimals,
-    uint256 _amount
+    address indexed user,
+    address indexed token,
+    uint256 indexed decimals,
+    uint256 amount
   );
 
   event UnstakedERC721(
-    address indexed _user,
-    address indexed _token,
-    uint256 indexed _tokenId
+    address indexed user,
+    address indexed token,
+    uint256 indexed tokenId
   );
 
   /**
    * @dev Emitted when a token transfer or delegate change results in changes to a delegate's number of staking.
    */
   event StakingPowerChanged(
-    address indexed _delegate,
-    address indexed _token,
-    uint256 _oldValue,
-    uint256 _newValue
+    address indexed delegate,
+    address indexed token,
+    uint256 oldValue,
+    uint256 newValue
   );
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function stakeERC20(address _token, uint256 _amount) external;
+  function stakeERC20(address token, uint256 amount) external;
 
-  function stakeERC721(address _token, uint256 _tokenId) external;
+  function stakeERC721(address token, uint256 tokenId) external;
 
-  function unstakeERC20(address _token, uint256 _amount) external;
+  function unstakeERC20(address token, uint256 amount) external;
 
-  function unstakeERC721(address _token, uint256 _tokenId) external;
+  function unstakeERC721(address token, uint256 tokenId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function stakingPower(address _user, address _token)
+  function stakingPower(address user, address token)
     external
     view
     returns (uint256);
 
   function pastStakingPower(
-    address _user,
-    address _token,
-    uint256 _blockNumber
+    address user,
+    address token,
+    uint256 blockNumber
   ) external view returns (uint256);
 
-  function stakedERC20Amount(address _user, address _token)
+  function stakedERC20Amount(address user, address token)
     external
     view
     returns (uint256);
 
   function isStakedERC721(
-    address _user,
-    address _token,
-    uint256 _tokenId
+    address user,
+    address token,
+    uint256 tokenId
   ) external view returns (bool);
 }

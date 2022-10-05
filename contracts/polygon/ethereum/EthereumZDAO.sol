@@ -29,9 +29,9 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     _;
   }
 
-  modifier onlyValidTokenHolder(address _holder) {
+  modifier onlyValidTokenHolder(address holder) {
     require(
-      IERC20Upgradeable(zDAOInfo.token).balanceOf(_holder) >= zDAOInfo.amount,
+      IERC20Upgradeable(zDAOInfo.token).balanceOf(holder) >= zDAOInfo.amount,
       "Not a valid token holder"
     );
     _;
@@ -42,8 +42,8 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     _;
   }
 
-  modifier onlyValidProposal(uint256 _proposalId) {
-    require(_proposalId > 0 && _proposalId <= lastProposalId, "Invalid zDAO");
+  modifier onlyValidProposal(uint256 proposalId) {
+    require(proposalId > 0 && proposalId <= lastProposalId, "Invalid zDAO");
     _;
   }
 
@@ -53,36 +53,36 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
 
   /**
    * @notice Initializer function
-   * @param _zDAOChef Address to EthereumZDAOChef contract
-   * @param _zDAOId Unique id for current zDAO
-   * @param _gnosisSafe Address to Gnosis Safe
-   * @param _createdBy Address to zDAO owner
-   * @param _zDAOConfig Structure of zDAO configuration
+   * @param zDAOChef_ Address to EthereumZDAOChef contract
+   * @param zDAOId Unique id for current zDAO
+   * @param gnosisSafe Address to Gnosis Safe
+   * @param createdBy Address to zDAO owner
+   * @param zDAOConfig Structure of zDAO configuration
    */
   function __ZDAO_init(
-    address _zDAOChef,
-    uint256 _zDAOId,
-    address _createdBy,
-    address _gnosisSafe,
-    IEthereumZDAOChef.ZDAOConfig calldata _zDAOConfig
+    address zDAOChef_,
+    uint256 zDAOId,
+    address createdBy,
+    address gnosisSafe,
+    IEthereumZDAOChef.ZDAOConfig calldata zDAOConfig
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
-    zDAOChef = _zDAOChef;
+    zDAOChef = zDAOChef_;
 
     zDAOInfo = ZDAOInfo({
-      zDAOId: _zDAOId,
-      createdBy: _createdBy,
-      gnosisSafe: _gnosisSafe,
-      token: _zDAOConfig.token,
-      amount: _zDAOConfig.amount,
-      duration: _zDAOConfig.duration,
-      votingDelay: _zDAOConfig.votingDelay,
-      votingThreshold: _zDAOConfig.votingThreshold,
-      minimumVotingParticipants: _zDAOConfig.minimumVotingParticipants,
-      minimumTotalVotingTokens: _zDAOConfig.minimumTotalVotingTokens,
+      zDAOId: zDAOId,
+      createdBy: createdBy,
+      gnosisSafe: gnosisSafe,
+      token: zDAOConfig.token,
+      amount: zDAOConfig.amount,
+      duration: zDAOConfig.duration,
+      votingDelay: zDAOConfig.votingDelay,
+      votingThreshold: zDAOConfig.votingThreshold,
+      minimumVotingParticipants: zDAOConfig.minimumVotingParticipants,
+      minimumTotalVotingTokens: zDAOConfig.minimumTotalVotingTokens,
       snapshot: block.number,
-      isRelativeMajority: _zDAOConfig.isRelativeMajority,
+      isRelativeMajority: zDAOConfig.isRelativeMajority,
       destroyed: false
     });
   }
@@ -94,49 +94,49 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /**
    * @notice Destroy the zDAO
    * @dev Callable by EthereumZDAOChef
-   * @param _destroyed Flag marking whether zDAO has been destroyed
+   * @param destroyed_ Flag marking whether zDAO has been destroyed
    */
-  function setDestroyed(bool _destroyed) external override onlyZDAOChef {
-    zDAOInfo.destroyed = _destroyed;
+  function setDestroyed(bool destroyed_) external override onlyZDAOChef {
+    zDAOInfo.destroyed = destroyed_;
   }
 
   /**
    * @notice Set Gnosis Safe address, Voting Token and minimum holding token amount
    * @dev Callable by EthereumZDAOChef, only available for active zDAO
-   * @param _gnosisSafe Address to Gnosis Safe wallet
-   * @param _token Address to Voting Token
-   * @param _amount Minimum number of tokens required to become proposal creator
+   * @param gnosisSafe Address to Gnosis Safe wallet
+   * @param token Address to Voting Token
+   * @param amount Minimum number of tokens required to become proposal creator
    */
   function modifyZDAO(
-    address _gnosisSafe,
-    address _token,
-    uint256 _amount
+    address gnosisSafe,
+    address token,
+    uint256 amount
   ) external override isActiveDAO onlyZDAOChef {
-    zDAOInfo.gnosisSafe = _gnosisSafe;
-    zDAOInfo.token = _token;
-    zDAOInfo.amount = _amount;
+    zDAOInfo.gnosisSafe = gnosisSafe;
+    zDAOInfo.token = token;
+    zDAOInfo.amount = amount;
   }
 
   /**
    * @notice Create a proposal with the IPFS which contains proposal meta data
    * @dev Callable by EthereumZDAOChef, only available for active zDAO
-   * @param _createdBy Address to the proposal owner
-   * @param _choices Number of choices
-   * @param _ipfs IPFS hash which contains proposal meta data e.g. body text
+   * @param createdBy Address to the proposal owner
+   * @param choices Number of choices
+   * @param ipfs IPFS hash which contains proposal meta data e.g. body text
    */
   function createProposal(
-    address _createdBy,
-    string[] calldata _choices,
-    string calldata _ipfs
+    address createdBy,
+    string[] calldata choices,
+    string calldata ipfs
   )
     external
     override
     onlyZDAOChef
     isActiveDAO
-    onlyValidTokenHolder(_createdBy)
+    onlyValidTokenHolder(createdBy)
     returns (uint256)
   {
-    uint256 proposalId = _createProposal(_createdBy, _choices, _ipfs);
+    uint256 proposalId = _createProposal(createdBy, choices, ipfs);
 
     return proposalId;
   }
@@ -146,24 +146,24 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    *      It means that proposal is still synchronizing to Polygon or active.
    * @dev Callable by EthereumZDAOChef, only available for active zDAO and valid
    *      proposal
-   * @param _cancelBy Address to user who is going to cancel proposal
-   * @param _proposalId Proposal unique id to cancel
+   * @param cancelBy Address to user who is going to cancel proposal
+   * @param proposalId Proposal unique id to cancel
    */
-  function cancelProposal(address _cancelBy, uint256 _proposalId)
+  function cancelProposal(address cancelBy, uint256 proposalId)
     external
     override
     onlyZDAOChef
     isActiveDAO
-    onlyValidProposal(_proposalId)
+    onlyValidProposal(proposalId)
   {
     require(
-      proposals[_proposalId].createdBy == _cancelBy,
+      proposals[proposalId].createdBy == cancelBy,
       "Not a proposal creator"
     );
-    ProposalState state2 = this.state(_proposalId);
+    ProposalState state2 = this.state(proposalId);
     require(state2 == ProposalState.Pending, "Not a pending proposal");
 
-    proposals[_proposalId].canceled = true;
+    proposals[proposalId].canceled = true;
   }
 
   /**
@@ -174,32 +174,32 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    *     Proposal state is pending state until proposal calculation.
    * @dev Callable by EthereumZDAOchef, only available for active zDAO and valid
    *     proposal
-   * @param _proposalId Proposal unique id to execute
-   * @param _voters Number of voters who participated in
-   * @param _votes Array of number of all the casted votes
+   * @param proposalId Proposal unique id to execute
+   * @param voters Number of voters who participated in
+   * @param votes Array of number of all the casted votes
    */
   function calculateProposal(
-    uint256 _proposalId,
-    uint256 _voters,
-    uint256[] calldata _votes
-  ) external override onlyZDAOChef onlyValidProposal(_proposalId) {
-    Proposal storage proposal = proposals[_proposalId];
+    uint256 proposalId,
+    uint256 voters,
+    uint256[] calldata votes
+  ) external override onlyZDAOChef onlyValidProposal(proposalId) {
+    Proposal storage proposal = proposals[proposalId];
     require(!proposal.calculated, "Already calculated proposal");
 
-    ProposalState state2 = this.state(_proposalId);
+    ProposalState state2 = this.state(proposalId);
     require(state2 == ProposalState.Pending, "Not a pending proposal");
 
     require(
-      _votes.length == proposal.votes.length,
+      votes.length == proposal.votes.length,
       "Not match length of votes"
     );
 
-    proposal.voters = _voters;
-    for (uint256 i = 0; i < _votes.length; i++) {
-      proposal.votes[i] = _votes[i];
+    proposal.voters = voters;
+    for (uint256 i = 0; i < votes.length; i++) {
+      proposal.votes[i] = votes[i];
     }
 
-    proposals[_proposalId].calculated = true;
+    proposals[proposalId].calculated = true;
   }
 
   /* -------------------------------------------------------------------------- */
@@ -207,23 +207,23 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
   /* -------------------------------------------------------------------------- */
 
   function _createProposal(
-    address _createdBy,
-    string[] memory _choices,
-    string memory _ipfs
+    address createdBy,
+    string[] memory choices,
+    string memory ipfs
   ) internal virtual returns (uint256 proposalId) {
     lastProposalId++;
 
     proposals[lastProposalId] = Proposal({
       proposalId: lastProposalId,
-      createdBy: _createdBy,
+      createdBy: createdBy,
       created: block.timestamp,
       voters: 0,
-      ipfs: _ipfs,
+      ipfs: ipfs,
       snapshot: block.number,
       calculated: false,
       canceled: false,
-      choices: _choices,
-      votes: new uint256[](_choices.length)
+      choices: choices,
+      votes: new uint256[](choices.length)
     });
     proposalIds.push(lastProposalId);
 
@@ -254,31 +254,31 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
     return lastProposalId;
   }
 
-  function getProposalById(uint256 _proposalId)
+  function getProposalById(uint256 proposalId)
     external
     view
     returns (Proposal memory)
   {
-    return proposals[_proposalId];
+    return proposals[proposalId];
   }
 
-  function listProposals(uint256 _startIndex, uint256 _count)
+  function listProposals(uint256 startIndex, uint256 count)
     external
     view
     override
     returns (Proposal[] memory records)
   {
-    uint256 numRecords = _count;
-    if (lastProposalId <= _startIndex) {
+    uint256 numRecords = count;
+    if (lastProposalId <= startIndex) {
       numRecords = 0;
-    } else if (numRecords > (lastProposalId - _startIndex)) {
-      numRecords = lastProposalId - _startIndex;
+    } else if (numRecords > (lastProposalId - startIndex)) {
+      numRecords = lastProposalId - startIndex;
     }
 
     records = new Proposal[](numRecords);
 
     for (uint256 i = 0; i < numRecords; ++i) {
-      records[i] = proposals[_startIndex + i + 1];
+      records[i] = proposals[startIndex + i + 1];
     }
 
     return records;
@@ -291,13 +291,13 @@ contract EthereumZDAO is ZeroUpgradeable, IEthereumZDAO {
    *       but not calculated yet
    *     Closed if proposal is successfully finalized
    */
-  function state(uint256 _proposalId)
+  function state(uint256 proposalId)
     external
     view
     override
     returns (ProposalState)
   {
-    Proposal storage proposal = proposals[_proposalId];
+    Proposal storage proposal = proposals[proposalId];
     if (proposal.canceled) {
       return ProposalState.Canceled;
     } else if (!proposal.calculated) {

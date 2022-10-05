@@ -4,15 +4,15 @@ pragma solidity ^0.8.11;
 
 import {ERC1967Proxy} from "../oz/proxy/ERC1967/ERC1967Proxy.sol";
 
-function createProxy(address _logic, bytes memory _data)
+function createProxy(address logic, bytes memory data)
   returns (address payable)
 {
   return
     payable(
       address(
         new ERC1967Proxy{
-          salt: keccak256(abi.encodePacked(block.number, _data))
-        }(_logic, _data)
+          salt: keccak256(abi.encodePacked(block.number, data))
+        }(logic, data)
       )
     );
 }

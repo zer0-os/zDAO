@@ -70,36 +70,36 @@ interface IPolygonZDAO {
   /* -------------------------------------------------------------------------- */
 
   function __ZDAO_init(
-    address _zDAOChef,
-    address _staking,
-    uint256 _zDAOId,
-    uint256 _duration,
-    uint256 _votingDelay,
-    address _token
+    address zDAOChef,
+    address staking,
+    uint256 zDAOId,
+    uint256 duration,
+    uint256 votingDelay,
+    address token
   ) external;
 
-  function setDestroyed(bool _destroyed) external;
+  function setDestroyed(bool destroyed) external;
 
-  function setStaking(address _staking) external;
+  function setStaking(address staking) external;
 
-  function updateToken(address _token) external;
+  function updateToken(address token) external;
 
   function createProposal(
-    uint256 _proposalId,
-    uint256 _numberOfChoices,
-    uint256 _startTimestamp
+    uint256 proposalId,
+    uint256 numberOfChoices,
+    uint256 startTimestamp
   ) external;
 
-  function cancelProposal(uint256 _proposalId) external;
+  function cancelProposal(uint256 proposalId) external;
 
-  function calculateProposal(uint256 _proposalId)
+  function calculateProposal(uint256 proposalId)
     external
     returns (uint256 voters, uint256[] memory votes);
 
   function vote(
-    uint256 _proposalId,
-    address _voter,
-    uint256 _choice
+    uint256 proposalId,
+    address voter,
+    uint256 choice
   ) external returns (uint256);
 
   /* -------------------------------------------------------------------------- */
@@ -114,47 +114,47 @@ interface IPolygonZDAO {
 
   function numberOfProposals() external view returns (uint256);
 
-  function getProposalById(uint256 _proposalId)
+  function getProposalById(uint256 proposalId)
     external
     view
     returns (Proposal memory);
 
-  function listProposals(uint256 _startIndex, uint256 _count)
+  function listProposals(uint256 startIndex, uint256 count)
     external
     view
     returns (Proposal[] memory records);
 
-  function state(uint256 _proposalId) external view returns (ProposalState);
+  function state(uint256 proposalId) external view returns (ProposalState);
 
-  function votesResultOfProposal(uint256 _proposalId)
+  function votesResultOfProposal(uint256 proposalId)
     external
     view
     returns (uint256 voters, uint256[] memory votes);
 
-  function canVote(uint256 _proposalId, address _voter)
+  function canVote(uint256 proposalId, address voter)
     external
     view
     returns (bool);
 
-  function canCalculateProposal(uint256 _proposalId)
+  function canCalculateProposal(uint256 proposalId)
     external
     view
     returns (bool);
 
-  function choiceOfVoter(uint256 _proposalId, address _voter)
+  function choiceOfVoter(uint256 proposalId, address voter)
     external
     view
     returns (uint256);
 
-  function votingPowerOfVoter(uint256 _proposalId, address _voter)
+  function votingPowerOfVoter(uint256 proposalId, address voter)
     external
     view
     returns (uint256);
 
   function listVoters(
-    uint256 _proposalId,
-    uint256 _startIndex,
-    uint256 _endIndex
+    uint256 proposalId,
+    uint256 startIndex,
+    uint256 endIndex
   )
     external
     view

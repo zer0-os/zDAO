@@ -4,17 +4,17 @@ pragma solidity ^0.8.11;
 
 interface IZDAOFactory {
   function addNewZDAO(
-    uint256 _zDAOId,
-    address _createdBy,
-    address _gnosisSafe,
-    bytes calldata _options
+    uint256 zDAOId,
+    address createdBy,
+    address gnosisSafe,
+    bytes calldata options
   ) external returns (address);
 
-  function removeZDAO(uint256 _zDAOId) external;
+  function removeZDAO(uint256 zDAOId) external;
 
   function modifyZDAO(
-    uint256 _zDAOId,
-    address _gnosisSafe,
-    bytes calldata _options
+    uint256 zDAOId,
+    address gnosisSafe,
+    bytes calldata options
   ) external;
 }

@@ -41,9 +41,9 @@ contract PolygonZDAOChef is
   /*                                  Modifiers                                 */
   /* -------------------------------------------------------------------------- */
 
-  modifier onlyValidZDAO(uint256 _zDAOId) {
+  modifier onlyValidZDAO(uint256 zDAOId) {
     require(
-      address(zDAOs[_zDAOId]) != address(0) && !zDAOs[_zDAOId].destroyed(),
+      address(zDAOs[zDAOId]) != address(0) && !zDAOs[zDAOId].destroyed(),
       "Invalid zDAO"
     );
     _;
@@ -54,65 +54,65 @@ contract PolygonZDAOChef is
   /* -------------------------------------------------------------------------- */
 
   function __ZDAOChef_init(
-    Staking _stakingBase,
-    IPolygonStateSender _polygonStateSender,
-    address _zDAOBase,
-    IChildChainManager _childChainManager
+    Staking stakingBase_,
+    IPolygonStateSender polygonStateSender_,
+    address zDAOBase_,
+    IChildChainManager childChainManager_
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
-    staking = _stakingBase;
-    polygonStateSender = _polygonStateSender;
-    zDAOBase = _zDAOBase;
-    childChainManager = _childChainManager;
+    staking = stakingBase_;
+    polygonStateSender = polygonStateSender_;
+    zDAOBase = zDAOBase_;
+    childChainManager = childChainManager_;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setStaking(Staking _staking) external onlyOwner {
-    staking = _staking;
+  function setStaking(Staking staking_) external onlyOwner {
+    staking = staking_;
 
-    emit StakingUpdated(address(_staking));
+    emit StakingUpdated(address(staking_));
   }
 
-  function setZDAOStaking(uint256 _zDAOId, Staking _staking)
+  function setZDAOStaking(uint256 zDAOId, Staking staking_)
     external
     onlyOwner
   {
-    require(staking == _staking, "Invalid staking address");
-    zDAOs[_zDAOId].setStaking(address(_staking));
+    require(staking == staking_, "Invalid staking address");
+    zDAOs[zDAOId].setStaking(address(staking_));
 
-    emit DAOStakingUpdated(_zDAOId, address(_staking));
+    emit DAOStakingUpdated(zDAOId, address(staking_));
   }
 
-  function setZDAOBase(address _zDAOBase) external onlyOwner {
-    zDAOBase = _zDAOBase;
+  function setZDAOBase(address zDAOBase_) external onlyOwner {
+    zDAOBase = zDAOBase_;
   }
 
-  function setChildChainManager(IChildChainManager _childChainManager)
+  function setChildChainManager(IChildChainManager childChainManager_)
     external
     onlyOwner
   {
-    childChainManager = _childChainManager;
+    childChainManager = childChainManager_;
   }
 
   /**
    * @notice Cast a vote with user's choice
    * @dev Only for valid zDAO
-   * @param _zDAOId zDAO unique id
-   * @param _proposalId Proposal unique id
-   * @param _choice User's choice, starting from 1
+   * @param zDAOId zDAO unique id
+   * @param proposalId Proposal unique id
+   * @param choice User's choice, starting from 1
    */
   function vote(
-    uint256 _zDAOId,
-    uint256 _proposalId,
-    uint256 _choice
-  ) external override onlyValidZDAO(_zDAOId) {
-    uint256 vp = zDAOs[_zDAOId].vote(_proposalId, msg.sender, _choice);
+    uint256 zDAOId,
+    uint256 proposalId,
+    uint256 choice
+  ) external override onlyValidZDAO(zDAOId) {
+    uint256 vp = zDAOs[zDAOId].vote(proposalId, msg.sender, choice);
 
-    emit CastVote(_zDAOId, _proposalId, msg.sender, _choice, vp);
+    emit CastVote(zDAOId, proposalId, msg.sender, choice, vp);
   }
 
   /**
@@ -120,26 +120,26 @@ contract PolygonZDAOChef is
    *     in the PolygonZDAO contract.
    *     Once calculate proposal, it should be sent to Ethereum.
    * @dev Only for valid zDAO
-   * @param _zDAOId zDAO unique id
-   * @param _proposalId Proposal unique id
+   * @param zDAOId zDAO unique id
+   * @param proposalId Proposal unique id
    */
-  function calculateProposal(uint256 _zDAOId, uint256 _proposalId)
+  function calculateProposal(uint256 zDAOId, uint256 proposalId)
     external
     override
-    onlyValidZDAO(_zDAOId)
+    onlyValidZDAO(zDAOId)
   {
-    (uint256 voters, uint256[] memory votes) = zDAOs[_zDAOId].calculateProposal(
-      _proposalId
+    (uint256 voters, uint256[] memory votes) = zDAOs[zDAOId].calculateProposal(
+      proposalId
     );
 
-    emit ProposalCalculated(_zDAOId, _proposalId, voters, votes);
+    emit ProposalCalculated(zDAOId, proposalId, voters, votes);
 
     // send calculated result to L1
     polygonStateSender.sendMessageToRoot(
       abi.encode(
         uint256(ITunnel.MessageType.CalculateProposal),
-        _zDAOId,
-        _proposalId,
+        zDAOId,
+        proposalId,
         voters,
         votes
       )
@@ -151,31 +151,31 @@ contract PolygonZDAOChef is
    *     The message is encoded by certain format according to protocol type
    * @dev Callable by root state sender
    */
-  function processMessageFromRoot(bytes calldata _message) external {
+  function processMessageFromRoot(bytes calldata message) external {
     require(msg.sender == address(polygonStateSender), "Not a state sender");
-    _processMessageFromRoot(_message);
+    _processMessageFromRoot(message);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _processMessageFromRoot(bytes memory _message) internal {
-    uint256 messageType = abi.decode(_message, (uint256));
+  function _processMessageFromRoot(bytes memory message) internal {
+    uint256 messageType = abi.decode(message, (uint256));
     if (messageType == uint256(MessageType.CreateZDAO)) {
-      _createZDAO(_message);
+      _createZDAO(message);
     } else if (messageType == uint256(MessageType.DeleteZDAO)) {
-      _deleteZDAO(_message);
+      _deleteZDAO(message);
     } else if (messageType == uint256(MessageType.CreateProposal)) {
-      _createProposal(_message);
+      _createProposal(message);
     } else if (messageType == uint256(MessageType.CancelProposal)) {
-      _cancelProposal(_message);
+      _cancelProposal(message);
     } else if (messageType == uint256(MessageType.UpdateToken)) {
-      _updateToken(_message);
+      _updateToken(message);
     }
   }
 
-  function _createZDAO(bytes memory _message)
+  function _createZDAO(bytes memory message)
     internal
     virtual
     returns (IPolygonZDAO)
@@ -186,7 +186,7 @@ contract PolygonZDAOChef is
       uint256 duration,
       uint256 votingDelay,
       address rootToken
-    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, address));
+    ) = abi.decode(message, (uint256, uint256, uint256, uint256, address));
 
     require(address(zDAOs[zDAOId]) == address(0), "zDAO was already created");
 
@@ -214,9 +214,9 @@ contract PolygonZDAOChef is
     return zDAO;
   }
 
-  function _deleteZDAO(bytes memory _message) internal virtual {
+  function _deleteZDAO(bytes memory message) internal virtual {
     (uint256 messageType, uint256 zDAOId) = abi.decode(
-      _message,
+      message,
       (uint256, uint256)
     );
 
@@ -227,14 +227,14 @@ contract PolygonZDAOChef is
     emit DAODestroyed(zDAOId);
   }
 
-  function _createProposal(bytes memory _message) internal virtual {
+  function _createProposal(bytes memory message) internal virtual {
     (
       uint256 messageType,
       uint256 zDAOId,
       uint256 proposalId,
       uint256 numberOfChoices,
       uint256 proposalCreated
-    ) = abi.decode(_message, (uint256, uint256, uint256, uint256, uint256));
+    ) = abi.decode(message, (uint256, uint256, uint256, uint256, uint256));
 
     require(address(zDAOs[zDAOId]) != address(0), "Not created zDAO yet");
     require(zDAOs[zDAOId].getZDAOId() == zDAOId, "Sync zDAO info error");
@@ -250,9 +250,9 @@ contract PolygonZDAOChef is
     );
   }
 
-  function _cancelProposal(bytes memory _message) internal virtual {
+  function _cancelProposal(bytes memory message) internal virtual {
     (uint256 messageType, uint256 zDAOId, uint256 proposalId) = abi.decode(
-      _message,
+      message,
       (uint256, uint256, uint256)
     );
 
@@ -264,9 +264,9 @@ contract PolygonZDAOChef is
     emit ProposalCanceled(zDAOId, proposalId);
   }
 
-  function _updateToken(bytes memory _message) internal virtual {
+  function _updateToken(bytes memory message) internal virtual {
     (uint256 messageType, uint256 zDAOId, address token) = abi.decode(
-      _message,
+      message,
       (uint256, uint256, address)
     );
 
@@ -282,21 +282,21 @@ contract PolygonZDAOChef is
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function getZDAOById(uint256 _zDAOId)
+  function getZDAOById(uint256 zDAOId)
     external
     view
     override
     returns (IPolygonZDAO)
   {
-    return zDAOs[_zDAOId];
+    return zDAOs[zDAOId];
   }
 
-  function getZDAOInfoById(uint256 _zDAOId)
+  function getZDAOInfoById(uint256 zDAOId)
     external
     view
     override
     returns (IPolygonZDAO.ZDAOInfo memory)
   {
-    return zDAOs[_zDAOId].getZDAOInfo();
+    return zDAOs[zDAOId].getZDAOInfo();
   }
 }

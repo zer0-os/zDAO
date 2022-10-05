@@ -33,10 +33,10 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   /* -------------------------------------------------------------------------- */
 
   event DAOCreated(
-    uint256 indexed _zDAOId,
-    address indexed _createdBy,
-    address _gnosisSafe,
-    string _ensSpace
+    uint256 indexed zDAOId,
+    address indexed createdBy,
+    address gnosisSafe,
+    string ensSpace
   );
 
   /* -------------------------------------------------------------------------- */
@@ -52,75 +52,75 @@ contract SnapshotZDAOChef is ZeroUpgradeable, IZDAOFactory {
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __ZDAOChef_init(address _zDAORegistry) public initializer {
-    zDAORegistry = _zDAORegistry;
+  function __ZDAOChef_init(address zDAORegistry_) public initializer {
+    zDAORegistry = zDAORegistry_;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setZDAORegistry(address _zDAORegistry) external onlyOwner {
-    zDAORegistry = _zDAORegistry;
+  function setZDAORegistry(address zDAORegistry_) external onlyOwner {
+    zDAORegistry = zDAORegistry_;
   }
 
   function addNewZDAO(
-    uint256 _zDAOId,
-    address _createdBy,
-    address _gnosisSafe,
-    bytes calldata _options
+    uint256 zDAOId,
+    address createdBy,
+    address gnosisSafe,
+    bytes calldata options
   ) external onlyRegistry returns (address) {
-    string memory ensSpace = abi.decode(_options, (string));
+    string memory ensSpace = abi.decode(options, (string));
     uint256 ensId = _ensId(ensSpace);
 
     require(ensToZDAOId[ensId] == 0, "ENS already has zDAO");
 
-    zDAOInfos[_zDAOId] = ZDAOInfo({
-      id: _zDAOId,
-      createdBy: _createdBy,
+    zDAOInfos[zDAOId] = ZDAOInfo({
+      id: zDAOId,
+      createdBy: createdBy,
       snapshot: block.number,
       ensSpace: ensSpace,
-      gnosisSafe: _gnosisSafe,
+      gnosisSafe: gnosisSafe,
       destroyed: false
     });
 
-    ensToZDAOId[ensId] = _zDAOId;
+    ensToZDAOId[ensId] = zDAOId;
 
-    emit DAOCreated(_zDAOId, _createdBy, _gnosisSafe, ensSpace);
+    emit DAOCreated(zDAOId, createdBy, gnosisSafe, ensSpace);
 
     return address(0);
   }
 
-  function removeZDAO(uint256 _zDAOId) external onlyRegistry {
-    zDAOInfos[_zDAOId].destroyed = false;
+  function removeZDAO(uint256 zDAOId) external onlyRegistry {
+    zDAOInfos[zDAOId].destroyed = false;
   }
 
   function modifyZDAO(
-    uint256 _zDAOId,
-    address _gnosisSafe,
-    bytes calldata _options
+    uint256 zDAOId,
+    address gnosisSafe,
+    bytes calldata options
   ) external onlyRegistry {
-    string memory ensSpace = abi.decode(_options, (string));
-    ZDAOInfo storage zDAO = zDAOInfos[_zDAOId];
+    string memory ensSpace = abi.decode(options, (string));
+    ZDAOInfo storage zDAO = zDAOInfos[zDAOId];
 
     uint256 newEnsId = _ensId(ensSpace);
     uint256 oldEnsId = _ensId(zDAO.ensSpace);
 
     if (newEnsId != oldEnsId) {
       ensToZDAOId[oldEnsId] = 0;
-      ensToZDAOId[newEnsId] = _zDAOId;
+      ensToZDAOId[newEnsId] = zDAOId;
     }
 
     zDAO.ensSpace = ensSpace;
-    zDAO.gnosisSafe = _gnosisSafe;
+    zDAO.gnosisSafe = gnosisSafe;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _ensId(string memory _ensSpace) private pure returns (uint256) {
-    uint256 ensHash = uint256(keccak256(abi.encodePacked(_ensSpace)));
+  function _ensId(string memory ensSpace) private pure returns (uint256) {
+    uint256 ensHash = uint256(keccak256(abi.encodePacked(ensSpace)));
     return ensHash;
   }
 

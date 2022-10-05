@@ -12,11 +12,11 @@ contract MockCollectibleUpgradeable is
   UUPSUpgradeable
 {
   function __MockCollectibleUpgradeable_init(
-    string memory _name,
-    string memory _symbol
+    string memory name,
+    string memory symbol
   ) public initializer {
     __Ownable_init();
-    __ERC721_init(_name, _symbol);
+    __ERC721_init(name, symbol);
     __UUPSUpgradeable_init();
   }
 
@@ -26,7 +26,7 @@ contract MockCollectibleUpgradeable is
     onlyOwner
   {}
 
-  function mintFor(address _to, uint256 _tokenId) external onlyOwner {
-    _mint(_to, _tokenId);
+  function mintFor(address to, uint256 tokenId) external onlyOwner {
+    _mint(to, tokenId);
   }
 }

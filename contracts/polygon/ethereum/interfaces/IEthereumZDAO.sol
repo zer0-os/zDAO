@@ -77,33 +77,33 @@ interface IEthereumZDAO {
   /* -------------------------------------------------------------------------- */
 
   function __ZDAO_init(
-    address _zDAOChef,
-    uint256 _zDAOId,
-    address _gnosisSafe,
-    address _createdBy,
-    IEthereumZDAOChef.ZDAOConfig calldata _zDAOConfig
+    address zDAOChef,
+    uint256 zDAOId,
+    address gnosisSafe,
+    address createdBy,
+    IEthereumZDAOChef.ZDAOConfig calldata zDAOConfig
   ) external;
 
-  function setDestroyed(bool _destroyed) external;
+  function setDestroyed(bool destroyed) external;
 
   function modifyZDAO(
-    address _gnosisSafe,
-    address _token,
-    uint256 _amount
+    address gnosisSafe,
+    address token,
+    uint256 amount
   ) external;
 
   function createProposal(
-    address _createdBy,
-    string[] calldata _choices,
-    string calldata _ipfs
+    address createdBy,
+    string[] calldata choices,
+    string calldata ipfs
   ) external returns (uint256);
 
-  function cancelProposal(address _cancelBy, uint256 _proposalid) external;
+  function cancelProposal(address cancelBy, uint256 proposalid) external;
 
   function calculateProposal(
-    uint256 _proposalId,
-    uint256 _voters,
-    uint256[] calldata _votes
+    uint256 proposalId,
+    uint256 voters,
+    uint256[] calldata votes
   ) external;
 
   /* -------------------------------------------------------------------------- */
@@ -120,15 +120,15 @@ interface IEthereumZDAO {
 
   function numberOfProposals() external view returns (uint256);
 
-  function getProposalById(uint256 _proposalId)
+  function getProposalById(uint256 proposalId)
     external
     view
     returns (Proposal memory);
 
-  function listProposals(uint256 _startIndex, uint256 _count)
+  function listProposals(uint256 startIndex, uint256 count)
     external
     view
     returns (Proposal[] memory);
 
-  function state(uint256 _proposalId) external view returns (ProposalState);
+  function state(uint256 proposalId) external view returns (ProposalState);
 }

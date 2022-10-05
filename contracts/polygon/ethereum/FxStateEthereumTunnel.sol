@@ -30,13 +30,13 @@ contract FxStateEthereumTunnel is
   /* -------------------------------------------------------------------------- */
 
   function __FxStateEthereumTunnel_init(
-    address _checkpointManager,
-    address _fxRoot
+    address checkpointManager_,
+    address fxRoot_
   ) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
-    checkpointManager = ICheckpointManager(_checkpointManager);
-    fxRoot = IFxStateSender(_fxRoot);
+    checkpointManager = ICheckpointManager(checkpointManager_);
+    fxRoot = IFxStateSender(fxRoot_);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -44,13 +44,13 @@ contract FxStateEthereumTunnel is
   /* -------------------------------------------------------------------------- */
 
   function setEthereumStateReceiver(
-    IEthereumStateReceiver _ethereumStateReceiver
+    IEthereumStateReceiver ethereumStateReceiver_
   ) external onlyOwner {
-    ethereumStateReceiver = _ethereumStateReceiver;
+    ethereumStateReceiver = ethereumStateReceiver_;
   }
 
-  function setPolygonStateTunnel(address _polygonTunnel) external onlyOwner {
-    fxChildTunnel = _polygonTunnel;
+  function setPolygonStateTunnel(address polygonTunnel) external onlyOwner {
+    fxChildTunnel = polygonTunnel;
   }
 
   /**
@@ -68,9 +68,9 @@ contract FxStateEthereumTunnel is
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _processMessageFromChild(bytes memory _data) internal override {
+  function _processMessageFromChild(bytes memory data) internal override {
     if (address(ethereumStateReceiver) != address(0)) {
-      ethereumStateReceiver.processMessageFromChild(_data);
+      ethereumStateReceiver.processMessageFromChild(data);
     }
   }
 }

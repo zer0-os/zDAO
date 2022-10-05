@@ -28,20 +28,20 @@ interface IZDAORegistry {
   /* -------------------------------------------------------------------------- */
 
   event DAOCreated(
-    uint256 indexed _platformType,
-    uint256 indexed _zDAOId,
-    address indexed _zDAO,
-    address _createdBy,
-    address _gnosisSafe,
-    string _name
+    uint256 indexed platformType,
+    uint256 indexed zDAOId,
+    address indexed zDAO,
+    address createdBy,
+    address gnosisSafe,
+    string name
   );
 
-  event DAODestroyed(uint256 indexed _platformType, uint256 indexed _zDAOId);
+  event DAODestroyed(uint256 indexed platformType, uint256 indexed zDAOId);
 
   event DAOModified(
-    uint256 indexed _platformType,
-    uint256 indexed _zDAOId,
-    address indexed _gnosisSafe
+    uint256 indexed platformType,
+    uint256 indexed zDAOId,
+    address indexed gnosisSafe
   );
 
   /* -------------------------------------------------------------------------- */
@@ -49,30 +49,30 @@ interface IZDAORegistry {
   /* -------------------------------------------------------------------------- */
 
   function addNewZDAO(
-    uint256 _platformType,
-    uint256 _zNA,
-    address _gnosisSafe,
-    string calldata _title,
-    bytes calldata _options
+    uint256 platformType,
+    uint256 zNA,
+    address gnosisSafe,
+    string calldata title,
+    bytes calldata options
   ) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function zDAOFactories(uint256 _platformType)
+  function zDAOFactories(uint256 platformType)
     external
     view
     returns (IZDAOFactory);
 
   function numberOfzDAOs() external view returns (uint256);
 
-  function listZDAOs(uint256 _startIndex, uint256 _count)
+  function listZDAOs(uint256 startIndex, uint256 count)
     external
     view
     returns (ZDAORecord[] memory);
 
-  function getZDAOById(uint256 _zDAOId)
+  function getZDAOById(uint256 zDAOId)
     external
     view
     returns (ZDAORecord memory);
