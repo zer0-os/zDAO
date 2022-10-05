@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
 import { FxStatePolygonTunnel, PolygonZDAOChef, Staking } from "../../types";
-import { config } from "../shared/config";
+import { zDAOChefConfig as config } from "../shared/config";
 import { calculateGasMargin, verifyContract } from "../shared/helpers";
 
 const main = async () => {
