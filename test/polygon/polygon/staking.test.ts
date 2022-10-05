@@ -22,10 +22,7 @@ import { BigNumber } from "ethers";
 chai.use(smock.matchers);
 
 describe("Staking", async function () {
-  let owner: SignerWithAddress,
-    locker: SignerWithAddress,
-    userA: SignerWithAddress,
-    userB: SignerWithAddress;
+  let userA: SignerWithAddress, userB: SignerWithAddress;
 
   let staking: MockContract<Staking>,
     childChainManager: FakeContract<IChildChainManager>,
@@ -35,7 +32,7 @@ describe("Staking", async function () {
   let BIG_POW: BigNumber;
 
   beforeEach("init setup", async function () {
-    [owner, locker, userA, userB] = await ethers.getSigners();
+    [, userA, userB] = await ethers.getSigners();
 
     childChainManager = (await smock.fake(
       "IChildChainManager"

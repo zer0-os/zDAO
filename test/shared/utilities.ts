@@ -29,10 +29,7 @@ export const enableAutoMining = async (seconds: number) => {
 };
 
 // block time in second unit
-export const mineToBlock = async (
-  blockNumber: number,
-  blockTime: number = 13
-) => {
+export const mineToBlock = async (blockNumber: number, blockTime = 13) => {
   for (let i = 0; i < blockNumber; i++) {
     await increaseTime(blockTime);
   }

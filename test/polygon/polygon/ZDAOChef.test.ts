@@ -31,9 +31,7 @@ import { now } from "../../shared/utilities";
 chai.use(smock.matchers);
 
 describe("ZDAOChef", async function () {
-  let owner: SignerWithAddress,
-    zDAOOwner: SignerWithAddress,
-    userA: SignerWithAddress;
+  let zDAOOwner: SignerWithAddress, userA: SignerWithAddress;
 
   let staking: MockContract<Staking>,
     ZDAOChef: MockContract<PolygonZDAOChef>,
@@ -44,7 +42,7 @@ describe("ZDAOChef", async function () {
   let zDAOPack: CreateZDAOPack, proposalPack: CreateProposalPack;
 
   beforeEach("init setup", async function () {
-    [owner, zDAOOwner, userA] = await ethers.getSigners();
+    [, zDAOOwner, userA] = await ethers.getSigners();
 
     const ZDAOChefFactory = (await smock.mock<PolygonZDAOChef__factory>(
       "PolygonZDAOChef"

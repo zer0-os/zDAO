@@ -14,29 +14,26 @@ import {
   EthereumZDAO__factory,
 } from "../../../types";
 import { ProposalConfig, ZDAOConfig } from "../../shared/types";
-import { mineToBlock, now } from "../../shared/utilities";
+import { mineToBlock } from "../../shared/utilities";
 
 chai.use(smock.matchers);
 
 describe("ZDAO", async function () {
-  let owner: SignerWithAddress,
-    zDAOChef: SignerWithAddress,
+  let zDAOChef: SignerWithAddress,
     zDAOCreatedBy: SignerWithAddress,
     userA: SignerWithAddress,
     userB: SignerWithAddress;
 
-  const zNA = "wilder.wheels";
-
   let zDAO: MockContract<EthereumZDAO>,
     vToken: FakeContract<IERC20Upgradeable>,
-    zDAOInfo: any;
+    zDAOInfo: Awaited<ReturnType<EthereumZDAO["zDAOInfo"]>>;
 
   let gnosisSafe: string,
     zDAOConfig: ZDAOConfig,
     proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
-    [owner, zDAOChef, zDAOCreatedBy, userA, userB] = await ethers.getSigners();
+    [, zDAOChef, zDAOCreatedBy, userA, userB] = await ethers.getSigners();
 
     const ZDAOFactory = (await smock.mock<EthereumZDAO__factory>(
       "EthereumZDAO"
@@ -50,7 +47,6 @@ describe("ZDAO", async function () {
     const zDAOId = 1;
     const minAmount = BigNumber.from("10000");
     const minDuration = 30; // unit in seconds
-    const minimumTotalVotingTokens = 5000;
     gnosisSafe = await ethers.Wallet.createRandom().getAddress();
 
     zDAOConfig = {

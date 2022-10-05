@@ -1,0 +1,6 @@
+node_modules
+dist
+archive
+typechain
+contracts
+subgraph

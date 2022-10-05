@@ -15,23 +15,6 @@ dotenv.config({path:__dirname+'/.env'});
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      GOERLI_RPC_URL: string;
-      RINKEBY_RPC_URL: string;
-      MAINNET_RPC_URL: string;
-      MUMBAI_RPC_URL: string;
-      POLYGON_RPC_URL: string;
-      ETHERSCAN_API_KEY: string;
-      POLYGONSCAN_API_KEY: string;
-
-      TESTNET_PRIVATE_KEY: string;
-      MAINNET_PRIVATE_KEY: string;
-    }
-  }
-}
-
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -55,23 +38,33 @@ const config: HardhatUserConfig = {
   networks: {
     goerli: {
       url: process.env.GOERLI_RPC_URL,
-      accounts: [process.env.TESTNET_PRIVATE_KEY],
+      accounts: process.env.TESTNET_PRIVATE_KEY
+      ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+      : [],
     },
     rinkeby: {
       url: process.env.RINKEBY_RPC_URL,
-      accounts: [process.env.TESTNET_PRIVATE_KEY],
+      accounts: process.env.TESTNET_PRIVATE_KEY
+      ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+      : [],
     },
     mainnet: {
       url: process.env.MAINNET_RPC_URL,
-      accounts: [process.env.MAINNET_PRIVATE_KEY],
+      accounts: process.env.MAINNET_PRIVATE_KEY
+      ? [`0x${process.env.MAINNET_PRIVATE_KEY}`]
+      : [],
     },
     polygonMumbai: {
       url: process.env.MUMBAI_RPC_URL,
-      accounts: [process.env.TESTNET_PRIVATE_KEY],
+      accounts: process.env.TESTNET_PRIVATE_KEY
+      ? [`0x${process.env.TESTNET_PRIVATE_KEY}`]
+      : [],
     },
     polygon: {
       url: process.env.POLYGON_RPC_URL,
-      accounts: [process.env.MAINNET_PRIVATE_KEY],
+      accounts: process.env.MAINNET_PRIVATE_KEY
+      ? [`0x${process.env.MAINNET_PRIVATE_KEY}`]
+      : [],
     },
     hardhat: {
       throwOnTransactionFailures: true,
