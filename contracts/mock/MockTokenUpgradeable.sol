@@ -16,7 +16,7 @@ contract MockTokenUpgradeable is
     string memory symbol
   ) public initializer {
     __Ownable_init();
-    __ERC20_init(_name, _symbol);
+    __ERC20_init(name, symbol);
     __UUPSUpgradeable_init();
   }
 

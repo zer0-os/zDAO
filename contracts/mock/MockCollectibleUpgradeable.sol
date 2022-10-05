@@ -16,7 +16,7 @@ contract MockCollectibleUpgradeable is
     string memory symbol
   ) public initializer {
     __Ownable_init();
-    __ERC721_init(_name, _symbol);
+    __ERC721_init(name, symbol);
     __UUPSUpgradeable_init();
   }
 
