@@ -2,7 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
 import { ZDAORegistry } from "../types";
 import { SnapshotZDAOChef } from "../types/SnapshotZDAOChef";
-import { config, PlatformType } from "./shared/config";
+import { zDAORegistryConfig as config, PlatformType } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
 const main = async () => {
@@ -21,10 +21,14 @@ const main = async () => {
     // ZDAORegistry
     console.log("Deploying ZDAORegistry proxy contract...");
     const ZDAORegistryFactory = await ethers.getContractFactory("ZDAORegistry");
-    const zDAORegistry = (await upgrades.deployProxy(ZDAORegistryFactory, [], {
-      kind: "uups",
-      initializer: "__ZDAORegistry_init",
-    })) as ZDAORegistry;
+    const zDAORegistry = (await upgrades.deployProxy(
+      ZDAORegistryFactory,
+      [config[network.name].zNSHub, config[network.name].zNAResolver],
+      {
+        kind: "uups",
+        initializer: "__ZDAORegistry_init",
+      }
+    )) as ZDAORegistry;
     await zDAORegistry.deployed();
     console.log(`\ndeployed: ${zDAORegistry.address}`);
 

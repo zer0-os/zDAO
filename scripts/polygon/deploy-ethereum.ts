@@ -5,7 +5,7 @@ import {
   FxStateEthereumTunnel,
   ZDAORegistry,
 } from "../../types";
-import { config, PlatformType } from "../shared/config";
+import { zDAOChefConfig as config, PlatformType } from "../shared/config";
 import { calculateGasMargin, verifyContract } from "../shared/helpers";
 
 // mainnet hub: 0x6141d5cb3517215a03519a464bf9c39814df7479

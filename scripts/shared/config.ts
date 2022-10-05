@@ -53,8 +53,23 @@ const snapshotConfig = {
   },
 };
 
-export const config = {
+export const zDAOChefConfig = {
   ...snapshotConfig,
   ...ethereumConfig,
   ...polygonConfig,
+};
+
+export const zDAORegistryConfig = {
+  rinkeby: {
+    zNSHub: "0x90098737eB7C3e73854daF1Da20dFf90d521929a",
+    zNAResolver: "",
+  },
+  goerli: {
+    zNSHub: "0x9a35367c5e8C01cd009885e497a33a9761938832",
+    zNAResolver: "",
+  },
+  mainnet: {
+    zNSHub: "0x6141d5Cb3517215A03519A464bF9C39814df7479",
+    zNAResolver: "",
+  },
 };
