@@ -12,8 +12,8 @@ contract MockTokenUpgradeable is
   UUPSUpgradeable
 {
   function __MockTokenUpgradeable_init(
-    string memory _name,
-    string memory _symbol
+    string memory name,
+    string memory symbol
   ) public initializer {
     __Ownable_init();
     __ERC20_init(_name, _symbol);
@@ -26,7 +26,7 @@ contract MockTokenUpgradeable is
     onlyOwner
   {}
 
-  function mintFor(address _to, uint256 _amount) external onlyOwner {
-    _mint(_to, _amount);
+  function mintFor(address to, uint256 amount) external onlyOwner {
+    _mint(to, amount);
   }
 }

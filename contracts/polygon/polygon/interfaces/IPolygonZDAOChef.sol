@@ -10,44 +10,44 @@ interface IPolygonZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   event DAOCreated(
-    address indexed _zDAO,
-    uint256 indexed _zDAOId,
-    address indexed _token,
-    uint256 _duration,
-    uint256 _votingDelay
+    address indexed zDAO,
+    uint256 indexed zDAOId,
+    address indexed token,
+    uint256 duration,
+    uint256 votingDelay
   );
 
-  event DAODestroyed(uint256 indexed _zDAOId);
+  event DAODestroyed(uint256 indexed zDAOId);
 
-  event DAOTokenUpdated(uint256 indexed _zDAOId, address indexed _token);
+  event DAOTokenUpdated(uint256 indexed zDAOId, address indexed token);
 
-  event StakingUpdated(address indexed _staking);
+  event StakingUpdated(address indexed staking);
 
-  event DAOStakingUpdated(uint256 indexed _zDAOId, address indexed _staking);
+  event DAOStakingUpdated(uint256 indexed zDAOId, address indexed staking);
 
   event ProposalCreated(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    uint256 indexed _numberOfChoices,
-    uint256 _proposalCreated,
-    uint256 _currentTimestamp
+    uint256 indexed zDAOId,
+    uint256 indexed proposalId,
+    uint256 indexed numberOfChoices,
+    uint256 proposalCreated,
+    uint256 currentTimestamp
   );
 
-  event ProposalCanceled(uint256 indexed _zDAOId, uint256 indexed _proposalId);
+  event ProposalCanceled(uint256 indexed zDAOId, uint256 indexed proposalId);
 
   event ProposalCalculated(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    uint256 _voters,
-    uint256[] _votes
+    uint256 indexed zDAOId,
+    uint256 indexed proposalId,
+    uint256 voters,
+    uint256[] votes
   );
 
   event CastVote(
-    uint256 indexed _zDAOId,
-    uint256 indexed _proposalId,
-    address indexed _voter,
-    uint256 _choice,
-    uint256 _votingPower
+    uint256 indexed zDAOId,
+    uint256 indexed proposalId,
+    address indexed voter,
+    uint256 choice,
+    uint256 votingPower
   );
 
   /* -------------------------------------------------------------------------- */
@@ -55,20 +55,20 @@ interface IPolygonZDAOChef {
   /* -------------------------------------------------------------------------- */
 
   function vote(
-    uint256 _zDAOId,
-    uint256 _proposalId,
-    uint256 _choice
+    uint256 zDAOId,
+    uint256 proposalId,
+    uint256 choice
   ) external;
 
-  function calculateProposal(uint256 _zDAOId, uint256 _proposalId) external;
+  function calculateProposal(uint256 zDAOId, uint256 proposalId) external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function getZDAOById(uint256 _zDAOId) external view returns (IPolygonZDAO);
+  function getZDAOById(uint256 zDAOId) external view returns (IPolygonZDAO);
 
-  function getZDAOInfoById(uint256 _zDAOId)
+  function getZDAOInfoById(uint256 zDAOId)
     external
     view
     returns (IPolygonZDAO.ZDAOInfo memory);

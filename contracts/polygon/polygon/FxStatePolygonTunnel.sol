@@ -29,25 +29,25 @@ contract FxStatePolygonTunnel is
   /*                                 Initializer                                */
   /* -------------------------------------------------------------------------- */
 
-  function __FxStatePolygonTunnel_init(address _fxChild) public initializer {
+  function __FxStatePolygonTunnel_init(address fxChild_) public initializer {
     ZeroUpgradeable.__ZeroUpgradeable_init();
 
-    fxChild = _fxChild;
+    fxChild = fxChild_;
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             External Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function setPolygonStateReceiver(IPolygonStateReceiver _polygonStateReceiver)
+  function setPolygonStateReceiver(IPolygonStateReceiver polygonStateReceiver_)
     external
     onlyOwner
   {
-    polygonStateReceiver = _polygonStateReceiver;
+    polygonStateReceiver = polygonStateReceiver_;
   }
 
-  function setEthereumStateTunnel(address _ethereumTunnel) external onlyOwner {
-    fxRootTunnel = _ethereumTunnel;
+  function setEthereumStateTunnel(address ethereumTunnel) external onlyOwner {
+    fxRootTunnel = ethereumTunnel;
   }
 
   /**

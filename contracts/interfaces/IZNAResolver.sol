@@ -8,26 +8,26 @@ interface IZNAResolver {
   /* -------------------------------------------------------------------------- */
 
   function associateWithResourceType(
-    uint256 _zNA,
-    uint256 _resourceType,
-    uint256 _resourceID
+    uint256 zNA,
+    uint256 resourceType,
+    uint256 resourceID
   ) external;
 
-  function disassociateWithResourceType(uint256 _zNA, uint256 _resourceType)
+  function disassociateWithResourceType(uint256 zNA, uint256 resourceType)
     external;
 
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
 
-  function hasResourceType(uint256 _zNA, uint256 _resourceType)
+  function hasResourceType(uint256 zNA, uint256 resourceType)
     external
     view
     returns (bool);
 
-  function resourceTypes(uint256 _zNA) external view returns (uint256);
+  function resourceTypes(uint256 zNA) external view returns (uint256);
 
-  function resourceID(uint256 _zNA, uint256 _resourceType)
+  function resourceID(uint256 zNA, uint256 resourceType)
     external
     view
     returns (uint256);

@@ -44,142 +44,142 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
   /**
    * @notice Stake ERC20 token, the staking contract save the checkpoint which
    *     contains snapshot of block number and accumulated staked amount.
-   * @param _token Address to ERC20 token
-   * @param _amount Token amount to stake
+   * @param token Address to ERC20 token
+   * @param amount Token amount to stake
    */
-  function stakeERC20(address _token, uint256 _amount) external {
-    _stakeERC20(msg.sender, _token, _amount);
+  function stakeERC20(address token, uint256 amount) external {
+    _stakeERC20(msg.sender, token, amount);
   }
 
   /**
    * @notice Stake ERC721 token, as same as stakeERC20, this stores checkpoints
-   * @param _token Address to ERC721 token
-   * @param _tokenId Token Id
+   * @param token Address to ERC721 token
+   * @param tokenId Token Id
    */
-  function stakeERC721(address _token, uint256 _tokenId) external {
-    require(_isERC721(_token), "Should ERC721 token address");
-    _stakeERC721(msg.sender, _token, _tokenId);
+  function stakeERC721(address token, uint256 tokenId) external {
+    require(_isERC721(token), "Should ERC721 token address");
+    _stakeERC721(msg.sender, token, tokenId);
   }
 
   /**
    * @notice Unstake ERC20 token, as same as stakeERC20, this stores
    *     checkpoints with accumulated token amount.
-   * @param _token Address to ERC20 token
-   * @param _amount Token amount to unstake
+   * @param token Address to ERC20 token
+   * @param amount Token amount to unstake
    */
-  function unstakeERC20(address _token, uint256 _amount) external {
-    _unstakeERC20(msg.sender, _token, _amount);
+  function unstakeERC20(address token, uint256 amount) external {
+    _unstakeERC20(msg.sender, token, amount);
   }
 
   /**
    * @notice Unstake ERC721 token, as same as stakeERC20, this stores
    *     checkpoints with accumulated token amount.
-   * @param _token Address to ERC721 token
-   * @param _tokenId Token id
+   * @param token Address to ERC721 token
+   * @param tokenId Token id
    */
-  function unstakeERC721(address _token, uint256 _tokenId) external {
-    require(_isERC721(_token), "Should ERC721 token address");
-    _unstakeERC721(msg.sender, _token, _tokenId);
+  function unstakeERC721(address token, uint256 tokenId) external {
+    require(_isERC721(token), "Should ERC721 token address");
+    _unstakeERC721(msg.sender, token, tokenId);
   }
 
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _isERC721(address _token) internal view returns (bool) {
-    return _token.supportsInterface(type(IERC721Upgradeable).interfaceId);
+  function _isERC721(address token) internal view returns (bool) {
+    return token.supportsInterface(type(IERC721Upgradeable).interfaceId);
   }
 
-  function _isERC20(address _token) internal view returns (bool) {
-    return _token.supportsInterface(type(IERC20Upgradeable).interfaceId);
+  function _isERC20(address token) internal view returns (bool) {
+    return token.supportsInterface(type(IERC20Upgradeable).interfaceId);
   }
 
   function _stakeERC20(
-    address _user,
-    address _token,
-    uint256 _amount
+    address user,
+    address token,
+    uint256 amount
   ) internal virtual {
-    uint256 decimals = ERC20Upgradeable(_token).decimals();
-    _decimals[_token] = decimals;
+    uint256 decimals = ERC20Upgradeable(token).decimals();
+    _decimals[token] = decimals;
 
-    IERC20Upgradeable(_token).safeTransferFrom(_user, address(this), _amount);
+    IERC20Upgradeable(token).safeTransferFrom(user, address(this), amount);
 
-    _moveStakingPower(_user, address(this), _token, _amount);
+    _moveStakingPower(user, address(this), token, amount);
 
-    emit StakedERC20(_user, _token, decimals, _amount);
+    emit StakedERC20(user, token, decimals, amount);
   }
 
   function _stakeERC721(
-    address _user,
-    address _token,
-    uint256 _tokenId
+    address user,
+    address token,
+    uint256 tokenId
   ) internal virtual {
-    _decimals[_token] = 0;
-    IERC721Upgradeable(_token).safeTransferFrom(_user, address(this), _tokenId);
+    _decimals[token] = 0;
+    IERC721Upgradeable(token).safeTransferFrom(user, address(this), tokenId);
 
-    _moveStakingPower(_user, address(this), _token, 1);
-    _erc721Staked[_user][_token][_tokenId] = true;
+    _moveStakingPower(user, address(this), token, 1);
+    _erc721Staked[user][token][tokenId] = true;
 
-    emit StakedERC721(_user, _token, _tokenId);
+    emit StakedERC721(user, token, tokenId);
   }
 
   function _unstakeERC20(
-    address _user,
-    address _token,
-    uint256 _amount
+    address user,
+    address token,
+    uint256 amount
   ) internal virtual {
     require(
-      ERC20Upgradeable(_token).decimals() == _decimals[_token],
+      ERC20Upgradeable(token).decimals() == _decimals[token],
       "Should ERC20 token address"
     );
     require(
-      _checkpoints[_user][_token].latest() >= _amount,
+      _checkpoints[user][token].latest() >= amount,
       "Should not exceed staked amount"
     );
 
-    _moveStakingPower(address(this), _user, _token, _amount);
+    _moveStakingPower(address(this), user, token, amount);
 
-    IERC20Upgradeable(_token).safeTransfer(_user, _amount);
+    IERC20Upgradeable(token).safeTransfer(user, amount);
 
-    emit UnstakedERC20(_user, _token, _decimals[_token], _amount);
+    emit UnstakedERC20(user, token, _decimals[token], amount);
   }
 
   function _unstakeERC721(
-    address _user,
-    address _token,
-    uint256 _tokenId
+    address user,
+    address token,
+    uint256 tokenId
   ) internal virtual {
-    require(_erc721Staked[_user][_token][_tokenId], "Should be staked ERC721");
+    require(_erc721Staked[user][token][tokenId], "Should be staked ERC721");
 
-    _moveStakingPower(address(this), _user, _token, 1);
-    _erc721Staked[_user][_token][_tokenId] = false;
+    _moveStakingPower(address(this), user, token, 1);
+    _erc721Staked[user][token][tokenId] = false;
 
-    IERC721Upgradeable(_token).safeTransferFrom(address(this), _user, _tokenId);
+    IERC721Upgradeable(token).safeTransferFrom(address(this), user, tokenId);
 
-    emit UnstakedERC721(_user, _token, _tokenId);
+    emit UnstakedERC721(user, token, tokenId);
   }
 
   function _moveStakingPower(
-    address _from,
-    address _to,
-    address _token,
-    uint256 _amount
+    address from,
+    address to,
+    address token,
+    uint256 amount
   ) internal {
-    if (_from != _to && _amount > 0) {
-      if (_from != address(this)) {
-        (uint256 oldValue, uint256 newValue) = _checkpoints[_from][_token].push(
+    if (from != to && amount > 0) {
+      if (from != address(this)) {
+        (uint256 oldValue, uint256 newValue) = _checkpoints[from][token].push(
           _add,
-          _amount
+          amount
         );
-        emit StakingPowerChanged(_from, _token, oldValue, newValue);
+        emit StakingPowerChanged(from, token, oldValue, newValue);
       }
 
-      if (_to != address(this)) {
-        (uint256 oldValue, uint256 newValue) = _checkpoints[_to][_token].push(
+      if (to != address(this)) {
+        (uint256 oldValue, uint256 newValue) = _checkpoints[to][token].push(
           _subtract,
-          _amount
+          amount
         );
-        emit StakingPowerChanged(_to, _token, oldValue, newValue);
+        emit StakingPowerChanged(to, token, oldValue, newValue);
       }
     }
   }
@@ -198,45 +198,45 @@ contract Staking is ZeroUpgradeable, IStaking, ERC721HolderUpgradeable {
 
   /**
    * @notice Get accumulated staking power at current block number
-   * @param _user User address
-   * @param _token Address to staked token(ERC20 or ERC721)
+   * @param user User address
+   * @param token Address to staked token(ERC20 or ERC721)
    */
-  function stakingPower(address _user, address _token)
+  function stakingPower(address user, address token)
     external
     view
     returns (uint256)
   {
-    return _checkpoints[_user][_token].latest();
+    return _checkpoints[user][token].latest();
   }
 
   /**
    * @notice Get accumulated staking power at given block number
-   * @param _user User address
-   * @param _token Address to staked token(ERC20 or ERC721)
-   * @param _blockNumber Block number
+   * @param user User address
+   * @param token Address to staked token(ERC20 or ERC721)
+   * @param blockNumber Block number
    */
   function pastStakingPower(
-    address _user,
-    address _token,
-    uint256 _blockNumber
+    address user,
+    address token,
+    uint256 blockNumber
   ) external view returns (uint256) {
-    return _checkpoints[_user][_token].getAtBlock(_blockNumber);
+    return _checkpoints[user][token].getAtBlock(blockNumber);
   }
 
-  function stakedERC20Amount(address _user, address _token)
+  function stakedERC20Amount(address user, address token)
     external
     view
     override
     returns (uint256)
   {
-    return _checkpoints[_user][_token].latest();
+    return _checkpoints[user][token].latest();
   }
 
   function isStakedERC721(
-    address _user,
-    address _token,
-    uint256 _tokenId
+    address user,
+    address token,
+    uint256 tokenId
   ) external view override returns (bool) {
-    return _erc721Staked[_user][_token][_tokenId];
+    return _erc721Staked[user][token][tokenId];
   }
 }
