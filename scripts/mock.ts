@@ -1,5 +1,4 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import * as zns from "@zero-tech/zns-sdk";
 import { ethers, network, upgrades } from "hardhat";
 import { MockTokenUpgradeable } from "../types";
 import { verifyContract } from "./shared/helpers";

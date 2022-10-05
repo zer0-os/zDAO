@@ -21,8 +21,7 @@ import { increaseTime, mineToBlock, now } from "../../shared/utilities";
 chai.use(smock.matchers);
 
 describe("ZDAO", async function () {
-  let owner: SignerWithAddress,
-    zDAOChef: SignerWithAddress,
+  let zDAOChef: SignerWithAddress,
     userA: SignerWithAddress,
     userB: SignerWithAddress,
     userC: SignerWithAddress;
@@ -30,14 +29,14 @@ describe("ZDAO", async function () {
   let staking: MockContract<Staking>,
     zDAO: MockContract<PolygonZDAO>,
     vToken: MockContract<MockTokenUpgradeable>,
-    zDAOInfo: any;
+    zDAOInfo: Awaited<ReturnType<PolygonZDAO["zDAOInfo"]>>;
 
   let zDAOConfig: PolygonZDAOConfig, proposalConfig: PolyProposalConfig;
 
   let BIG_POW: BigNumber;
 
   beforeEach("init setup", async function () {
-    [owner, zDAOChef, userA, userB, userC] = await ethers.getSigners();
+    [, zDAOChef, userA, userB, userC] = await ethers.getSigners();
 
     const ZDAOFactory = (await smock.mock<PolygonZDAO__factory>(
       "PolygonZDAO"
@@ -60,7 +59,6 @@ describe("ZDAO", async function () {
     BIG_POW = BigNumber.from(10).pow(18);
 
     const zDAOId = 1;
-    const minAmount = BigNumber.from("10000");
     const minDuration = 300; // unit in seconds
 
     zDAOConfig = {

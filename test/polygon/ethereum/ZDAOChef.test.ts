@@ -5,30 +5,24 @@ import {
   smock,
 } from "@defi-wonderland/smock";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import * as zns from "@zero-tech/zns-sdk";
 import chai, { expect } from "chai";
 import { BigNumber, ContractTransaction } from "ethers";
 import { ethers } from "hardhat";
-import { PlatformType } from "../../../scripts/shared/config";
 import {
   EthereumZDAO,
   EthereumZDAOChef,
   EthereumZDAOChef__factory,
   IERC20Upgradeable,
-  MockTokenUpgradeable,
-  MockTokenUpgradeable__factory,
 } from "../../../types";
 import { IEthereumStateSender } from "../../../types/IEthereumStateSender";
 import { encodeCalculateProposal } from "../../shared/messagePack";
 import { ProposalConfig, ZDAOConfig } from "../../shared/types";
-import { increaseTime, mineToBlock, now } from "../../shared/utilities";
+import { increaseTime, mineToBlock } from "../../shared/utilities";
 
 chai.use(smock.matchers);
 
 describe("ZDAOChef", async function () {
-  let owner: SignerWithAddress,
-    userA: SignerWithAddress,
-    userB: SignerWithAddress;
+  let userA: SignerWithAddress;
 
   let ethereumStateSender: FakeContract<IEthereumStateSender>,
     zDAOChef: MockContract<EthereumZDAOChef>,
@@ -39,7 +33,7 @@ describe("ZDAOChef", async function () {
     proposalConfig: ProposalConfig;
 
   beforeEach("init setup", async function () {
-    [owner, userA, userB] = await ethers.getSigners();
+    [, userA] = await ethers.getSigners();
 
     const ZDAOChefFactory = (await smock.mock<EthereumZDAOChef__factory>(
       "EthereumZDAOChef"

@@ -1,8 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers, network, upgrades } from "hardhat";
 import { ZDAORegistry } from "../types";
-import { SnapshotZDAOChef } from "../types/SnapshotZDAOChef";
-import { zDAORegistryConfig as config, PlatformType } from "./shared/config";
+import { zDAORegistryConfig as config } from "./shared/config";
 import { verifyContract } from "./shared/helpers";
 
 const main = async () => {

@@ -34,17 +34,13 @@ interface zDAOPair {
 }
 
 describe("ZDAORegistry", function () {
-  let deployer: SignerWithAddress,
-    user1: SignerWithAddress,
-    user2: SignerWithAddress,
-    user3: SignerWithAddress;
+  let deployer: SignerWithAddress, user1: SignerWithAddress;
 
   let zDAORegistry: MockContract<ZDAORegistry>,
     zNAResolver: FakeContract<IZNAResolver>,
     zNSHub: FakeContract<IZNSHub>,
     snapshotZDAOChef: MockContract<SnapshotZDAOChef>;
 
-  const zNA = "wilder.wheels";
   const zDAOPairs: zDAOPair[] = [];
 
   const validateSnapshotDAOInformation = async (
@@ -71,7 +67,7 @@ describe("ZDAORegistry", function () {
   };
 
   beforeEach("init setup", async function () {
-    [deployer, user1, user2, user3] = await ethers.getSigners();
+    [deployer, user1] = await ethers.getSigners();
 
     zNSHub = (await smock.fake<IZNSHub>("IZNSHub")) as FakeContract<IZNSHub>;
 
@@ -174,7 +170,7 @@ describe("ZDAORegistry", function () {
       rootZDAOChef: MockContract<EthereumZDAOChef>,
       vToken: FakeContract<IERC20Upgradeable>;
 
-    let name: string, zDAOConfig: ZDAOConfig;
+    let zDAOConfig: ZDAOConfig;
 
     const validatePolygonDAOInformation = async (
       platformType: number,
