@@ -20,7 +20,7 @@ services:
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
-      ethereum: "rinkeby:https://eth-rinkeby.alchemyapi.io/v2/l1u0wuvuvoqtYye4fFuY9C3NGZFKWhXC"
+      ethereum: "rinkeby:https://eth-rinkeby.alchemyapi.io/v2/<alchemy-key>"
       GRAPH_LOG: info
   ipfs:
     image: ipfs/go-ipfs:v0.10.0
