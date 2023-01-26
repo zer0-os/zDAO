@@ -25,6 +25,8 @@ dataSources:
       eventHandlers:
         - event: DAOCreated(indexed uint256,string,address)
           handler: handleDAOCreated
+        - event: DAOModified(indexed uint256,string,address)
+          handler: handleDAOModified
         - event: DAODestroyed(indexed uint256)
           handler: handleDAODestroyed
         - event: LinkAdded(indexed uint256,indexed uint256)

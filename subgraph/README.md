@@ -71,11 +71,11 @@ Reference: https://thegraph.com/docs/en/deploying/deploying-a-subgraph-to-studio
 ### Auth
 
 ```
-graph auth --studio <DEPLOY KEY>
+graph auth --product hosted-services <DEPLOY KEY>
 ```
 
 ### Deploy
 
 ```
-graph deploy --studio <SUBGRAPH_SLUG>
+yarn internal:deploy <GITHUB NAME/REPO> --access-token <ACCESS TOKEN>
 ```

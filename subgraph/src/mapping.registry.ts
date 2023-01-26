@@ -27,6 +27,26 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.save();
 }
 
+export function handleDAOModified(event: DAOCreated): void {
+  const platformType = 0; // 0: Snapshot
+  const zDAOId = event.params.daoId.toI32();
+  const id = generateZDAORecordID(platformType, zDAOId);
+
+  log.info("handleDAOModified, called {}", [id]);
+
+  let zDAO: ZDAORecord | null = ZDAORecord.load(id);
+  if (zDAO) {
+    zDAO.name = event.params.ensSpace;
+    zDAO.gnosisSafe = event.params.gnosisSafe;
+    zDAO.save();
+  } else {
+    log.error("handleDAOModified, Unable to load ZDAORecord with zDAOId {}, {}", [
+      id,
+      event.block.number.toString()
+    ]);
+  }
+}
+
 export function handleDAODestroyed(event: DAODestroyed): void {
   const platformType = 0; // 0: Snapshot
   const zDAOId = event.params.daoId.toI32();

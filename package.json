@@ -21,8 +21,6 @@
     "@typechain/hardhat": "4.0.0",
     "@types/chai": "4.2.22",
     "@types/mocha": "9.0.0",
-    "@zero-tech/zauction-sdk": "0.0.39",
-    "@zero-tech/zns-sdk": "0.1.12",
     "chai": "4.3.4",
     "dotenv": "10.0.0",
     "ethereum-waffle": "3.4.0",
@@ -37,8 +35,5 @@
     "ts-node": "10.0.0",
     "typechain": "7.0.0",
     "typescript": "4.3.2"
-  },
-  "dependencies": {
-    "@ensdomains/eth-ens-namehash": "^2.0.15"
   }
 }
