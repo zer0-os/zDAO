@@ -6,7 +6,8 @@
     "build": "yarn run clean && yarn run compile",
     "clean": "hardhat clean",
     "compile": "hardhat compile",
-    "deploy": "hardhat run scripts/deploy.ts --network"
+    "deploy": "hardhat run scripts/deploy.ts --network",
+    "upgrade": "hardhat run scripts/upgrade.ts --network"
   },
   "devDependencies": {
     "@defi-wonderland/smock": "2.0.7",
@@ -35,5 +36,8 @@
     "ts-node": "10.0.0",
     "typechain": "7.0.0",
     "typescript": "4.3.2"
+  },
+  "dependencies": {
+    "@zero-tech/zero-contracts": "^0.0.7"
   }
 }

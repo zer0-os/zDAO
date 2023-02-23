@@ -1,30 +1,58 @@
-import * as hre from "hardhat";
-import { ZDAORegistry__factory } from "../types";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { ethers, network, upgrades } from "hardhat";
+import * as manifestGoerli from "../.openzeppelin/goerli.json";
+import * as manifestMainnet from "../.openzeppelin/mainnet.json";
+import { ZDAORegistryV2__factory } from "../types";
 import { verifyContract } from "./shared/helpers";
 
-// mainnet zDAORegistry: 0x7701913b65C9bCDa4d353F77EC12123d57D77f1e
-// rinkeby zDAORegistry: 0x73D44dEa3A3334aB2504443479aD531FfeD2d2D9
-// goerli zDAORegistry: 0x4d681D8245e956E1cb295Abe870DF6736EA5F70e
-
-const zDAORegistryAddress = "0x7701913b65C9bCDa4d353F77EC12123d57D77f1e";
+// mainnet hub: 0x6141d5cb3517215a03519a464bf9c39814df7479
+// rinkeby hub: 0x90098737eB7C3e73854daF1Da20dFf90d521929a
+// goerli hub: 0xce1fE2DA169C313Eb00a2bad25103D2B9617b5e1
 
 const main = async () => {
-  const signers = await hre.ethers.getSigners();
-  const deployer = signers[0];
+  const signers = await ethers.getSigners();
+  if (signers.length < 1) {
+    throw new Error(`Not found deployer`);
+  }
 
-  const ZDAORegistryFactory = new ZDAORegistry__factory(deployer);
-  const zDAORegistry = await hre.upgrades.upgradeProxy(
-    zDAORegistryAddress,
-    ZDAORegistryFactory,
-    {}
-  );
-  console.log(`Upgraded to ${zDAORegistry.address}`);
+  const deployer: SignerWithAddress = signers[0];
+  console.log(`Using deployer address ${deployer.address}`);
 
-  const zDAORegistryImpl = await hre.upgrades.erc1967.getImplementationAddress(
-    zDAORegistry.address
-  );
-  await verifyContract(zDAORegistryImpl);
-  console.log(`Implementation address: ${zDAORegistryImpl}`);
+  if (
+    network.name === "goerli" ||
+    // network.name === "hardhat" ||
+    network.name === "mainnet"
+  ) {
+    const proxyAddr =
+      network.name === "goerli"
+        ? manifestGoerli.proxies[0].address
+        : manifestMainnet.proxies[0].address;
+
+    const ZDAORegistryFactory = new ZDAORegistryV2__factory(deployer);
+    const zDAORegistry = await upgrades.upgradeProxy(proxyAddr, ZDAORegistryFactory);
+    console.log(`Deployed to ${zDAORegistry.address}`);
+
+    const zDAORegistryImpl = await upgrades.erc1967.getImplementationAddress(
+      zDAORegistry.address
+    );
+    await verifyContract(zDAORegistryImpl);
+    console.log(`Implementation address: ${zDAORegistryImpl}`);
+
+    console.table([
+      {
+        Label: "Deployer",
+        Info: deployer.address,
+      },
+      {
+        Label: "zDAORegistry",
+        Info: zDAORegistry.address,
+      },
+      {
+        Label: "zDAORegistry impl",
+        Info: zDAORegistryImpl,
+      },
+    ]);
+  }
 };
 
 main().catch(console.error);

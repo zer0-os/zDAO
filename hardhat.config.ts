@@ -25,9 +25,7 @@ declare global {
       GOERLI_API_KEY: string;
       RINKEBY_API_KEY: string;
       MAINNET_API_KEY: string;
-      MUMBAI_API_KEY: string;
       ETHERSCAN_API_KEY: string;
-      POLYGON_API_KEY: string;
     }
   }
 }

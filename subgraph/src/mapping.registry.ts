@@ -1,5 +1,5 @@
 import {
-  DAOCreated, DAODestroyed, LinkAdded, LinkRemoved
+  DAOCreated, DAOCreatedWithToken, DAODestroyed, LinkAdded, LinkRemoved
 } from "../generated/ZDAORegistry/ZDAORegistry";
 import { ZDAORecord, ZNAAssociation } from "../generated/schema";
 import { Bytes, log, store } from "@graphprotocol/graph-ts";
@@ -11,7 +11,7 @@ function generateZDAORecordID(platformType: number, zDAOId: number): string {
 
 export function handleDAOCreated(event: DAOCreated): void {
   const platformType = 0; // 0: Snapshot
-  const zDAOId = event.params.daoId.toI32();
+  const zDAOId = event.params.zDAOId.toI32();
   const id = generateZDAORecordID(platformType, zDAOId);
 
   log.info("handleDAOCreated, called {}", [id]);
@@ -22,6 +22,26 @@ export function handleDAOCreated(event: DAOCreated): void {
   zDAO.zDAOId = zDAOId;
   zDAO.name = event.params.ensSpace;
   zDAO.gnosisSafe = event.params.gnosisSafe;
+  zDAO.token = Bytes.empty();
+  zDAO.createdBy = Bytes.empty();
+  zDAO.destroyed = false;
+  zDAO.save();
+}
+
+export function handleDAOCreatedWithToken(event: DAOCreatedWithToken): void {
+  const platformType = 0; // 0: Snapshot
+  const zDAOId = event.params.zDAOId.toI32();
+  const id = generateZDAORecordID(platformType, zDAOId);
+
+  log.info("handleDAOCreated, called {}", [id]);
+
+  const zDAO: ZDAORecord = new ZDAORecord(id);
+  zDAO.id = id;
+  zDAO.platformType = platformType;
+  zDAO.zDAOId = zDAOId;
+  zDAO.name = event.params.ensSpace;
+  zDAO.gnosisSafe = event.params.gnosisSafe;
+  zDAO.token = event.params.token;
   zDAO.createdBy = Bytes.empty();
   zDAO.destroyed = false;
   zDAO.save();
@@ -29,7 +49,7 @@ export function handleDAOCreated(event: DAOCreated): void {
 
 export function handleDAOModified(event: DAOCreated): void {
   const platformType = 0; // 0: Snapshot
-  const zDAOId = event.params.daoId.toI32();
+  const zDAOId = event.params.zDAOId.toI32();
   const id = generateZDAORecordID(platformType, zDAOId);
 
   log.info("handleDAOModified, called {}", [id]);
@@ -49,7 +69,7 @@ export function handleDAOModified(event: DAOCreated): void {
 
 export function handleDAODestroyed(event: DAODestroyed): void {
   const platformType = 0; // 0: Snapshot
-  const zDAOId = event.params.daoId.toI32();
+  const zDAOId = event.params.zDAOId.toI32();
   const id = generateZDAORecordID(platformType, zDAOId);
 
   log.info("handleDAODestroyed, called {}", [id]);
@@ -68,7 +88,7 @@ export function handleDAODestroyed(event: DAODestroyed): void {
 
 export function handleLinkAdded(event: LinkAdded): void {
   const platformType = 0; // 0: Snapshot
-  const zDAOId = event.params.daoId.toI32();
+  const zDAOId = event.params.zDAOId.toI32();
   const zDAORecordId = generateZDAORecordID(platformType, zDAOId);
   const zNAId = event.params.zNA.toHexString();
 
@@ -101,7 +121,7 @@ export function handleLinkAdded(event: LinkAdded): void {
 
 export function handleLinkRemoved(event: LinkRemoved): void {
   const platformType = 0; // 0: Snapshot
-  const zDAOId = event.params.daoId.toI32();
+  const zDAOId = event.params.zDAOId.toI32();
   const zDAORecordId = generateZDAORecordID(platformType, zDAOId);
   const zNAId = event.params.zNA.toHexString();
 
