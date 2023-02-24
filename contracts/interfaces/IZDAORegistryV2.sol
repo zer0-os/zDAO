@@ -30,7 +30,12 @@ interface IZDAORegistryV2 {
 
   event ZNSHubChanged(address zNSHub);
   event DAOCreated(uint256 indexed zDAOId, string ensSpace, address gnosisSafe);
-  event DAOCreatedWithToken(uint256 indexed zDAOId, string ensSpace, address gnosisSafe, address token);
+  event DAOCreatedWithToken(
+    uint256 indexed zDAOId,
+    string ensSpace,
+    address gnosisSafe,
+    address token
+  );
   event DAOModified(uint256 indexed zDAOId, string endSpace, address gnosisSafe);
   event DAODestroyed(uint256 indexed zDAOId);
   event LinkAdded(uint256 indexed zDAOId, uint256 indexed zNA);

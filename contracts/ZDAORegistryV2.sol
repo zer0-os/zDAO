@@ -63,7 +63,11 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
    * @param gnosisSafe Address to Gnosis Safe
    * @param token Address to default DAO token
    */
-  function addNewDAOWithToken(string calldata ensSpace, address gnosisSafe, address token) external onlyOwner {
+  function addNewDAOWithToken(
+    string calldata ensSpace,
+    address gnosisSafe,
+    address token
+  ) external onlyOwner {
     _addNewDAO(ensSpace, gnosisSafe, token);
   }
 
@@ -241,7 +245,11 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
 
-  function _addNewDAO(string calldata ensSpace, address gnosisSafe, address token) internal {
+  function _addNewDAO(
+    string calldata ensSpace,
+    address gnosisSafe,
+    address token
+  ) internal {
     uint256 ensId = _ensId(ensSpace);
     require(ensTozDAO[ensId] == 0, "ENS already has zDAO");
 
