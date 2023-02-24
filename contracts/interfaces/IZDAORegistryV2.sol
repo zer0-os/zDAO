@@ -11,8 +11,6 @@ interface IZDAORegistryV2 {
     address token;
   }
 
-  // function zNATozDAOId(uint256 zNA) external view returns (uint256);
-
   function numberOfzDAOs() external view returns (uint256);
 
   function getzDAOById(uint256 zDAOId) external view returns (ZDAORecord memory);
