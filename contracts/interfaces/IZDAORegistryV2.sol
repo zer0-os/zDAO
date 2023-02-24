@@ -28,6 +28,7 @@ interface IZDAORegistryV2 {
 
   function getzDAOByzNA(uint256 zNA) external view returns (ZDAORecord memory);
 
+  event ZNSHubChanged(address zNSHub);
   event DAOCreated(uint256 indexed zDAOId, string ensSpace, address gnosisSafe);
   event DAOCreatedWithToken(uint256 indexed zDAOId, string ensSpace, address gnosisSafe, address token);
   event DAOModified(uint256 indexed zDAOId, string endSpace, address gnosisSafe);

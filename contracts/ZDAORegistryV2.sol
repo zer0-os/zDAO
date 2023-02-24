@@ -90,8 +90,7 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
     onlyValidzDAO(zDAOId)
     onlyzNAOwner(zNA)
   {
-    uint256 currentDAOAssociation = zNATozDAOId[zNA];
-    require(currentDAOAssociation == zDAOId, "zNA not associated");
+    require(zNATozDAOId[zNA] == zDAOId, "zNA not associated");
 
     _disassociatezNA(zDAOId, zNA);
   }
@@ -107,6 +106,7 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
    */
   function adminSetZNSHub(address zNSHub_) external onlyOwner {
     znsHub = IZNSHub(zNSHub_);
+    emit ZNSHubChanged(zNSHub_);
   }
 
   /**
@@ -116,7 +116,8 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
    */
   function adminRemoveDAO(uint256 zDAOId) external onlyValidzDAO(zDAOId) onlyOwner {
     zDAORecords[zDAOId].destroyed = true;
-    ensTozDAO[_ensId(zDAORecords[zDAOId].ensSpace)] = 0;
+    uint256 ensId = _ensId(zDAORecords[zDAOId].ensSpace);
+    ensTozDAO[ensId] = 0;
 
     emit DAODestroyed(zDAOId);
   }
@@ -142,8 +143,7 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
     onlyOwner
     onlyValidzDAO(zDAOId)
   {
-    uint256 currentDAOAssociation = zNATozDAOId[zNA];
-    require(currentDAOAssociation == zDAOId, "zNA not associated");
+    require(zNATozDAOId[zNA] == zDAOId, "zNA not associated");
 
     _disassociatezNA(zDAOId, zNA);
   }
@@ -163,6 +163,7 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
     ZDAORecord storage zDAO = zDAORecords[zDAOId];
 
     uint256 newEnsId = _ensId(ensSpace);
+    require(ensTozDAO[newEnsId] == 0, "ENS already has zDAO");
     uint256 existingEnsId = _ensId(zDAO.ensSpace);
 
     if (newEnsId != existingEnsId) {
