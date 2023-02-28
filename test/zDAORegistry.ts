@@ -110,11 +110,15 @@ describe("zDAORegistry", async () => {
       it("Only zNA owner can associate zDAO and zNA", async () => {
         await expect(zDAORegistry.connect(zNAOwner).addZNAAssociation(1, wilder_beasts)).to.be.not
           .reverted;
+
+        expect(await zDAORegistry.doeszDAOExistForzNA(wilder_beasts)).to.be.true;
       });
 
       it("Should revert when associate by non zNA owner", async () => {
         await expect(zDAORegistry.connect(userA).addZNAAssociation(1, wilder_beasts)).to.be
           .reverted;
+
+        expect(await zDAORegistry.doeszDAOExistForzNA(wilder_beasts)).to.be.false;
       });
     });
 
@@ -126,11 +130,15 @@ describe("zDAORegistry", async () => {
       it("Only zNA owner can disassociate zDAO and zNA", async () => {
         await expect(zDAORegistry.connect(zNAOwner).removeZNAAssociation(1, wilder_beasts)).to.be
           .not.reverted;
+
+        expect(await zDAORegistry.doeszDAOExistForzNA(wilder_beasts)).to.be.false;
       });
 
       it("Should revert when disassociate by non-zNA owner", async () => {
         await expect(zDAORegistry.connect(userA).removeZNAAssociation(1, wilder_beasts)).to.be
           .reverted;
+
+        expect(await zDAORegistry.doeszDAOExistForzNA(wilder_beasts)).to.be.true;
       });
 
       it("Should revert if already disassociated", async () => {
@@ -140,6 +148,8 @@ describe("zDAORegistry", async () => {
         await expect(
           zDAORegistry.connect(zNAOwner).removeZNAAssociation(1, wilder_beasts)
         ).to.be.revertedWith("zNA not associated");
+
+        expect(await zDAORegistry.doeszDAOExistForzNA(wilder_beasts)).to.be.false;
       });
     });
   });
@@ -167,6 +177,7 @@ describe("zDAORegistry", async () => {
       expect(zDAORecord.token).to.be.equal(ethers.constants.AddressZero);
 
       expect(await zDAORegistryV2.doeszDAOExistForzNA(wilder_beasts)).to.be.true;
+      expect(await zDAORegistryV2.getzDAOIdForzNA(wilder_beasts)).to.be.equal(1);
 
       const zDAORecord2 = await zDAORegistryV2.getzDAOByENS(ENS);
       const zDAORecord3 = await zDAORegistryV2.getzDAOByzNA(wilder_beasts);
@@ -184,6 +195,7 @@ describe("zDAORegistry", async () => {
         .be.not.reverted;
       await expect(zDAORegistryV2.connect(zNAOwner).addZNAAssociation(2, wilder_kicks)).to.be.not
         .reverted;
+      expect(await zDAORegistryV2.getzDAOIdForzNA(wilder_kicks)).to.be.equal(2);
 
       const zDAORecord = await zDAORegistryV2.getzDAOByzNA(wilder_kicks);
       expect(zDAORecord.id).to.be.equal(2);

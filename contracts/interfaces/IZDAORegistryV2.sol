@@ -26,6 +26,8 @@ interface IZDAORegistryV2 {
 
   function doeszDAOExistForzNA(uint256 zNA) external view returns (bool);
 
+  function getzDAOIdForzNA(uint256 zNA) external view returns (uint256);
+
   function getzDAOByzNA(uint256 zNA) external view returns (ZDAORecord memory);
 
   event ZNSHubChanged(address zNSHub);

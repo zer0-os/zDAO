@@ -266,6 +266,10 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
     return zNATozDAOId[zNA] != 0;
   }
 
+  function getzDAOIdForzNA(uint256 zNA) external view returns (uint256) {
+    return zNATozDAOId[zNA];
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                             Internal Functions                             */
   /* -------------------------------------------------------------------------- */
