@@ -120,7 +120,8 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
    */
   function adminRemoveDAO(uint256 zDAOId) external onlyValidzDAO(zDAOId) onlyOwner {
     zDAORecords[zDAOId].destroyed = true;
-    uint256 ensId = _ensId(zDAORecords[zDAOId].ensSpace);
+    string memory ensSpace = zDAORecords[zDAOId].ensSpace;
+    uint256 ensId = _ensId(ensSpace);
     ensTozDAO[ensId] = 0;
 
     emit DAODestroyed(zDAOId);
@@ -181,6 +182,19 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
     emit DAOModified(zDAOId, ensSpace, gnosisSafe);
   }
 
+  function adminModifyGnosisSafe(uint256 zDAOId, address gnosisSafe)
+    external
+    onlyOwner
+    onlyValidzDAO(zDAOId)
+  {
+    ZDAORecord storage zDAO = zDAORecords[zDAOId];
+
+    require(zDAO.gnosisSafe != gnosisSafe, "Same Gnosis Safe address");
+    zDAO.gnosisSafe = gnosisSafe;
+
+    emit DAOGnosisSafeModified(zDAOId, gnosisSafe);
+  }
+
   /* -------------------------------------------------------------------------- */
   /*                               View Functions                               */
   /* -------------------------------------------------------------------------- */
@@ -192,6 +206,17 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
 
   function getzDAOById(uint256 zDAOId) external view returns (ZDAORecord memory) {
     return zDAORecords[zDAOId];
+  }
+
+  function getzDAOAssociations(uint256 zDAOId) external view returns (uint256[] memory) {
+    ZDAORecord storage zDAO = zDAORecords[zDAOId];
+
+    uint256 length = zDAO.associatedzNAs.length;
+    uint256[] memory associated = new uint256[](length);
+    for (uint256 i = 0; i < length; ++i) {
+      associated[i] = zDAO.associatedzNAs[i];
+    }
+    return associated;
   }
 
   function listzDAOs(uint256 startIndex, uint256 endIndex)

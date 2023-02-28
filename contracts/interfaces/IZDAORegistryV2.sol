@@ -15,6 +15,8 @@ interface IZDAORegistryV2 {
 
   function getzDAOById(uint256 zDAOId) external view returns (ZDAORecord memory);
 
+  function getzDAOAssociations(uint256 zDAOId) external view returns (uint256[] memory);
+
   function getzDAOByENS(string calldata ensSpace) external view returns (ZDAORecord memory);
 
   function listzDAOs(uint256 startIndex, uint256 endIndex)
@@ -34,7 +36,8 @@ interface IZDAORegistryV2 {
     address gnosisSafe,
     address token
   );
-  event DAOModified(uint256 indexed zDAOId, string endSpace, address gnosisSafe);
+  event DAOModified(uint256 indexed zDAOId, string ensSpace, address gnosisSafe);
+  event DAOGnosisSafeModified(uint256 indexed zDAOId, address gnosisSafe);
   event DAODestroyed(uint256 indexed zDAOId);
   event LinkAdded(uint256 indexed zDAOId, uint256 indexed zNA);
   event LinkRemoved(uint256 indexed zDAOId, uint256 indexed zNA);

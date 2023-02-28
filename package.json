@@ -1,5 +1,5 @@
 {
-  "name": "forward-contracts",
+  "name": "zDAO",
   "scripts": {
     "typechain": "hardhat typechain",
     "test": "hardhat test --show-stack-traces",

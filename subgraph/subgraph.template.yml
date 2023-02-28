@@ -29,6 +29,8 @@ dataSources:
           handler: handleDAOCreatedWithToken
         - event: DAOModified(indexed uint256,string,address)
           handler: handleDAOModified
+        - event: DAOGnosisSafeModified(indexed uint256,address)
+          handler: handleDAOGnosisSafeModified
         - event: DAODestroyed(indexed uint256)
           handler: handleDAODestroyed
         - event: LinkAdded(indexed uint256,indexed uint256)

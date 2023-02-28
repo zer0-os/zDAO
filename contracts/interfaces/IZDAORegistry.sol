@@ -28,7 +28,7 @@ interface IZDAORegistry {
   function getzDaoByZNA(uint256 zNA) external view returns (ZDAORecord memory);
 
   event DAOCreated(uint256 indexed daoId, string ensSpace, address gnosisSafe);
-  event DAOModified(uint256 indexed daoId, string endSpace, address gnosisSafe);
+  event DAOModified(uint256 indexed daoId, string ensSpace, address gnosisSafe);
   event DAODestroyed(uint256 indexed daoId);
   event LinkAdded(uint256 indexed daoId, uint256 indexed zNA);
   event LinkRemoved(uint256 indexed daoId, uint256 indexed zNA);
