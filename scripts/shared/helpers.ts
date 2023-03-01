@@ -1,13 +1,11 @@
+import logdown from "logdown";
 import { run } from "hardhat";
 import { NomicLabsHardhatPluginError } from "hardhat/plugins";
 import { ethers } from "ethers";
 
 export const sleep = (m: number) => new Promise((r) => setTimeout(r, m));
 
-export const verifyContract = async (
-  address: string,
-  constructorArguments: any[] = []
-) => {
+export const verifyContract = async (address: string, constructorArguments: any[] = []) => {
   try {
     console.log("Sleeping for 10 seconds before verification...");
     await sleep(10000);
@@ -31,10 +29,16 @@ export const verifyContract = async (
 };
 
 // add 10%
-export const calculateGasMargin = (
-  value: ethers.BigNumber
-): ethers.BigNumber => {
+export const calculateGasMargin = (value: ethers.BigNumber): ethers.BigNumber => {
   return value
     .mul(ethers.BigNumber.from(10000).add(ethers.BigNumber.from(1000)))
     .div(ethers.BigNumber.from(10000));
+};
+
+const root = "zDAO";
+
+export const getLogger = (title: string): logdown.Logger => {
+  const logger = logdown(`${root}::${title}`);
+  logger.state.isEnabled = true;
+  return logger;
 };

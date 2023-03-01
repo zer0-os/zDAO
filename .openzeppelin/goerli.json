@@ -61,7 +61,7 @@
             "label": "znsHub",
             "offset": 0,
             "slot": "101",
-            "type": "t_contract(IZNSHub)1062",
+            "type": "t_contract(IZNSHub)1999",
             "contract": "ZDAORegistry",
             "src": "contracts/ZDAORegistry.sol:9"
           },
@@ -85,7 +85,7 @@
             "label": "zDAORecords",
             "offset": 0,
             "slot": "104",
-            "type": "t_mapping(t_uint256,t_struct(ZDAORecord)971_storage)",
+            "type": "t_mapping(t_uint256,t_struct(ZDAORecord)1802_storage)",
             "contract": "ZDAORegistry",
             "src": "contracts/ZDAORegistry.sol:16"
           },
@@ -119,11 +119,11 @@
             "label": "bool",
             "numberOfBytes": "1"
           },
-          "t_contract(IZNSHub)1062": {
+          "t_contract(IZNSHub)1999": {
             "label": "contract IZNSHub",
             "numberOfBytes": "20"
           },
-          "t_mapping(t_uint256,t_struct(ZDAORecord)971_storage)": {
+          "t_mapping(t_uint256,t_struct(ZDAORecord)1802_storage)": {
             "label": "mapping(uint256 => struct IZDAORegistry.ZDAORecord)",
             "numberOfBytes": "32"
           },
@@ -135,7 +135,7 @@
             "label": "string",
             "numberOfBytes": "32"
           },
-          "t_struct(ZDAORecord)971_storage": {
+          "t_struct(ZDAORecord)1802_storage": {
             "label": "struct IZDAORegistry.ZDAORecord",
             "members": [
               {
@@ -166,6 +166,178 @@
                 "label": "destroyed",
                 "type": "t_bool",
                 "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        }
+      }
+    },
+    "3027a57b76bc06aa4413eca98d480f8b7ce9b99c02bc7c3c26d0e213742d9959": {
+      "address": "0x0e0435A0AeC23929D46F51c7848b18B8B9E0eb29",
+      "txHash": "0x6868288e93e18596caab9762adaafdb397f71d2e4f07a2f72c1f481491a8fb36",
+      "layout": {
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:21"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:26"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:30"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:21"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "52",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:77"
+          },
+          {
+            "label": "znsHub",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_contract(IZNSHub)1999",
+            "contract": "ZDAORegistryV2",
+            "src": "contracts/ZDAORegistryV2.sol:9"
+          },
+          {
+            "label": "ensTozDAO",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "ZDAORegistryV2",
+            "src": "contracts/ZDAORegistryV2.sol:11"
+          },
+          {
+            "label": "zNATozDAOId",
+            "offset": 0,
+            "slot": "103",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "ZDAORegistryV2",
+            "src": "contracts/ZDAORegistryV2.sol:12"
+          },
+          {
+            "label": "zDAORecords",
+            "offset": 0,
+            "slot": "104",
+            "type": "t_mapping(t_uint256,t_struct(ZDAORecord)1898_storage)",
+            "contract": "ZDAORegistryV2",
+            "src": "contracts/ZDAORegistryV2.sol:16"
+          },
+          {
+            "label": "numZDAOs",
+            "offset": 0,
+            "slot": "105",
+            "type": "t_uint256",
+            "contract": "ZDAORegistryV2",
+            "src": "contracts/ZDAORegistryV2.sol:19"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IZNSHub)1999": {
+            "label": "contract IZNSHub",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_uint256,t_struct(ZDAORecord)1898_storage)": {
+            "label": "mapping(uint256 => struct IZDAORegistryV2.ZDAORecord)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ZDAORecord)1898_storage": {
+            "label": "struct IZDAORegistryV2.ZDAORecord",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "ensSpace",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "gnosisSafe",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "associatedzNAs",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "destroyed",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 1,
                 "slot": "4"
               }
             ],

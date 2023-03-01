@@ -21,12 +21,16 @@ dataSources:
         - ZNAAssociation
       abis:
         - name: ZDAORegistry
-          file: ./abis/ZDAORegistry.json
+          file: ./abis/ZDAORegistryV2.json
       eventHandlers:
         - event: DAOCreated(indexed uint256,string,address)
           handler: handleDAOCreated
+        - event: DAOCreatedWithToken(indexed uint256,string,address,address)
+          handler: handleDAOCreatedWithToken
         - event: DAOModified(indexed uint256,string,address)
           handler: handleDAOModified
+        - event: DAOGnosisSafeModified(indexed uint256,address)
+          handler: handleDAOGnosisSafeModified
         - event: DAODestroyed(indexed uint256)
           handler: handleDAODestroyed
         - event: LinkAdded(indexed uint256,indexed uint256)

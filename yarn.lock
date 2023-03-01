@@ -1370,6 +1370,11 @@
   resolved "https://registry.npmjs.org/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz"
   integrity sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==
 
+"@zero-tech/zero-contracts@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@zero-tech/zero-contracts/-/zero-contracts-0.0.7.tgz#67adb33ecce6267225a0bd97f2f07a29a8c5f5d1"
+  integrity sha512-0B192LZOF8X33v2FUsfVcVSQPOoElHT/16Z5KB80Zp2A3IvFnzfikhUKwTIwzZQCl/fvJz2OV5gS7l7oDcPAkw==
+
 abbrev@1:
   version "1.1.1"
   resolved "https://registry.npmjs.org/abbrev/-/abbrev-1.1.1.tgz"
@@ -5966,9 +5971,9 @@ log-symbols@4.1.0:
     chalk "^4.1.0"
     is-unicode-supported "^0.1.0"
 
-logdown@3.3.1:
+logdown@^3.3.1:
   version "3.3.1"
-  resolved "https://registry.npmjs.org/logdown/-/logdown-3.3.1.tgz"
+  resolved "https://registry.yarnpkg.com/logdown/-/logdown-3.3.1.tgz#836d5a195b5949c6db631ccc9fecce0492e01d10"
   integrity sha512-pjX0vlIJsYQlgVzFba2amXI1wZZnhrEorL68MdLI7B0/sN1TNUozBNFaHfcPHMM3A+INZ0OXFDxtnoaEgOmGjQ==
   dependencies:
     chalk "^2.3.0"
