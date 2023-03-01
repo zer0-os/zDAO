@@ -8,7 +8,9 @@ import "./interfaces/IZNSHub.sol";
 contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
   IZNSHub public znsHub;
 
+  // ENS namehash => zDAO id
   mapping(uint256 => uint256) private ensTozDAO;
+  // zNA id => zDAO id
   mapping(uint256 => uint256) private zNATozDAOId;
 
   // The zdao at index 0 is a null zDAO
@@ -36,6 +38,11 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
     __Ownable_init();
 
     znsHub = IZNSHub(zNSHub_);
+
+    // Actual zDAO starts from index 1, initialize with null for index 0
+    // While `ensTozDAO`, `zNATozDAOId` return 0 if the key is not found in the
+    // mapping, zDAOId as 0 can be indicated by any value
+    // So do not use 0 as actual zDAOId
     zDAORecords[0] = ZDAORecord({
       id: 0,
       ensSpace: "",
@@ -44,24 +51,14 @@ contract ZDAORegistryV2 is IZDAORegistryV2, OwnableUpgradeable {
       destroyed: false,
       token: address(0)
     });
-
     numZDAOs = 1;
-  }
-
-  /**
-   * Add new DAO with ENS name and Gnosis Safe address
-   * @param ensSpace ENS name
-   * @param gnosisSafe Address to Gnosis Safe
-   */
-  function addNewDAO(string calldata ensSpace, address gnosisSafe) external onlyOwner {
-    _addNewDAO(ensSpace, gnosisSafe, address(0));
   }
 
   /**
    * Add new DAO with ENS name, Gnosis Safe address and token
    * @param ensSpace ENS name
    * @param gnosisSafe Address to Gnosis Safe
-   * @param token Address to default DAO token
+   * @param token Address to default DAO token, if don't have DAO token, pass 0
    */
   function addNewDAOWithToken(
     string calldata ensSpace,
